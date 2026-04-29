@@ -1,23 +1,32 @@
-# RNA2Phospho best deployable model v1
+# RNA2Phospho best deployable model v2 with total protein
 
-Selected model is a two-engine deployable contract, not the rejected single-checkpoint prototype.
+Final model is a multi-engine deployable contract from one RNA input. It outputs four matrices:
+
+- CPTAC/PDC mass-spectrometry phosphosite predictions.
+- CPTAC/PDC mass-spectrometry total-protein predictions.
+- TCPA phospho-RPPA antibody predictions.
+- TCPA total-RPPA antibody predictions.
 
 ## Selected CPTAC/PDC phosphosite engine
 
 `20260426_cptac_adversarial_ensemble_stack_v1`
 
-Reason: best strict locked gene-site CPTAC/PDC model. Median target Spearman = 0.4305588762701733; 4506 sites >= 0.5. The ensemble uses cross-fitted per-target correlation weights over five component models. Component checkpoint availability was verified. Rerun checkpoints for baseline, target-stratified, and per-cancer branches reproduce original OOF predictions exactly.
+Locked gene-site target contract. Median target Spearman = 0.4305588762701733. Targets with Spearman >= 0.5 = 4506.
 
-## Rejected CPTAC high-number model
+## Selected CPTAC/PDC total-protein engine
 
-`20260426_cptac_pancancer_phosphoproteome_film_v3` has median Spearman = 0.5111875187448232, but it uses the older unlocked raw/refseq-like phosphosite table and raw logratio target contract. It is not selected as the main deployable model.
+`20260428_cptac_total_proteome_film_vae_z_direct_residual_v1`
 
-## Selected TCPA phospho-RPPA engine
+Median target Spearman = 0.4846051523389646. Targets with Spearman >= 0.5 = 5222.
+
+A v2 retrain on expanded `pancancer_multi_task_locked_v2` was performed, but its median target Spearman was 0.4729714323757167, so it is not selected.
+
+## Selected TCPA/RPPA engine
 
 `20260428_tcpa_pancancer_rppa_film_vae_z_direct_residual_v1`
 
-Reason: best TCPA/RPPA phospho-antibody model. Phospho-antibody median Spearman = 0.6364467170343006; 70 phospho antibodies >= 0.5.
+Total antibody median Spearman = 0.6652301230803972. Phospho-antibody median Spearman = 0.6364467170343006.
 
-## Rejected joint prototype
+## Rejected prototype
 
-`20260429_rna2phospho_dual_output_final_v1` is rejected. Its CPTAC phosphosite median Spearman is 0.30146750524109006, below the selected CPTAC engine. It is retained only as an interface prototype and must not be cited as the final model.
+`20260429_rna2phospho_dual_output_final_v1` remains rejected because its CPTAC phosphosite median Spearman was only 0.30146750524109006.

@@ -1,35 +1,40 @@
-# RNA2Phospho dual-output model
+# RNA2Phospho deployable model
 
-This repository contains the deployable code contract for a bulk RNA-to-phosphorylation model.
+This repository contains the deployable code contract for a bulk RNA-to-protein-state model.
 
-The model takes a bulk RNA expression matrix as input and produces two separate phosphorylation outputs:
+The model takes a bulk RNA expression matrix as input and produces four separate output matrices:
 
 1. CPTAC/PDC mass-spectrometry phosphosite predictions.
-2. TCGA/TCPA phospho-RPPA antibody predictions.
+2. CPTAC/PDC mass-spectrometry total-protein predictions.
+3. TCGA/TCPA phospho-RPPA antibody predictions.
+4. TCGA/TCPA total-RPPA antibody predictions.
 
-These outputs are deliberately kept separate. A mass-spectrometry phosphosite and an RPPA antibody readout are different measurement layers and should not be merged into a single target table.
+These outputs are deliberately kept separate. Mass-spectrometry phosphosites, mass-spectrometry total proteins, and RPPA antibody readouts are different measurement layers and should not be merged into one target table.
 
 ## Current sealed model
 
-Use `rna2phospho_best_deployable_model_v1`.
+Use `rna2phospho_best_deployable_model_v2_with_total`.
 
 This is the strictly audited model selection. It is not the earlier single-checkpoint prototype.
 
 Deployed contract:
 
 - CPTAC/PDC mass-spectrometry phosphosite output: use the strongest per-target correlation-weighted CPTAC ensemble.
-- TCGA/TCPA phospho-RPPA antibody output: use the RNA + VAE z + direct RNA residual FiLM model.
+- CPTAC/PDC mass-spectrometry total-protein output: use the best audited CPTAC total-proteome FiLM model.
+- TCGA/TCPA phospho-RPPA and total-RPPA antibody outputs: use the RNA + VAE z + direct RNA residual FiLM model.
 
 Correct benchmark values:
 
 | output head | model | median Spearman | stronger-use metric |
 |---|---|---:|---:|
 | CPTAC/PDC phosphosite | locked per-target correlation-weighted ensemble | 0.431 | 4506 sites >= 0.5 |
+| CPTAC/PDC total protein | RNA + VAE z + direct RNA residual FiLM | 0.485 | 5222 proteins >= 0.5 |
 | TCPA phospho-RPPA antibody | RNA + VAE z + direct RNA residual FiLM | 0.636 | 70 phospho antibodies >= 0.5 |
+| TCPA total-RPPA antibody | RNA + VAE z + direct RNA residual FiLM | 0.665 | 346 total antibodies >= 0.5 |
 
 Server directory:
 
-`/data/lsy/Infinite_Stream/02_results/model_validation/20260429_rna2phospho_best_deployable_model_v1`
+`/data/lsy/Infinite_Stream/02_results/model_validation/20260429_rna2phospho_best_deployable_model_v2_with_total`
 
 Selection audit:
 
@@ -42,6 +47,10 @@ Component hashes:
 Rejected high-number CPTAC model:
 
 `20260426_cptac_pancancer_phosphoproteome_film_v3` has a higher internal median Spearman (`0.511`), but it uses an older unlocked raw/refseq-like target table and raw logratio target contract. It is not selected as the main deployable model.
+
+Rejected total-protein retrain:
+
+`20260429_cptac_total_proteome_film_vae_z_direct_residual_v2` was trained on the expanded v2 matrix, but its median Spearman was `0.473`, below the selected total-protein v1 model (`0.485`).
 
 ## Superseded interface prototype
 
