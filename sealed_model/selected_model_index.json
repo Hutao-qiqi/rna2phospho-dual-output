@@ -1,0 +1,36 @@
+{
+  "cptac_phosphosite_engine": {
+    "selected_model": "per_target_correlation_weighted_ensemble_locked_v1",
+    "source_dir": "/data/lsy/Infinite_Stream/02_results/model_validation/20260426_cptac_adversarial_ensemble_stack_v1",
+    "label_matrix": "/data/lsy/Infinite_Stream/01_data/multi_omics/processed/pancancer_phosphoproteome_locked_v1/phosphosite_gene_site_study_zscore_min20pct_targets.parquet",
+    "prediction_matrix": "/data/lsy/Infinite_Stream/02_results/model_validation/20260426_cptac_adversarial_ensemble_stack_v1/predictions/per_target_correlation_weighted_oof_predictions.parquet",
+    "weight_table": "/data/lsy/Infinite_Stream/02_results/model_validation/20260426_cptac_adversarial_ensemble_stack_v1/tables/per_target_correlation_weights.tsv",
+    "median_spearman": 0.4305588762701733,
+    "targets_ge_0_5": 4506,
+    "n_targets": 18617,
+    "n_samples": 834,
+    "reason": "Best strict locked CPTAC/PDC gene-site model. Uses study-zscored gene-site labels and cross-fitted per-target ensemble weights. All component checkpoints are present or rerun-verified."
+  },
+  "tcpa_phospho_rppa_engine": {
+    "selected_model": "tcpa_pancancer_rppa_film_vae_z_direct_residual_v1",
+    "source_dir": "/data/lsy/Infinite_Stream/02_results/model_validation/20260428_tcpa_pancancer_rppa_film_vae_z_direct_residual_v1",
+    "prediction_matrix": "/data/lsy/Infinite_Stream/02_results/model_validation/20260428_tcpa_pancancer_rppa_film_vae_z_direct_residual_v1/predictions/tcpa_pancancer_rppa_film_vae_z_direct_residual_v1_oof_predictions.parquet",
+    "median_spearman_phospho": 0.6364467170343006,
+    "phospho_antibodies_ge_0_5": 70,
+    "n_phospho_antibodies": 73,
+    "n_samples": 6034,
+    "reason": "Best TCGA/TCPA phospho-antibody model among RNA-only, RNA+VAE, and RNA+VAE+direct residual variants."
+  },
+  "rejected_models": [
+    {
+      "model": "20260426_cptac_pancancer_phosphoproteome_film_v3",
+      "median_spearman": 0.5111875187448232,
+      "reason": "Rejected as primary deployable CPTAC model despite highest internal number because it uses the older unlocked raw/refseq-like target table and raw logratio target contract. It is not the strict locked gene-site model."
+    },
+    {
+      "model": "20260429_rna2phospho_dual_output_final_v1",
+      "cptac_median_spearman": 0.30146750524109006,
+      "reason": "Rejected. It was only a joint-interface prototype and degraded the CPTAC phosphosite head."
+    }
+  ]
+}
