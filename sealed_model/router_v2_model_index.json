@@ -1,0 +1,19 @@
+{
+  "model_name": "rna2phospho_dual_output_router_v2",
+  "server_output_dir": "/data/lsy/Infinite_Stream/02_results/model_validation/20260429_rna2phospho_dual_output_router_v2",
+  "supersedes": "/data/lsy/Infinite_Stream/02_results/model_validation/20260429_rna2phospho_dual_output_final_v1",
+  "cptac_phosphosite_engine": {
+    "type": "per_target_correlation_weighted_ensemble",
+    "source_dir": "/data/lsy/Infinite_Stream/02_results/model_validation/20260426_cptac_adversarial_ensemble_stack_v1",
+    "median_target_spearman": 0.4305588762701733,
+    "targets_ge_0_5": 4506,
+    "n_targets": 18617
+  },
+  "tcpa_phospho_rppa_engine": {
+    "type": "rna_vae_z_direct_residual_film",
+    "source_dir": "/data/lsy/Infinite_Stream/02_results/model_validation/20260428_tcpa_pancancer_rppa_film_vae_z_direct_residual_v1",
+    "phospho_median_target_spearman": 0.6364467170343006,
+    "phospho_targets_ge_0_5": 70,
+    "n_phospho_antibodies": 73
+  }
+}

@@ -11,6 +11,28 @@ These outputs are deliberately kept separate. A mass-spectrometry phosphosite an
 
 ## Current sealed model
 
+Use `rna2phospho_dual_output_router_v2`.
+
+The earlier single-checkpoint `rna2phospho_dual_output_final_v1` is superseded. It was technically runnable, but its CPTAC phosphosite validation median Spearman was only `0.301`, because it collapsed two mature specialist models into one simplified joint model.
+
+Correct deployed contract:
+
+- CPTAC/PDC mass-spectrometry phosphosite output: use the strongest per-target correlation-weighted CPTAC ensemble.
+- TCGA/TCPA phospho-RPPA antibody output: use the RNA + VAE z + direct RNA residual FiLM model.
+
+Correct benchmark values:
+
+| output head | model | median Spearman | stronger-use metric |
+|---|---|---:|---:|
+| CPTAC/PDC phosphosite | per-target correlation-weighted ensemble | 0.431 | 4506 sites >= 0.5 |
+| TCPA phospho-RPPA antibody | RNA + VAE z + direct RNA residual FiLM | 0.636 | 70 phospho antibodies >= 0.5 |
+
+Server directory:
+
+`/data/lsy/Infinite_Stream/02_results/model_validation/20260429_rna2phospho_dual_output_router_v2`
+
+## Superseded interface prototype
+
 Model name:
 
 `rna2phospho_dual_output_final_v1`
@@ -27,7 +49,7 @@ Inference script:
 
 `rna2phospho/predict_rna2phospho_dual_output.py`
 
-The checkpoint is not committed to GitHub because it is too large for ordinary Git storage. The sealed server directory records the checkpoint hash in `LOCKED_MODEL_HASHES.tsv`.
+This checkpoint is retained only as a runnable interface prototype. Do not use it as the main CPTAC phosphosite model.
 
 Sealed model summary:
 
