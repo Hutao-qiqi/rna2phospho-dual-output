@@ -1,0 +1,20 @@
+{
+  "model_name": "rna2phospho_dual_output_final_v1",
+  "output_dir": "/data/lsy/Infinite_Stream/02_results/model_validation/20260429_rna2phospho_dual_output_final_v1",
+  "best_epoch": 20,
+  "best_val_loss": 1.5735697162199211,
+  "final_val_loss": 1.5735697162199211,
+  "n_samples": 7465,
+  "n_cptac_samples": 1431,
+  "n_tcga_tcpa_samples": 6034,
+  "n_genes": 33233,
+  "n_cptac_phosphosites": 16049,
+  "n_tcpa_phospho_antibodies": 76,
+  "cptac_site_val_median_spearman": 0.30146750524109006,
+  "tcpa_phospho_antibody_val_median_spearman": 0.6482837214381498,
+  "checkpoint_sha256": "e30d91a80cd39f57ed463a9a1866a7ea0c31efd42d7f156863f6ae5cd01b6ebf",
+  "data_sources": {
+    "cptac_pdc": "/data/lsy/Infinite_Stream/01_data/multi_omics/processed/pancancer_multi_task_locked_v2",
+    "tcga_tcpa_loader": "/data/lsy/Infinite_Stream/03_code/model_validation/train_tcpa_pancancer_rppa_film_vae_z_direct_residual_20260428.py"
+  }
+}
