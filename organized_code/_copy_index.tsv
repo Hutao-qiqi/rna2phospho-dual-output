@@ -1,0 +1,431 @@
+画图	ppko	3_plotting\ppko\_thumb_final.R	02_results/figure_outputs/fig4_v3/scripts/_thumb_final.R	L	support	将最终合图PNG缩小为820px缩略图供预览
+画图	ppko	3_plotting\ppko\_thumb.R	02_results/figure_outputs/fig4_v3/scripts/_thumb.R	L	support	批量生成panel缩略图(130dpi)用于快速检视
+分析	ppko	2_analysis\ppko\00_check_packages.R	02_results/figure_outputs/fig4_v3/scripts/00_check_packages.R	L	support	检查Fig4出图所需R包是否安装完整
+分析	ppko	2_analysis\ppko\00b_check.R	02_results/figure_outputs/fig4_v3/scripts/00b_check.R	L	support	补充检查pheatmap/ggbeeswarm等Fig4额外依赖包
+画图	ppko	3_plotting\ppko\01_config.R	02_results/figure_outputs/fig4_v3/scripts/01_config.R	L	support	定义Fig4全局路径、调色板、theme_fig4发布主题，供其余脚本source引用
+画图	ppko	3_plotting\ppko\02_load_data.R	02_results/figure_outputs/fig4_v3/scripts/02_load_data.R	L	support	定义load_fig4_data()统一加载Fig4所有panel源表到命名列表
+画图	ppko	3_plotting\ppko\03_panel_b.R	02_results/figure_outputs/fig4_v3/scripts/03_panel_b.R	L	canonical	渲染Fig4b：P100整体验证grouped bar（cosine+方向准确率，n=125，mean±95%CI）
+画图	ppko	3_plotting\ppko\04_panel_c.R	02_results/figure_outputs/fig4_v3/scripts/04_panel_c.R	L	canonical	渲染Fig4c：per-comparison分布雨云图（cosine+方向准确率，按药物class染色）
+画图	ppko	3_plotting\ppko\05_panel_d.R	02_results/figure_outputs/fig4_v3/scripts/05_panel_d.R	L	canonical	渲染Fig4d：按药物class的哑铃图（cosine到方向准确率，responsive top20%）
+画图	ppko	3_plotting\ppko\06_panel_e.R	02_results/figure_outputs/fig4_v3/scripts/06_panel_e.R	L	canonical	渲染Fig4e：per-drug 16x4热图（4指标，药物class行注释）
+画图	ppko	3_plotting\ppko\07_panel_f.R	02_results/figure_outputs/fig4_v3/scripts/07_panel_f.R	L	canonical	渲染Fig4f：PPKO vs zero-baseline散点+边缘小提琴（responsive top20% cosine，125对）
+画图	ppko	3_plotting\ppko\08_panel_g.R	02_results/figure_outputs/fig4_v3/scripts/08_panel_g.R	L	canonical	渲染Fig4g：TCGA-TCPA患者验证ROC曲线+响应分组箱线图（AUC=0.72）
+画图	ppko	3_plotting\ppko\09_panel_h.R	02_results/figure_outputs/fig4_v3/scripts/09_panel_h.R	L	canonical	渲染Fig4h：PPKO vs各类对照AUC棒棒糖图+随机k标记物曲线
+画图	ppko	3_plotting\ppko\11_panel_a_placeholder.R	02_results/figure_outputs/fig4_v3/scripts/11_panel_a_placeholder.R	L	support	生成PPKO架构BioRender占位示意图，正式版由BioRender SVG替换
+画图	ppko	3_plotting\ppko\20_new_panels.R	02_results/figure_outputs/fig4_v3/scripts/20_new_panels.R	L	canonical	渲染drug×cell-line余弦热图和代表性位点级散点图（P100机制验证新panel）
+画图	ppko	3_plotting\ppko\40_ed_baselines.R	02_results/figure_outputs/fig4_v3/scripts/40_ed_baselines.R	L	canonical	渲染ED Fig M2：PPKO vs已发表方法基线(KSEA/Heat/RWR/Ridge/Retr)的P100 4指标对比bar图
+画图	ppko	3_plotting\ppko\99_assemble.R	02_results/figure_outputs/fig4_v3/scripts/99_assemble.R	L	canonical	主Fig4最终合图组装（调用全部panel函数，保存单体panel+合图，a-h共8个panel）
+分析	atlas	2_analysis\atlas\analyze_modules.py	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/analyze_modules.py	L	canonical	分析NMF k30模块：计算cancer中位活性矩阵、Hallmark ORA富集、模块汇总表
+画图	atlas	3_plotting\atlas\build_ED7a_stability.R	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/build_ED7a_stability.R	L	canonical	渲染ED7a：k=20和k=40模块x癌种热图，展示NMF模块数稳健性
+画图	atlas	3_plotting\atlas\build_ED7b_cptac.py	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/build_ED7b_cptac.py	L	canonical	渲染ED7b：NMF模块在CPTAC预测vs实测磷酸化中top-site富集对比，定位atlas为RNA推断构建
+分析	atlas	2_analysis\atlas\build_ED7c_33project.py	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/build_ED7c_33project.py	L	canonical	扩展至33项目(含LAML)重跑signed-split NMF k30，验证血液肿瘤模块独立性
+画图	atlas	3_plotting\atlas\build_ED7c_heatmap.R	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/build_ED7c_heatmap.R	L	canonical	渲染ED7c：33项目含LAML的模块x癌种热图（验证LAML形成独立造血模块）
+画图	atlas	3_plotting\atlas\build_figA_annotated.R	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/build_figA_annotated.R	L	canonical	渲染带多行临床注释(年龄/性别/分期/纯度/OS)的样本x模块活性热图(10023例)
+画图	atlas	3_plotting\atlas\build_figA_sample_overview.R	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/build_figA_sample_overview.R	L	canonical	渲染泛癌10023例样本x模块活性概览热图（不含临床注释的简版）
+画图	atlas	3_plotting\atlas\build_figB_module_cancer.R	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/build_figB_module_cancer.R	L	canonical	渲染Fig2e主图：30模块x32癌种中位活性热图（带Hallmark标注，对角块状结构）
+画图	atlas	3_plotting\atlas\build_figC_pathway_bars.R	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/build_figC_pathway_bars.R	L	canonical	渲染Fig2g：9个代表性癌种特异模块的Hallmark ORA bar图（3x3布局，覆盖代谢/缺氧/免疫/激素等）
+画图	atlas	3_plotting\atlas\build_figD_survival.R	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/build_figD_survival.R	L	canonical	渲染Fig2f：30模块OS风险比森林图（cancer分层Cox + BH-FDR，16/30显著）
+分析	atlas	2_analysis\atlas\project_to_cptac.py	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/project_to_cptac.py	L	canonical	将TCGA-NMF H矩阵用masked NNLS投影到CPTAC实测磷酸组，验证模块癌种偏好性再现率
+分析	atlas	2_analysis\atlas\run_nmf.py	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/run_nmf.py	L	canonical	对TCGA泛癌SCP682预测磷酸组运行signed-split NMF (k=30主+k=20/40稳健性)，产出W/H矩阵
+分析	ppko	2_analysis\ppko\run_ppko_tcga_survival_analysis.py	03_code/clinical_validation/run_ppko_tcga_survival_analysis.py	L	canonical	PPKO V10B TCGA-TCPA患者响应预测与OS生存分析（Cox+KM+logrank），产出Fig4g数据
+分析	data	2_analysis\data\audit_requested_pdc_contexts_20260429.py	03_code/external_validation/proteogenomics/audit_requested_pdc_contexts_20260429.py	LU	support	审计 PDC/GDC 扩展 CPTAC 队列的文件可用性和元数据（数据准备支持）
+分析	data	2_analysis\data\download_requested_pdc_contexts_20260429.py	03_code/external_validation/proteogenomics/download_requested_pdc_contexts_20260429.py	LU	support	从 PDC/GDC 下载扩展 CPTAC 磷蛋白组/蛋白质组/RNA 原始数据（训练数据准备）
+分析	ppko	2_analysis\ppko\export_v10b_p100_sitelevel_all125.py	03_code/figure_generation/export_v10b_p100_sitelevel_all125.py	LW	canonical	用 canonical V10B 对全部125条 P100 扰动做位点级推理并导出 delta 表（Fig4 源数据）
+分析	ppko	2_analysis\ppko\export_v10b_pxd063604_sitelevel.py	03_code/figure_generation/export_v10b_pxd063604_sitelevel.py	LW	canonical	用 canonical V10B 对 PXD063604 外部验证集做位点级推理并导出源数据
+画图	ppko	3_plotting\ppko\make_fig4_ppko_v10b_mechanism_panels.py	03_code/figure_generation/make_fig4_ppko_v10b_mechanism_panels.py	L	canonical	渲染 Fig4 PPKO V10B P100 机制面板（通路模块散点/药物-pathway 热图等）
+分析	ppko	2_analysis\ppko\make_pxd063604_reusable_candidate_tables.py	03_code/figure_generation/make_pxd063604_reusable_candidate_tables.py	L	canonical	从 PXD063604/CoPheeAtlas 生成可复用 KRAS 通路节点汇总表（Fig4 数据准备）
+画图	ppko	3_plotting\ppko\make_pxd063604_v10b_mechanism_panels.py	03_code/figure_generation/make_pxd063604_v10b_mechanism_panels.py	LW	canonical	渲染 Fig4 PPKO PXD063604 KRAS抑制外部验证机制面板
+画图	ppko	3_plotting\ppko\make_scp682_ppko_methods_schematic.py	03_code/figure_generation/make_scp682_ppko_methods_schematic.py	L	canonical	用 matplotlib 绘制 SCP682-PPKO 架构示意图（Fig4a schematic）
+分析	bulk	2_analysis\bulk\build_scp682_bulk_main_panels.py	03_code/model_interpretation/build_scp682_bulk_main_panels.py	LU	canonical	基于 canonical SCP682-22 OOF 构建 bulk 主分析面板（per-site Spearman 多基线对比）
+分析	bulk	2_analysis\bulk\audit_scp682_final_model_contract_20260501.py	03_code/model_validation/audit_scp682_final_model_contract_20260501.py	LU	support	审计SCP682 v1.0模型合约：CPTAC v2 vs TCPA 32项目覆盖度
+分析	data	2_analysis\data\audit_tcpa_32_project_data_contract_20260501.py	03_code/model_validation/audit_tcpa_32_project_data_contract_20260501.py	LU	support	核查TCPA 32项目RNA/RPPA匹配缺口并生成GDC下载清单
+分析	data	2_analysis\data\build_tcpa_32_project_rna_rppa_contract_20260501.py	03_code/model_validation/build_tcpa_32_project_rna_rppa_contract_20260501.py	LU	support	为TCGA-TCPA 32项目下载缺失RNA并构建RNA/RPPA配对锁定矩阵
+训练	bulk	1_training\bulk\prepare_cptac_multi_task_locked_v2_20260429.py	03_code/model_validation/data_preparation/prepare_cptac_multi_task_locked_v2_20260429.py	LU	support	为canonical bulk SCP682训练构建锁定版v2 CPTAC多任务输入矩阵（含RNA/磷酸化/总蛋白）
+分析	data	2_analysis\data\download_cptac_gdc_open_star_counts.py	03_code/model_validation/download_cptac_gdc_open_star_counts.py	LU	support	下载CPTAC各研究对应的GDC开放STAR count RNA文件（bulk训练数据准备）
+分析	data	2_analysis\data\download_pdc_phosphoproteome_quant_matrices.py	03_code/model_validation/download_pdc_phosphoproteome_quant_matrices.py	LU	support	从PDC下载CPTAC磷酸化蛋白组quantDataMatrix（bulk训练数据准备）
+分析	data	2_analysis\data\download_pdc_phosphoproteome_report_files.py	03_code/model_validation/download_pdc_phosphoproteome_report_files.py	LU	support	从PDC下载CPTAC磷酸化蛋白组报告文件（bulk训练数据准备）
+分析	data	2_analysis\data\download_pdc_proteome_report_files.py	03_code/model_validation/download_pdc_proteome_report_files.py	LU	support	从PDC下载CPTAC总蛋白报告文件（bulk训练数据准备的伴随蛋白质组）
+分析	ppko	2_analysis\ppko\evaluate_ppko_p100_published_baselines.py	03_code/model_validation/evaluate_ppko_p100_published_baselines.py	LW	canonical	在P100数据集上对比SCP682-PPKO V10B与已发表基线（含Ridge/相似度/随机），支撑Fig4 P100验证panel
+画图	clinical	3_plotting\clinical\plot_rps6_ps6_bubble_correlation_20260530.py	03_code/model_validation/plot_rps6_ps6_bubble_correlation_20260530.py	L	canonical	绘制 CCRCC RPS6 S235/S236 pS6 与 mTOR 轴磷酸位点气泡相关图（Fig5 canonical panel）
+画图	clinical	3_plotting\clinical\plot_rps6_ps6_fig5_anchor_20260530.py	03_code/model_validation/plot_rps6_ps6_fig5_anchor_20260530.py	L	canonical	绘制 Fig5 pS6-RPS6 beyond-parent-mRNA 核心锚定面板（预测 vs 实测 vs mRNA 散点+KM）
+画图	clinical	3_plotting\clinical\plot_rps6_ps6_mtor_phospho_raincloud_ridge_20260531.py	03_code/model_validation/plot_rps6_ps6_mtor_phospho_raincloud_ridge_20260531.py	L	canonical	绘制 CCRCC mTOR 轴磷酸化状态分组 raincloud/ridge 图（Fig5 mTOR 通路 panel）
+画图	clinical	3_plotting\clinical\plot_rps6_ps6_mtor_phospho_state_20260530.py	03_code/model_validation/plot_rps6_ps6_mtor_phospho_state_20260530.py	L	canonical	绘制 CCRCC RPS6 pS6 高低组在 mTOR 轴磷酸位点上的分布状态图（Fig5）
+画图	clinical	3_plotting\clinical\plot_rps6_ps6_mutation_ridgeline_20260530.py	03_code/model_validation/plot_rps6_ps6_mutation_ridgeline_20260530.py	L	canonical	绘制 TCGA-KIRC pS6 按 mTOR 通路突变（VHL/MTOR/TSC1/PIK3CA 等）分层的 ridgeline 图（Fig5）
+画图	clinical	3_plotting\clinical\plot_rps6_ps6_patient_slope_20260530.py	03_code/model_validation/plot_rps6_ps6_patient_slope_20260530.py	L	canonical	绘制 CCRCC 患者级别预测 pS6 vs 实测 pS6 斜率对比图（Fig5 beyond-parent-mRNA 核心佐证）
+画图	clinical	3_plotting\clinical\plot_rps6_ps6_raincloud_20260530.py	03_code/model_validation/plot_rps6_ps6_raincloud_20260530.py	L	canonical	绘制 TCGA-KIRC predicted pS6 按肿瘤分级/分期分层的 raincloud 图（Fig5）
+画图	clinical	3_plotting\clinical\plot_rps6_ps6_waterfall_20260530.py	03_code/model_validation/plot_rps6_ps6_waterfall_20260530.py	L	canonical	绘制 TCGA-KIRC predicted pS6 与 RPS6 mRNA z-score 的 waterfall 排列对比图（Fig5）
+画图	clinical	3_plotting\clinical\plot_tcga_predicted_rps6_mtor_phospho_distributions_20260531.py	03_code/model_validation/plot_tcga_predicted_rps6_mtor_phospho_distributions_20260531.py	L	canonical	绘制 TCGA-KIRC mTOR 通路相关磷酸位点预测分布图（Fig5 mTOR-angiogenesis panel）
+画图	clinical	3_plotting\clinical\plot_tcga_rps6_ps6_combined_raincloud_20260531.py	03_code/model_validation/plot_tcga_rps6_ps6_combined_raincloud_20260531.py	L	canonical	绘制 TCGA-KIRC combined raincloud 图（predicted pS6 + mTOR 突变分层）用于 Fig5
+分析	bulk	2_analysis\bulk\prepare_cptac_pancancer_rna_phosphoproteome_pairs.py	03_code/model_validation/prepare_cptac_pancancer_rna_phosphoproteome_pairs.py	LU	support	将CPTAC/PDC多癌RNA与磷酸化蛋白组配对，构建bulk模型训练输入矩阵
+分析	bulk	2_analysis\bulk\prepare_cptac_phosphosite_gene_site_locked_v1.py	03_code/model_validation/prepare_cptac_phosphosite_gene_site_locked_v1.py	LU	support	对CPTAC磷酸化位点做study-wise z-score标准化并锁定为v1训练标签
+分析	bulk	2_analysis\bulk\prepare_cptac_total_proteome_and_residual_locked_v1.py	03_code/model_validation/prepare_cptac_total_proteome_and_residual_locked_v1.py	LU	support	配对CPTAC总蛋白组并构建磷酸化/总蛋白残差多任务标签(locked_v1)
+分析	bulk	2_analysis\bulk\prepare_gsea_pathway_aux_labels.py	03_code/model_validation/prepare_gsea_pathway_aux_labels.py	LU	support	从RNA表达构建Hallmark和信号通路辅助标签供模型训练使用
+分析	bulk	2_analysis\bulk\process_copheemap_prior_20260428.py	03_code/model_validation/priors/process_copheemap_prior_20260428.py	LU	support	处理CoPheeMap/CoPheeKSA原始数据，构建bulk模型磷酸化位点图先验(420k+边)
+分析	clinical	2_analysis\clinical\rescreen_measured_cptac_site_specific_survival_20260527.py	03_code/model_validation/rescreen_measured_cptac_site_specific_survival_20260527.py	L	support	对CPTAC实测磷酸化位点做癌型分层Cox生存筛查(RNA/总蛋白双重null对照)，产出Fig5 pS6候选位点
+分析	bulk	2_analysis\bulk\run_deepgxp_cptac_half_retrain_20260511.py	03_code/model_validation/run_deepgxp_cptac_half_retrain_20260511.py	LU	support	在CPTAC/PDC上半量重训练DeepGxP基线模型，产出Fig2b/2c所需DeepGxP比较结果
+分析	bulk	2_analysis\bulk\run_deepgxp_tcpa_reproduction_20260507.py	03_code/model_validation/run_deepgxp_tcpa_reproduction_20260507.py	LU	support	在TCGA-TCPA RPPA上复现DeepGxP架构获得参考baseline(ref17，Fig2b比较器)
+分析	bulk	2_analysis\bulk\run_lau_style_external_total_validation_20260505.py	03_code/model_validation/run_lau_style_external_total_validation_20260505.py	L	support	将Lau风格总蛋白模型应用于四个外部队列(FU-iCCA/TU-SCLC/CHCC)产出Fig2c比较数据
+分析	bulk	2_analysis\bulk\run_lau2022_total_protein_protocol_controls_20260504.py	03_code/model_validation/run_lau2022_total_protein_protocol_controls_20260504.py	LU	support	运行Lau-style总蛋白协议对照(logratio vs study-zscore)区分标签归一化效应与模型效应
+分析	bulk	2_analysis\bulk\run_lau2022_total_protein_protocol_controls_fast_ridge_20260504.py	03_code/model_validation/run_lau2022_total_protein_protocol_controls_fast_ridge_20260504.py	LU	support	用矩阵Ridge快速实现Lau-style总蛋白协议对照(同分割logratio/zscore标签)
+分析	bulk	2_analysis\bulk\run_scp682_2_lau_total_benchmark_and_external_20260505.py	03_code/model_validation/run_scp682_2_lau_total_benchmark_and_external_20260505.py	LU	support	实现Lau-style总蛋白协议并对外部队列评估，生成Fig2c外部benchmark比较基线
+分析	bulk	2_analysis\bulk\run_srivastava_lau2022_rppa_baseline.py	03_code/model_validation/run_srivastava_lau2022_rppa_baseline.py	LU	support	在TCGA RPPA上适配Srivastava/Lau2022 RNA-to-蛋白基线(ElasticNet/Ridge/RF/GB)，用于Fig2b对照
+分析	clinical	2_analysis\clinical\run_tcga_existing_predicted_site_survival_concordance_20260527.py	03_code/model_validation/run_tcga_existing_predicted_site_survival_concordance_20260527.py	LU	support	验证CPTAC实测位点生存信号在SCP682 TCGA预测磷酸化中的一致性（Fig5 pS6 BH-FDR候选验证）
+分析	clinical	2_analysis\clinical\run_tcga_predicted_site_survival_concordance_20260527.py	03_code/model_validation/run_tcga_predicted_site_survival_concordance_20260527.py	L	support	在SCP682 TCGA预测磷酸化上运行癌症特异性位点Cox生存筛查并与RNA/总蛋白null对照（Fig5 KIRC pS6 BH-FDR主线）
+分析	bulk	2_analysis\bulk\scp682_v4_0_input_guard_and_sample_centering_20260503.py	03_code/model_validation/scp682_v4_0_input_guard_and_sample_centering_20260503.py	LU	support	SCP682 v4.0部署时输入特征验证与样本中位数中心化预处理工具（canonical链support）
+训练	bulk	1_training\bulk\train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py	03_code/model_validation/training/train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py	LU	support	CPTAC总蛋白FiLM+VAE_z直接残差v2，产出SCP682-22 exact_scnet所冻结引用的v4 baseline组件
+分析	bulk	2_analysis\bulk\app.py	03_code/rna2phospho_web/app.py	LU	support	SCP682 FastAPI web服务主入口：提供bulk RNA上传推断API、atlas预测文件下载、任务状态查询；依赖SCP682-22 canonical权重，是canonical模型的对外部署支撑
+分析	bulk	2_analysis\bulk\predict_uploaded_bulk.py	03_code/rna2phospho_web/predict_uploaded_bulk.py	LU	support	SCP682 web服务的实际推断脚本：加载SCP682-22 canonical权重，对用户上传bulk RNA执行输入QC(log2TPM验证)和磷酸化预测
+分析	bulk	2_analysis\bulk\server_stdlib.py	03_code/rna2phospho_web/server_stdlib.py	LU	support	使用Python标准库ThreadingHTTPServer实现的SCP682 web服务(无fastapi依赖)，功能与app.py等价
+分析	bulk	2_analysis\bulk\smoke_test_scp682_api.py	03_code/rna2phospho_web/smoke_test_scp682_api.py	L	support	对SCP682 web API进行端到端冒烟测试，验证上传推断流程正确性
+分析	bulk	2_analysis\bulk\start_scp682_server.sh	03_code/rna2phospho_web/start_scp682_server.sh	LU	support	启动SCP682 web服务并写PID/log，做/api/health健康检查验证
+分析	bulk	2_analysis\bulk\status_scp682_server.sh	03_code/rna2phospho_web/status_scp682_server.sh	LU	support	查询SCP682 web服务运行状态(PID/端口/健康/日志)
+分析	bulk	2_analysis\bulk\stop_scp682_server.sh	03_code/rna2phospho_web/stop_scp682_server.sh	LU	support	停止SCP682 web服务进程
+分析	sc	2_analysis\sc\audit_data_coverage.py	03_code/single_cell/data_audit/audit_data_coverage.py	LW	support	审计SC训练数据集(vivo_seq_th17/blair/iccite)细胞数/RNA基因数/磷酸化特征覆盖率；SC11数据准备支撑
+分析	sc	2_analysis\sc\build_antibody_and_anchor_audit.py	03_code/single_cell/data_audit/build_antibody_and_anchor_audit.py	L	support	从Blair补充材料解析抗体+磷酸化位点表并标记is_phospho；SC11 Blair队列数据准备支撑
+分析	sc	2_analysis\sc\list_coverage_details.py	03_code/single_cell/data_audit/list_coverage_details.py	LW	support	列出Blair ADT磷酸化特征和SC数据集RNA/磷酸化基因覆盖细节；数据审计工具
+分析	sc	2_analysis\sc\patch_coverage_blair_phospho.py	03_code/single_cell/data_audit/patch_coverage_blair_phospho.py	LW	support	修正Blair ADT磷酸化覆盖统计(只保留pRPS6一条真正phospho特征)；数据审计修正工具
+分析	sc	2_analysis\sc\run_anchor_signal_diagnostics.py	03_code/single_cell/data_audit/run_anchor_signal_diagnostics.py	LW	support	对跨数据集anchor磷酸化位点(RPS6_S235/STAT3_Y705/MAPK1_T202)进行信号诊断和Spearman相关分析；SC11数据质控支撑
+分析	sc	2_analysis\sc\update_anchor_audit_tables.py	03_code/single_cell/data_audit/update_anchor_audit_tables.py	LW	support	构建Blair/iccite数据集anchor磷酸化目标审计表，标准化target_id/uniprot/residue映射；SC11数据准备支撑
+分析	sc	2_analysis\sc\audit_iccite_isotype_background_server.R	03_code/single_cell/iccite/audit_iccite_isotype_background_server.R	L	support	在远程服务器上审计iccite isotype背景控制并做磷酸化特征背景矫正；SC11数据准备支撑(服务器版)
+分析	sc	2_analysis\sc\audit_iccite_isotype_background.R	03_code/single_cell/iccite/audit_iccite_isotype_background.R	L	support	在本地iccite RDS上审计isotype背景控制并做磷酸化特征背景矫正；SC11 iccite数据准备支撑(本地版)
+分析	sc	2_analysis\sc\correct_iccite_background_from_mtx.py	03_code/single_cell/iccite/correct_iccite_background_from_mtx.py	L	support	从MTX格式iccite intra计数矩阵做isotype背景均值矫正(max(x-control_mean,0))；SC11数据准备支撑
+分析	sc	2_analysis\sc\export_iccite_full_rna.R	03_code/single_cell/iccite/export_iccite_full_rna.R	L	support	从iccite Seurat RDS导出全RNA计数矩阵(MTX格式)；SC11 iccite数据导出支撑
+分析	sc	2_analysis\sc\export_iccite_matrices.R	03_code/single_cell/iccite/export_iccite_matrices.R	L	support	从iccite Seurat RDS导出intra/phospho/RNA_HVG各层计数矩阵和细胞元数据；SC11 iccite数据准备主导出脚本
+分析	sc	2_analysis\sc\fetch_iccite_metadata_and_download.ps1	03_code/single_cell/iccite/fetch_iccite_metadata_and_download.ps1	LW	support	下载iccite T细胞数据集(PRJDB16517 ENA元数据+Zenodo RDS文件)；SC11 iccite数据下载支撑
+分析	sc	2_analysis\sc\summarize_prjdb16517_runs.py	03_code/single_cell/iccite/summarize_prjdb16517_runs.py	LW	support	汇总PRJDB16517(iccite)数据集ENA run表按测序类型统计run数/样本数/数据量；数据下载验证支撑
+分析	sc	2_analysis\sc\inspect_blair_csv.py	03_code/single_cell/inspect/inspect_blair_csv.py	LW	support	检查Blair phospho-seq CSV.gz文件的列名和前几行；数据检视工具
+分析	sc	2_analysis\sc\inspect_blair_supp.py	03_code/single_cell/inspect/inspect_blair_supp.py	L	support	检查Blair补充材料Excel各sheet内容并搜索RPS6/STAT3等磷酸化相关行；数据检视工具
+分析	sc	2_analysis\sc\inspect_iccite_rds.R	03_code/single_cell/inspect/inspect_iccite_rds.R	L	support	检查iccite Seurat RDS的assay/reduction/metadata结构并导出特征列表；数据检视工具
+分析	sc	2_analysis\sc\inspect_vivo_h5ad.py	03_code/single_cell/inspect/inspect_vivo_h5ad.py	LW	support	检查Vivo-seq Th17 h5ad数据结构(obs列/var/layers/obsm/uns)；数据检视工具
+分析	sc	2_analysis\sc\list_blair_adt_features.py	03_code/single_cell/inspect/list_blair_adt_features.py	LW	support	列出Blair phospho-multi ADT计数矩阵的全部特征名；数据检视工具
+分析	sc	2_analysis\sc\merge_manifest_update.py	03_code/single_cell/metadata/merge_manifest_update.py	LW	support	合并SC数据集manifest主表和更新补丁并按预设顺序排序写回；SC数据集元数据管理支撑
+分析	sc	2_analysis\sc\download_scfoundation_model.py	03_code/single_cell/modeling/download_scfoundation_model.py	LW	support	从HuggingFace下载scFoundation模型权重(SC11 backbone)；SC11训练前置数据准备
+分析	sc	2_analysis\sc\merge_scfoundation_shards.py	03_code/single_cell/modeling/merge_scfoundation_shards.py	LW	support	将并行计算的scFoundation embedding分片按barcode索引合并为完整矩阵，SC11训练前必需步骤
+训练	sc	1_training\sc\phospho_model_common.py	03_code/single_cell/modeling/phospho_model_common.py	LW	support	SC模块共享工具库：数据集路径常量、稀疏矩阵加载、Spearman评分、磷酸化向量读取、evaluation_tier推断等
+分析	sc	2_analysis\sc\precompute_scfoundation_embeddings.py	03_code/single_cell/modeling/precompute_scfoundation_embeddings.py	LW	support	用冻结scFoundation批量编码4个SC数据集提取细胞embedding，支持分片和max-gene-tokens参数
+分析	sc	2_analysis\sc\run_cell_state_baseline.py	03_code/single_cell/modeling/run_cell_state_baseline.py	LW	support	以细胞状态one-hot+RidgeCV为最弱基线(model_minus1)，5折内部评估，为Fig3d基线对照
+分析	clinical	2_analysis\clinical\run_kirc_rps6_clinicopathology.py	03_code/single_cell/modeling/run_kirc_rps6_clinicopathology.py	LW	support	提取KIRC患者pT分期/坏死/肿瘤大小并与预测pS6均值做Mann-Whitney关联，支撑Fig5临床意义
+分析	clinical	2_analysis\clinical\run_kirc_rps6_validation.py	03_code/single_cell/modeling/run_kirc_rps6_validation.py	LW	support	验证SCP682-SC预测pRPS6与KIRC单细胞mTOR/增殖/缺氧通路score的空间相关性，支撑Fig5 SC恶性程序
+分析	sc	2_analysis\sc\run_persite_ridge.py	03_code/single_cell/modeling/run_persite_ridge.py	LW	support	以冻结embedding+per-site RidgeCV(model0)内部5折+外部holdout评估，为Fig3d基线对照
+分析	sc	2_analysis\sc\run_scfoundation_cap12000_model_minus1.ps1	03_code/single_cell/modeling/run_scfoundation_cap12000_model_minus1.ps1	LW	support	在cap12000 scFoundation输入上运行cell_state_ridge baseline，为Fig3d生成基线性能
+分析	sc	2_analysis\sc\prepare_qurie_seq_bjab.py	03_code/single_cell/preprocessing/prepare_qurie_seq_bjab.py	LW	support	整理QuRIE-seq BJAB 8个样本(BCR刺激+ibrutinib时间系列)为统一paired矩阵格式供SC训练使用
+分析	sc	2_analysis\sc\build_phospho_target_table.py	03_code/single_cell/schema/build_phospho_target_table.py	LW	support	统计各SC数据集磷酸化feature的观测数/方差并生成SC训练目标表，分配target_index
+分析	sc	2_analysis\sc\finalize_iccite_schema.py	03_code/single_cell/schema/finalize_iccite_schema.py	LW	support	将icCITE-seq T细胞数据集磷酸化抗体标签映射到规范target_id并更新统一schema
+分析	sc	2_analysis\sc\patch_blair_prps6_schema.py	03_code/single_cell/schema/patch_blair_prps6_schema.py	LW	support	热补丁：将Blair Phospho-Multi的pRPS6 ADT注册到RPS6_pSitePending并更新共同靶点表
+分析	sc	2_analysis\sc\summarize_paired_dataset_coverage.py	03_code/single_cell/schema/summarize_paired_dataset_coverage.py	LW	support	扫描4个SC数据集RNA/phospho矩阵维度及feature覆盖度，生成feature清单供build_phospho_target_table.py使用
+分析	sc	2_analysis\sc\update_common_targets_from_anchor.py	03_code/single_cell/schema/update_common_targets_from_anchor.py	LW	support	从锚点候选中筛选直接配对数据集覆盖的 SC 共有磷酸化靶点，生成 SC11 训练共享靶点表
+分析	clinical	2_analysis\clinical\22_repredict_tcga_full_scp682_from_raw.py	04_figures/20260528_fig5_v2/code/22_repredict_tcga_full_scp682_from_raw.py	LU	support	用 SCP682_PORTABLE canonical 模型对全 TCGA 重预测，为 Fig5 临床分析生成预测输入
+分析	clinical	2_analysis\clinical\23_rebuild_fig5_support_from_full_tcga.py	04_figures/20260528_fig5_v2/code/23_rebuild_fig5_support_from_full_tcga.py	LU	canonical	从全 TCGA SCP682 预测重建 Fig5 支撑表（full prediction + baseline + parent-mRNA Cox LRT 分解），canonical Fig5 分析脚本
+画图	shared	3_plotting\shared\make_fig1_rebuild.py	04_figures/fig1/make_fig1_rebuild.py	L	canonical	用 matplotlib 绘制 Fig1 三模型总览示意图（bulk/PPKO/SC）
+分析	ppko	2_analysis\ppko\make_fig4_locked_p100_direction_stats.py	make_fig4_locked_p100_direction_stats.py	L	canonical	计算 V10B P100 验证的方向一致性统计量（cosine/Wilcoxon），生成 Fig4 panel b/c 数据表
+分析	ppko	2_analysis\ppko\make_fig4_locked_p100_tables.py	make_fig4_locked_p100_tables.py	L	canonical	从 V10B P100 原始验证结果构建 Fig4 b/c panel 源数据表，canonical P100 分析
+分析	ppko	2_analysis\ppko\make_fig4_tcga_validation_plot_tables.py	make_fig4_tcga_validation_plot_tables.py	L	canonical	计算 V10B 在 TCGA 患者级别的药物响应 AUC/ROC，生成 Fig4d 源数据（AUC 0.72）
+画图	atlas	3_plotting\atlas\build_figA_annotated__L.R	paper_final/fig2/fig_tcga_pancancer_atlas/scripts/build_figA_annotated.R	L	canonical	绘制 10023 TCGA 样本 × 30 NMF 模块活性热图并附临床注释条，canonical Fig2e
+画图	atlas	3_plotting\atlas\build_figA_sample_overview__L.R	paper_final/fig2/fig_tcga_pancancer_atlas/scripts/build_figA_sample_overview.R	L	canonical	绘制无临床注释的 TCGA 样本 × 30 模块热图（简洁版），canonical Fig2e 配套版
+画图	atlas	3_plotting\atlas\build_figB_module_cancer__L.R	paper_final/fig2/fig_tcga_pancancer_atlas/scripts/build_figB_module_cancer.R	L	canonical	绘制 30 NMF 模块 × 32 癌种活性中位数热图（对角线结构），canonical Fig2e
+画图	atlas	3_plotting\atlas\build_figC_pathway_bars__L.R	paper_final/fig2/fig_tcga_pancancer_atlas/scripts/build_figC_pathway_bars.R	L	canonical	绘制各 NMF 模块 top5 Hallmark 富集条形图（30 facets），canonical Fig2g
+画图	bulk	3_plotting\bulk\_build_fig2d_interp.R	paper_final/fig2/scripts/_build_fig2d_interp.R	L	canonical	绘制 Fig2d 注意力可解释性图（same-protein 4.7×/same-pathway 1.8× 富集条形+小提琴图），canonical
+分析	bulk	2_analysis\bulk\analyze_site_attention.py	paper_final/fig2/scripts/analyze_site_attention.py	L	canonical	对 420102 条磷酸位点图边做 Fisher exact 检验（same-protein/same-pathway 富集），生成 Fig2d 数据
+分析	bulk	2_analysis\bulk\enrichment_top_bottom.py	paper_final/fig2/scripts/enrichment_top_bottom.py	L	support	对 top/bottom 1000 预测位点做 Hallmark+KEGG Medicus 超几何富集，为 panel f 数据准备
+分析	bulk	2_analysis\bulk\export_scp682_site_attention.py	paper_final/fig2/scripts/export_scp682_site_attention.py	LU	canonical	从 canonical SCP682 e160 checkpoint 提取学习的位点轴注意力权重，供 Fig2d 可解释性分析
+分析	bulk	2_analysis\bulk\panel_f_cancer_type_matrix.py	paper_final/fig2/scripts/panel_f_cancer_type_matrix.py	L	support	将 OOF 预测折叠到癌种级别，计算每 (癌种, 位点) Spearman ρ 宽矩阵，为 panel f 聚类准备
+分析	bulk	2_analysis\bulk\panel_f_heatmap_data.py	paper_final/fig2/scripts/panel_f_heatmap_data.py	L	support	为 Fig2 panel f 构建 top/bottom 1000 位点 × 6 数据集 Spearman ρ 热图矩阵及注释
+分析	bulk	2_analysis\bulk\panel_f_v5_cluster_enrichment.py	paper_final/fig2/scripts/panel_f_v5_cluster_enrichment.py	L	support	对 panel f 矩阵做 k-means（top/bottom 各 k=3）聚类并做 Hallmark 超几何富集，生成 cluster sidebar 标注
+画图	bulk	3_plotting\bulk\_build_panel_c.R	paper_final/fig2/scripts/panels/_build_panel_c.R	L	canonical	调用 panel_c.R 绘制 Fig2c（3外部队列冻结 SCP682 vs 6基线 benchmark），canonical panel c 渲染入口
+画图	bulk	3_plotting\bulk\_build_panel_f.R	paper_final/fig2/scripts/panels/_build_panel_f.R	L	canonical	调用 panel_f.R 绘制 Fig2b/f panel（热图+bar+connector），canonical panel f 渲染入口
+画图	bulk	3_plotting\bulk\panel_a.R	paper_final/fig2/scripts/panels/panel_a.R	L	canonical	渲染Fig2a bulk SCP682架构示意图(Site/Sample graph+Bphi/Gtheta/yhat三盒箭头流，v2松弛化，18592 sites/420102 edges)
+画图	bulk	3_plotting\bulk\panel_b.R	paper_final/fig2/scripts/panels/panel_b.R	L	canonical	渲染Fig2b跨组织benchmark柱图(SCP682 vs 8基线含DeepGxP/VAE，6组织分层，H型显著性bracket，配对Wilcoxon)
+画图	bulk	3_plotting\bulk\panel_c.R	paper_final/fig2/scripts/panels/panel_c.R	L	canonical	渲染Fig2c外部3队列7方法benchmark柱图(FU-iCCA/TU-SCLC/CHCC-HBV，逐基线配对Wilcoxon星号，冻结SCP682不重训)
+画图	bulk	3_plotting\bulk\panel_d.R	paper_final/fig2/scripts/panels/panel_d.R	L	canonical	渲染Fig2d注意力集中度柱图(top5%高注意力边同蛋白4.7×/同通路1.8×富集，Fisher exact P<1e-300，直接cairo_pdf输出)
+画图	bulk	3_plotting\bulk\panel_e.R	paper_final/fig2/scripts/panels/panel_e.R	L	support	渲染图残差权重alpha收缩扫描双曲线(train-mode vs pseudo-external，alpha 0-1共11测点，ED补充图支持alpha=0.3选择)
+画图	bulk	3_plotting\bulk\panel_f.R	paper_final/fig2/scripts/panels/panel_f.R	L	support	渲染2000位点×12癌种mfuzz-style热图(6 cluster+方向色条，bulk CPTAC per-site rho，ED补充用)
+画图	sc	3_plotting\sc\fig01.R	paper_final/fig3/scripts/figures/fig01.R	L	support	SC11通路注意力路由热图(8 pathway token×56 readout，逐格数字+右侧per-pathway mean柱+顶部per-readout max柱)，ED附图
+画图	sc	3_plotting\sc\fig02.R	paper_final/fig3/scripts/figures/fig02.R	L	support	抗体克隆敏感性哑铃图(同基因低vs高克隆Spearman连线+fold比注释)，ED附图
+画图	sc	3_plotting\sc\fig03.R	paper_final/fig3/scripts/figures/fig03.R	L	support	HeLa UMAP逐细胞预测误差图(主图CTNND1_T310+4小图，颜色=|pred-obs|)，ED附图
+画图	sc	3_plotting\sc\fig04.R	paper_final/fig3/scripts/figures/fig04.R	L	canonical	56 readout×6队列跨队列Spearman矩阵热图(发散蓝-橙，通路上色y标签)，对应Fig3b底层可视化
+画图	sc	3_plotting\sc\fig05.R	paper_final/fig3/scripts/figures/fig05.R	L	canonical	扩展图残差贡献分解水平柱(灰底=无扩展图backbone，彩色段=GNN delta叠加)，对应图消融结论
+画图	sc	3_plotting\sc\fig07.R	paper_final/fig3/scripts/figures/fig07.R	L	support	扩展phosphosite图邻域子图可视化(56监督节点按内部CV rho着色+辅助节点，FR布局，边按来源上色)，ED附图
+画图	sc	3_plotting\sc\fig08.R	paper_final/fig3/scripts/figures/fig08.R	L	support	Phospho readout概览双行热图(internal CV vs 最佳外部Spearman，56列，通路分组竖线)，ED附图
+画图	sc	3_plotting\sc\fig09.R	paper_final/fig3/scripts/figures/fig09.R	L	support	HeLa逐细胞NMF(k=3)：上排UMAP按NMF得分着色+下排readout loading柱，ED附图
+画图	sc	3_plotting\sc\fig10.R	paper_final/fig3/scripts/figures/fig10.R	L	support	HeLa NMF成分得分vs逐细胞预测误差hexbin(2误差口径×3成分，Spearman注标)，ED附图
+画图	sc	3_plotting\sc\fig11.R	paper_final/fig3/scripts/figures/fig11.R	L	support	Cell风格NMF分块热图(readout×cell z化预测+主导成分顶条+底部hexbin)，ED附图
+画图	sc	3_plotting\sc\fig12.R	paper_final/fig3/scripts/figures/fig12.R	L	support	NMF3主导(应激)细胞UMAP高亮+逐readout预测偏移柱+5高方差readout观测vs预测方向一致性，ED附图
+画图	sc	3_plotting\sc\fig13.R	paper_final/fig3/scripts/figures/fig13.R	L	support	各外部队列NMF H矩阵热图(成分×readout行归一化，HeLa/GSE300551/Vivo-Th17/PDO-CAF)，ED附图
+画图	sc	3_plotting\sc\fig14.R	paper_final/fig3/scripts/figures/fig14.R	L	support	HeLa RNA-NMF独立验证phospho-NMF3应激亚群(3×10 Spearman热图+hexbin+UMAP重叠+Hallmark富集)，ED附图
+画图	sc	3_plotting\sc\fig15.R	paper_final/fig3/scripts/figures/fig15.R	L	support	跨队列高误差RNA-NMF程序Hallmark一致性热图(-log10(q)，暖色渐变)，ED附图
+画图	sc	3_plotting\sc\fig16.R	paper_final/fig3/scripts/figures/fig16.R	L	support	细胞周期marker在高误差RNA-NMF程序中的富集(命中计数热图+排名散点)，ED附图
+画图	sc	3_plotting\sc\fig17.R	paper_final/fig3/scripts/figures/fig17.R	L	support	各队列phospho-NMF×RNA-NMF Spearman矩阵热图(4队列2×2拼图)，ED附图
+画图	sc	3_plotting\sc\fig18.R	paper_final/fig3/scripts/figures/fig18.R	L	support	各队列细胞状态landscape(RNA-NMF得分PCA-2D，5队列按主导程序着色)，ED附图
+画图	sc	3_plotting\sc\fig19.R	paper_final/fig3/scripts/figures/fig19.R	L	support	Per-readout难度地图(外部均值rho水平柱+内部CV vs外部均值散点，56 readout)，ED附图
+画图	sc	3_plotting\sc\fig21.R	paper_final/fig3/scripts/figures/fig21.R	L	support	PDO-CAF失败诊断三联图(逐readout预测SD/MAE小提琴+RNA-NMF主导度密度)，ED附图
+画图	sc	3_plotting\sc\fig22.R	paper_final/fig3/scripts/figures/fig22.R	L	canonical	组件消融配对Δ图(-pathway attn/-expanded graph/-scFoundation，3列×5队列，共享读数配对，对应Fig3g消融结论)
+画图	sc	3_plotting\sc\fig23.R	paper_final/fig3/scripts/figures/fig23.R	L	support	GNN头vs site-aware MLP配对散点(iCCITE/QuRIE两数据集，对角线+win注标)，审稿人要求补实验图
+画图	sc	3_plotting\sc\fig24.R	paper_final/fig3/scripts/figures/fig24.R	L	support	5折CV逐readout稳定性pointrange(点=中位rho，须=min-max，颜色=折间SD)，审稿人要求补实验图
+画图	sc	3_plotting\sc\fig25.R	paper_final/fig3/scripts/figures/fig25.R	L	support	校准可靠性曲线(z化binned predicted vs observed，4队列facet，每readout一条线)，审稿人要求补实验图
+画图	sc	3_plotting\sc\fig26.R	paper_final/fig3/scripts/figures/fig26.R	L	support	注意力负对照slopegraph(最强生物pathway token vs random_control token，配对连线+箱线+Wilcoxon)，审稿人要求补实验图
+画图	sc	3_plotting\sc\make_main_panels.R	paper_final/fig3/scripts/make_main_panels.R	L	canonical	终稿Fig3 e/f/g/h合成渲染脚本：NMF1-3 UMAP、phospho-NMF3×RNA-NMF01 hexbin、Hallmark lollipop、NMF分块热图
+画图	sc	3_plotting\sc\panel_a.R	paper_final/fig3/scripts/panels/panel_a.R	L	canonical	渲染Fig3a SCP682-SC架构示意图(scRNA→scFoundation frozen→Pathway attention→扩展ScNET GNN→ŷ，bulk转移先验箭头)
+画图	sc	3_plotting\sc\panel_b.R	paper_final/fig3/scripts/panels/panel_b.R	L	canonical	渲染Fig3b内部重建+4外部队列per-site中位Spearman柱图(内部0.469/HeLa/Blair/GSE300551/Vivo-Th17，分布内vs外部分隔线)
+画图	sc	3_plotting\sc\panel_c.R	paper_final/fig3/scripts/panels/panel_c.R	L	canonical	渲染Fig3c锚点位点验证双联：CTNND1 Thr310 HeLa hexbin散点(ρ=0.63)+ STAT3 Tyr705跨平台柱(GSE300551/Vivo-Th17)
+画图	sc	3_plotting\sc\panel_d.R	paper_final/fig3/scripts/panels/panel_d.R	L	canonical	渲染Fig3g扩展ScNET图残差消融：GSE300551 20读数配对Δ lollipop(中位Δ=-0.029，P=9.54×10⁻⁷，全部为负=图有贡献)
+画图	sc	3_plotting\sc\panel_e.R	paper_final/fig3/scripts/panels/panel_e.R	L	canonical	渲染Fig3 e/f组件：phospho-NMF3×RNA-NMF01 hexbin(ρ=+0.564,P=4.5×10⁻⁹⁷,n=1143)+RNA-NMF01 Hallmark lollipop，被make_main_panels.R source调用
+画图	sc	3_plotting\sc\theme_fig3.R	paper_final/fig3/scripts/panels/theme_fig3.R	L	support	Fig3全部panel共享的ggplot2主题、调色板、通路分组(fig3_target_group)和helper函数(fig3_short/fig3_sci10)库
+分析	sc	2_analysis\sc\benchmark_leaderboard_prep.py	paper_final/fig3/scripts/prep/benchmark_leaderboard_prep.py	L	canonical	在GSE300551 matched读数集上计算SCP682-SC vs 6 backbone+cognate mRNA的逐读数Spearman及配对Wilcoxon，生成Fig3d擂台数据
+分析	sc	2_analysis\sc\external_funnel_prep.py	paper_final/fig3/scripts/prep/external_funnel_prep.py	L	canonical	锁定外部验证分母口径并拆分精度/覆盖，区分trained_supervised vs transfer_only位点，生成转移能力和补充表数据
+分析	sc	2_analysis\sc\reviewer_ed_prep.py	paper_final/fig3/scripts/prep/reviewer_ed_prep.py	L	canonical	为reviewer请求的扩展图(fig22组件消融/fig23 GNN vs MLP/fig25校准)生成配对Δ和可靠性中间表
+分析	sc	2_analysis\sc\winscatter_prep.py	paper_final/fig3/scripts/prep/winscatter_prep.py	L	canonical	产出GSE300551 matched集per-readout长表(SCP682-SC vs 5 shown baseline)，供Fig3e win-scatter grid绘图
+画图	sc	3_plotting\sc\render_all.R	paper_final/fig3/scripts/render_all.R	L	canonical	渲染Fig3全部主图panel a-e及26张扩展图，批量输出pdf/svg/png(含reviewer请求的fig22-26)
+画图	sc	3_plotting\sc\render_biology.R	paper_final/fig3/scripts/render_biology.R	L	canonical	渲染Fig3生物学版终稿主图5 panel(b基准/c跨平台/d win-scatter/e UMAP/f图消融)及4张Extended Data图
+分析	clinical	2_analysis\clinical\audit_panel_a_fdr.py	paper_final/fig5/scripts/audit_panel_a_fdr.py	L	support	审计panel a FDR校正前后各category计数(nominal-p vs BH-q)，反推flag定义正确性的诊断脚本
+分析	clinical	2_analysis\clinical\build_panel_b_module_cancer.py	paper_final/fig5/scripts/build_panel_b_module_cancer.py	L	canonical	计算24 pathway_module × 28癌种的risk-minus-protective比例矩阵，供Fig5b热图
+分析	clinical	2_analysis\clinical\build_pathway_direction_enrichment.py	paper_final/fig5/scripts/build_pathway_direction_enrichment.py	L	canonical	计算pathway_family × 方向(risk/protective)的Fisher富集，双口径(clinical FDR/beyond parent mRNA FDR)
+分析	clinical	2_analysis\clinical\build_pathway_module_direction.py	paper_final/fig5/scripts/build_pathway_module_direction.py	L	canonical	计算24 pathway_module方向占比(risk_frac)及Fisher富集，产出panel c排序轴和代表基因
+画图	clinical	3_plotting\clinical\enh_plots.R	paper_final/fig5/scripts/enh_plots.R	L	canonical	渲染增强图enh1(恶性细胞predicted pS6 vs 血管生成程序六角密度图)和enh2(Fig5i前身panel c通路方向柱状图)
+分析	clinical	2_analysis\clinical\panel_a_cancer_entry_data.py	paper_final/fig5/scripts/panel_a_cancer_entry_data.py	L	canonical	BH-FDR重定义三种flag(clinical/beyond-mRNA/graph-residual)并按12行×28列组织泛癌入口图数据
+画图	clinical	3_plotting\clinical\panel_a_cancer_entry_plot.R	paper_final/fig5/scripts/panel_a_cancer_entry_plot.R	L	canonical	渲染Fig5a泛癌入口图(顶部双层柱+中部数值矩阵+右侧全局总量条)
+画图	clinical	3_plotting\clinical\panel_b_module_cancer.R	paper_final/fig5/scripts/panel_b_module_cancer.R	L	canonical	渲染Fig5b 24 pathway_module × 癌种risk-minus-protective热图(alpha by n，小样本淡化)
+分析	clinical	2_analysis\clinical\panel_i_full_phospho_specific_modules_data.py	paper_final/fig5/scripts/panel_i_full_phospho_specific_modules_data.py	LU	canonical	对全TCGA SCP682预测矩阵做FastICA提取磷酸化特异性模块，并做PTMSigDB富集和Cox生存，产出panel i数据(需Linux服务器)
+分析	clinical	2_analysis\clinical\panel_i_program_specificity_data.py	paper_final/fig5/scripts/panel_i_program_specificity_data.py	L	canonical	把磷酸化特异性ICA模块折叠到program级(Cell-cycle/PI3K-AKT/MAPK/PKC等)，计算各program特异性指标
+分析	clinical	2_analysis\clinical\panel_i_site_specificity_kegg_data.py	paper_final/fig5/scripts/panel_i_site_specificity_kegg_data.py	L	canonical	对cancer-specific磷酸化位点做层次聚类(14簇)并做KEGG超几何富集，产出panel i KEGG热图源数据
+画图	clinical	3_plotting\clinical\panel_a.R	paper_final/fig5/scripts/panels/panel_a.R	L	canonical	渲染KIRC predicted pS6 vs OS/Grade/mTOR状态raincloud图及RPS6 mRNA对照组(共6子图)
+画图	clinical	3_plotting\clinical\panel_b.R	paper_final/fig5/scripts/panels/panel_b.R	L	canonical	渲染KIRC predicted pS6 KM生存曲线和mRNA校正Cox forest图
+画图	clinical	3_plotting\clinical\panel_c.R	paper_final/fig5/scripts/panels/panel_c.R	L	canonical	渲染CPTAC ccRCC predicted vs measured pS6散点图(raw相关+RPS6 mRNA/蛋白质校正残差)
+画图	clinical	3_plotting\clinical\panel_common.R	paper_final/fig5/scripts/panels/panel_common.R	L	support	Fig5所有panel共享常量(颜色/theme_fig5/save_panel/matrix_to_long等helper)定义，source panel_fig2_style
+画图	clinical	3_plotting\clinical\panel_d.R	paper_final/fig5/scripts/panels/panel_d.R	L	canonical	渲染CPTAC ccRCC predicted pS6与mTOR轴磷酸化偏相关气泡图(mRNA+总蛋白校正后)
+画图	clinical	3_plotting\clinical\panel_e.R	paper_final/fig5/scripts/panels/panel_e.R	L	canonical	渲染KIRC predicted pS6 beyond parent mRNA残差瀑布图，附OS状态颜色条，Fisher检验标注
+画图	clinical	3_plotting\clinical\panel_f.R	paper_final/fig5/scripts/panels/panel_f.R	L	canonical	渲染DepMap ccRCC细胞系中predicted pS6 vs mTOR抑制剂AUC Spearman相关图
+画图	shared	3_plotting\shared\panel_fig2_style.R	paper_final/fig5/scripts/panels/panel_fig2_style.R	L	support	从Fig2复制视觉语法到Fig5的共享样式常量(方法颜色/热图色板/主题函数)
+画图	clinical	3_plotting\clinical\panel_g_all_site_modules.R	paper_final/fig5/scripts/panels/panel_g_all_site_modules.R	L	canonical	渲染全癌种位点模块 × 癌种方向热图(risk-minus-protective，气泡=显著性密度)
+画图	clinical	3_plotting\clinical\panel_h_signed_ptmsea.R	paper_final/fig5/scripts/panels/panel_h_signed_ptmsea.R	L	canonical	渲染signed PTM-SEA通路富集分数 × 癌种热图
+画图	clinical	3_plotting\clinical\panel_i_representative_sites.R	paper_final/fig5/scripts/panels/panel_i_representative_sites.R	L	canonical	渲染Fig5i癌症特异磷酸化位点14聚类 × 癌种热图叠加KEGG富集热图
+分析	clinical	2_analysis\clinical\prepare_fig5_source_data.py	paper_final/fig5/scripts/prepare_fig5_source_data.py	L	canonical	汇集Fig5各panel所需上游结果表(copy/解压)到source_data/tables，为绘图脚本提供统一入口
+画图	clinical	3_plotting\clinical\render_fig5_panels.R	paper_final/fig5/scripts/render_fig5_panels.R	L	canonical	批量渲染Fig5全部panel(a/b/c/d/e/f/g/h/i)，输出pdf+png+svg
+画图	clinical	3_plotting\clinical\render_fig5c_split.R	paper_final/fig5/scripts/render_fig5c_split.R	L	canonical	将Fig5 panel d(KM+Cox)拆成两张独立图输出，复用make_panel_b_km/forest
+分析	bulk	2_analysis\bulk\launch_scp682_general_graph_external.sh	paper_materials_SCP682/03_code/evaluation/launch_scp682_general_graph_external.sh	LU	canonical	启动冻结SCP682在外部队列的推理(predict_scp682_general_graph_external.py, CUDA)，产出Fig2c外部验证预测
+分析	bulk	2_analysis\bulk\predict_scp682_general_graph_external.py	paper_materials_SCP682/03_code/inference/predict_scp682_general_graph_external.py	LU	canonical	Frozen SCP682在外部磷酸化队列推理脚本，含top-k softmax attention锚定对齐，对应Fig2c外部验证
+训练	bulk	1_training\bulk\launch_scp682_general_graph_residual_e160.sh	paper_materials_SCP682/03_code/training/launch_scp682_general_graph_residual_e160.sh	LU	canonical	启动SCP682主训练(train_scp682_general_graph_residual.py, 160 epoch, CUDA)，产出Fig2b OOF预测权重
+训练	bulk	1_training\bulk\launch_scp682_missing_ablation_grid_e40.sh	paper_materials_SCP682/03_code/training/launch_scp682_missing_ablation_grid_e40.sh	LU	canonical	运行6组双轴/边源消融训练(train_scp682_missing_ablation.py, e40)并汇总，对应Fig2d注意力可解释性消融实验
+分析	bulk	2_analysis\bulk\run_scp682_oof_branch_benchmark.py	paper_materials_SCP682/03_code/training/run_scp682_oof_branch_benchmark.py	LU	canonical	计算Fig2b五种RNA基线(mean/parent_only/ridge_direct/rna_direct/general_baseline)的OOF Spearman，供SCP682 benchmark对比
+分析	bulk	2_analysis\bulk\run_scp682_shrinkage_sensitivity_grid.py	paper_materials_SCP682/03_code/training/run_scp682_shrinkage_sensitivity_grid.py	LU	support	对 α=0~1.0 多系数网格扫描 baseline+α*delta 公式的 per-site Spearman，产出 Fig2a α-scan 支撑数据（确认 α=0.3 最优）
+分析	bulk	2_analysis\bulk\summarize_scp682_missing_ablation_grid.py	paper_materials_SCP682/03_code/training/summarize_scp682_missing_ablation_grid.py	LU	support	聚合 missing ablation 网格各 run 的 axis_mode/edge_mode/median_spearman 与图统计到单一汇总表，供 Fig2d 消融对比
+训练	bulk	1_training\bulk\train_scp682_general_graph_residual.py	paper_materials_SCP682/03_code/training/train_scp682_general_graph_residual.py	LU	canonical	bulk canonical 训练器（论文包 curated 版）：exact ScNET 双轴 GNN 图约束残差(baseline+graph_residual_theta)，产出 Fig2b OOF 预测与模型权重
+训练	bulk	1_training\bulk\train_scp682_missing_ablation.py	paper_materials_SCP682/03_code/training/train_scp682_missing_ablation.py	LU	canonical	bulk 图约束消融训练入口：支持 --axis-mode dual/site_only/sample_only 与 --edge-mode 切换，产出 Fig2d 双轴/边源消融对比数据
+画图	bulk	3_plotting\bulk\make_coverage_expression_panels.py	paper_materials_SCP682/04_figure_source_data/fig2_extensions/make_coverage_expression_panels.py	L	support	按父基因表达量三分位分层比较 SCP682 vs 4 基线内部 per-site Spearman，生成 Extended Data 延伸分层箱线图
+分析	bulk	2_analysis\bulk\make_external_9model_benchmark.py	paper_materials_SCP682/04_figure_source_data/fig2_extensions/make_external_9model_benchmark.py	L	support	合并 9 模型外部 per-site Spearman 汇总表，是 Fig2c 外部 benchmark 的数据源准备脚本
+画图	bulk	3_plotting\bulk\make_external_coverage_expression_panels.py	paper_materials_SCP682/04_figure_source_data/fig2_extensions/make_external_coverage_expression_panels.py	L	support	按外部队列父基因表达量三分位分层比较 SCP682 vs 5 基线的外部 per-site Spearman，Extended Data 延伸面板
+画图	bulk	3_plotting\bulk\make_fig2_extensions.py	paper_materials_SCP682/04_figure_source_data/fig2_extensions/make_fig2_extensions.py	L	support	生成 Fig2 延伸面板：SCP682 vs cognate mRNA scatter、site class violin、anchor site 案例等 Extended Data 辅助图
+分析	bulk	2_analysis\bulk\make_extended_data_table1.py	paper_materials_SCP682/04_figure_source_data/fig2/_scripts/make_extended_data_table1.py	L	support	从文献比较源表提取不进主图的邻接任务方法，格式化为 Extended Data Table 1（adjacent task models 说明表）
+画图	bulk	3_plotting\bulk\_build_enrichment_heatmap.R	paper_materials_SCP682/04_figure_source_data/fig2/_scripts/panels/_build_enrichment_heatmap.R	L	support	调用 panel_enrichment_heatmap.R 生成富集热图测试 PDF，panel 开发辅助脚本
+画图	bulk	3_plotting\bulk\_build_panel_c__L.R	paper_materials_SCP682/04_figure_source_data/fig2/_scripts/panels/_build_panel_c.R	L	support	调用 panel_c.R 生成外部 3 队列 benchmark 测试 PDF，panel c 开发辅助脚本
+画图	bulk	3_plotting\bulk\panel_d__L.R	paper_materials_SCP682/04_figure_source_data/fig2/_scripts/panels/panel_d.R	L	canonical	Fig2d 正式 panel：图轴与边源消融 lollipop/bar/forest，数值 hardcoded 来自消融网格结果，为最终 panel d 渲染模块
+画图	bulk	3_plotting\bulk\panel_enrichment_heatmap.R	paper_materials_SCP682/04_figure_source_data/fig2/_scripts/panels/panel_enrichment_heatmap.R	L	support	渲染 top100 vs bottom100 预测位点 Hallmark 超几何富集热图（BH-FDR），供 Extended Data 使用
+分析	ppko	2_analysis\ppko\rerun_missing_items.py	paper_materials_SCP682_PPKO/03_code/evaluation/rerun_missing_items.py	L	support	重新计算 PPKO 论文包缺失的 P100 指定口径、独立队列性能、图统计和超参数表等补充数据
+训练	ppko	1_training\ppko\build_global_phosphoprotein_heterograph_v10.py	paper_materials_SCP682_PPKO/03_code/preprocessing/build_global_phosphoprotein_heterograph_v10.py	L	canonical	构建 PPKO V10B 训练所需全局磷酸化蛋白异构图（STRING700 top50），是 pretrain_v10b_strong300 的必需训练前置
+训练	ppko	1_training\ppko\build_joint_decryptm_p100_phospho_inputs.py	paper_materials_SCP682_PPKO/03_code/preprocessing/build_joint_decryptm_p100_phospho_inputs.py	L	canonical	合并 decryptM 与 LINCS P100 磷酸化扰动输入，构建 PPKO V10B 联合训练数据集
+训练	ppko	1_training\ppko\build_signed_phospho_regulatory_prior_v9.py	paper_materials_SCP682_PPKO/03_code/preprocessing/build_signed_phospho_regulatory_prior_v9.py	L	canonical	构建 PPKO 所需有符号磷酸化调控先验图 v9（CoPheeMap+KSTAR+PhosphoSitePlus），是 heterograph_v10 的上游数据准备
+训练	ppko	1_training\ppko\pretrain_v10b_strong300.py	paper_materials_SCP682_PPKO/03_code/training/pretrain_v10b_strong300.py	L	canonical	PPKO canonical 训练器：AttentionPriorManifoldV10 + V10B strong300 配置（300 epoch），产出论文最终 PPKO 权重
+训练	sc	1_training\sc\train_scp682_sc11_expanded_scnet_site_gnn.py	paper_materials_SCP682_SC11/03_code/architecture/train_scp682_sc11_expanded_scnet_site_gnn.py	LW	canonical	SC canonical 训练器：ScFoundationPathwayPredictor + expanded ScNET site graph，MODEL_NAME=SCP682-SC11-expanded-ScNET-site-GNN，含内部/外部/消融全输出
+分析	sc	2_analysis\sc\summarize_scp682_sc11_internal_5fold.py	paper_materials_SCP682_SC11/03_code/evaluation/summarize_scp682_sc11_internal_5fold.py	L	canonical	汇总 SC11 正式五折交叉验证逐折/逐位点/总体指标，产出 Fig3b 内部 0.469 中位 Spearman 汇总表
+画图	sc	3_plotting\sc\generate_fig3.py	paper_materials_SCP682_SC11/03_code/generate_fig3.py	L	canonical	生成 SCP682-SC Fig3 全部 panel 的图源表和 SVG（外部验证/基线/消融/UMAP），是 Fig3 正式画图脚本
+画图	sc	3_plotting\sc\generate_scp682_sc11_all_visualizations.py	paper_materials_SCP682_SC11/03_code/generate_scp682_sc11_all_visualizations.py	L	support	生成 SC11 论文候选可视化全套面板（外部验证/注意力/通路/UMAP 等），供图稿筛选
+分析	sc	2_analysis\sc\export_sc11_external_predicted_observed_all.py	paper_materials_SCP682_SC11/03_code/inference/export_sc11_external_predicted_observed_all.py	LW	canonical	导出 SC11 五外部验证队列的逐细胞预测/实测明细和 per-target Spearman，产出 Fig3b/c/f 数据源
+训练	sc	1_training\sc\export_scp682_main_sc_transfer_prior.py	paper_materials_SCP682_SC11/03_code/preprocessing/export_scp682_main_sc_transfer_prior.py	LW	canonical	从 bulk canonical SCP682-22 抽取 teacher transfer prior（site attention+bulk Spearman），是 SC11 训练的必需数据准备前置步骤
+训练	sc	1_training\sc\run_scp682_sc11_formal_internal_5fold.bat	paper_materials_SCP682_SC11/03_code/training/run_scp682_sc11_formal_internal_5fold.bat	L	canonical	SC11 正式五折交叉验证启动脚本：先 export prior 再循环 5 fold 训练 + summarize，产出 Fig3b 0.469 中位数
+训练	sc	1_training\sc\run_scp682_sc11_formal.bat	paper_materials_SCP682_SC11/03_code/training/run_scp682_sc11_formal.bat	L	canonical	SC11 正式单次训练启动脚本（warm-start from SC7，pathway-token transfer），产出论文最终 SC11 权重和全部外部验证结果
+训练	sc	1_training\sc\run_scp682_sc11_no_site_graph_matched_ablation.bat	paper_materials_SCP682_SC11/03_code/training/run_scp682_sc11_no_site_graph_matched_ablation.bat	L	canonical	启动SC11无site-graph消融训练（site-graph-weight=0）复现Fig3g图残差贡献对照
+分析	sc	2_analysis\sc\build_requested_review_tables.py	paper_materials_SCP682_SC11/03_code/visualization/build_requested_review_tables.py	L	support	汇总审稿人要求的随机控制注意力对照、输出collapse检验、校准表等辅助分析表
+画图	sc	3_plotting\sc\compose_fig3_v2.py	paper_materials_SCP682_SC11/03_code/visualization/compose_fig3_v2.py	L	canonical	五面板Fig3组合图：架构占位/各队列Spearman/CTNND1散点+STAT3跨平台/图残差消融/phospho-RNA NMF交叉验证
+画图	sc	3_plotting\sc\generate_fig1a_scp682_sc_architecture.py	paper_materials_SCP682_SC11/03_code/visualization/generate_fig1a_scp682_sc_architecture.py	L	canonical	程序生成SCP682-SC11架构示意图（116.675mm×58.535mm，scFoundation→pathway→site→ScNET GNN流程）
+画图	sc	3_plotting\sc\generate_scp682_sc11_all_visualizations__L.py	paper_materials_SCP682_SC11/03_code/visualization/generate_scp682_sc11_all_visualizations.py	L	support	SC11全量可视化主入口：生成benchmarks/ablation/scatter等所有面板源数据
+分析	sc	2_analysis\sc\run_scp682_sc11_validation_nmf.py	paper_materials_SCP682_SC11/03_code/visualization/run_scp682_sc11_validation_nmf.py	L	support	对外部验证队列SC11预测矩阵做NMF并比较预测与实测模块
+分析	sc	2_analysis\sc\run_scp682_sc11_validation_rna_nmf.py	paper_materials_SCP682_SC11/03_code/visualization/run_scp682_sc11_validation_rna_nmf.py	L	support	对外部验证队列原始RNA做全基因组NMF并关联hallmark富集与预测误差
+画图	clinical	3_plotting\clinical\plot_kirc_rps6_malignant_meantest.R	paper_materials_SCP682_SC11/04_figure_source_data/kirc_rps6_single_cell_validation_v1/scripts/plot_kirc_rps6_malignant_meantest.R	L	canonical	KIRC单细胞RPS6预测值按恶性/非恶性/健康分组violin+患者配对斜线+效应量森林图（Fig5 SC验证部分）
+分析	bulk	2_analysis\bulk\predict_scp682.py	portable_src/predict_scp682.py	LUW	canonical	SCP682 bulk canonical可迁移预测入口：读取RNA矩阵→v4 baseline→图残差→输出每位点预测值
+训练	bulk	1_training\bulk\scp682_graph_runtime.py	portable_src/scp682_graph_runtime.py	LUW	canonical	SCP682图残差runtime引擎：SCP682GraphDecoder(baseline+0.3*delta)+SCP682GraphRuntime推理核心
+训练	bulk	1_training\bulk\scp682_v4_engine.py	portable_src/scp682_v4_engine.py	LUW	canonical	SCP682 v4 baseline引擎封装：加载CPTAC多任务冻结baseline并推理，被predict_scp682.py调用
+分析	bulk	2_analysis\bulk\export_graph_runtime_state.py	portable_src/scripts/export_graph_runtime_state.py	LU	support	从exact_scnet_gnn训练检查点提取row/col embedding+decoder参数，打包为portable推理用的runtime_state.pt
+训练	sc	1_training\sc\run_scp682_sc11_formal__L.bat	remote_scripts/_paper_extract_sources/run_scp682_sc11_formal.bat	L	canonical	SC11正式训练启动脚本（epoch=140,patience=26,hidden=256,warm-start from SC7，_paper_extract_sources副本）
+训练	sc	1_training\sc\train_scp682_sc11_expanded_scnet_site_gnn__L.py	remote_scripts/_paper_extract_sources/train_scp682_sc11_expanded_scnet_site_gnn.py	L	canonical	SC11核心训练器（_paper_extract_sources副本）：ScFoundationPathwayPredictor+expanded ScNET图，MODEL_NAME=SCP682-SC11
+分析	sc	2_analysis\sc\assemble_foundation_embeddings_model_input.py	remote_scripts/assemble_foundation_embeddings_model_input.py	LW	support	将多种foundation模型embedding（tGPT/scGPT/UCE等）按统一格式组装为SC基线benchmark输入
+分析	sc	2_analysis\sc\assemble_scp682_sc_reviewer_ablation_v2.py	remote_scripts/assemble_scp682_sc_reviewer_ablation_v2.py	LW	support	汇总审稿人要求的SC消融实验表（无pathway attention、无scFoundation raw-expression对照）
+分析	sc	2_analysis\sc\assemble_scp682_sc_reviewer_benchmarks_v2.py	remote_scripts/assemble_scp682_sc_reviewer_benchmarks_v2.py	LW	support	汇总SC11对比多foundation baseline的benchmark表供审稿回复和Fig3d/e数据
+分析	shared	2_analysis\shared\audit_original_copheemap_local.py	remote_scripts/audit_original_copheemap_local.py	L	support	本地审计CoPheeMap/CoPheeKSA/n2v原始文件与SCP682靶位点重叠覆盖率（图先验质控）
+分析	shared	2_analysis\shared\audit_original_gnn_tables.py	remote_scripts/audit_original_gnn_tables.py	LU	support	远程服务器审计CoPheeMap/n2v/KSA与SCP682靶点重叠的配套版本（ubuntu路径）
+分析	ppko	2_analysis\ppko\build_copheemap_prior_for_scp682_ppko_v6.py	remote_scripts/build_copheemap_prior_for_scp682_ppko_v6.py	LW	support	为PPKO V10B构建基于CoPheeMap的磷酸化位点图先验（v6版，kmer序列匹配）
+分析	ppko	2_analysis\ppko\build_decryptm_comparison_delta_v8.py	remote_scripts/build_decryptm_comparison_delta_v8.py	LW	support	从DecryptM剂量响应曲线计算drug-vs-control磷酸化delta用于PPKO验证（v8）
+分析	ppko	2_analysis\ppko\build_decryptm_pxd037285_phospho_curve_inputs.py	remote_scripts/build_decryptm_pxd037285_phospho_curve_inputs.py	LW	support	解析DecryptM PXD037285数据集建立剂量响应曲线输入，支持PPKO P100验证
+分析	sc	2_analysis\sc\build_foundation_model_h5ad_inputs.py	remote_scripts/build_foundation_model_h5ad_inputs.py	LW	support	将多队列scRNA原始数据标准化为h5ad格式，供scFoundation等foundation模型提取embedding
+分析	ppko	2_analysis\ppko\build_global_phosphoprotein_heterograph_v10.py	remote_scripts/build_global_phosphoprotein_heterograph_v10.py	LW	support	构建PPKO V10B训练所需的全局磷酸蛋白异质图（含签名调控/PPI/CoPheeMap边）
+分析	sc	2_analysis\sc\build_gse300551_iccite_plex_inputs.py	remote_scripts/build_gse300551_iccite_plex_inputs.py	LW	support	从GSE300551 icCITE-plex原始h5文件构建SC11外部验证队列模型输入
+分析	ppko	2_analysis\ppko\build_joint_decryptm_p100_phospho_inputs.py	remote_scripts/build_joint_decryptm_p100_phospho_inputs.py	LW	support	合并DecryptM和LINCS P100两个磷酸化扰动数据集为PPKO联合训练输入
+分析	ppko	2_analysis\ppko\build_kstar_edges_for_scp682_ppko_v5.py	remote_scripts/build_kstar_edges_for_scp682_ppko_v5.py	LW	support	将KSTAR激酶底物预测网络边映射到PPKO训练靶点索引（v5版本，被v9/v10引用）
+分析	ppko	2_analysis\ppko\build_lincs_p100_comparison_delta_v7.py	remote_scripts/build_lincs_p100_comparison_delta_v7.py	LW	support	从LINCS P100 Level4数据计算药物扰动delta矩阵及通路先验（v7，供PPKO验证用）
+分析	ppko	2_analysis\ppko\build_lincs_p100_phospho_perturb_inputs.py	remote_scripts/build_lincs_p100_phospho_perturb_inputs.py	LW	support	解析LINCS P100 GCT格式数据为PPKO训练标准化输入格式
+分析	sc	2_analysis\sc\build_scfoundation_multidomain_model_input.py	remote_scripts/build_scfoundation_multidomain_model_input.py	LW	support	将多数据集scFoundation嵌入组装为SC多域模型输入（支持SC11训练数据准备）
+分析	sc	2_analysis\sc\build_scp682_sc_reviewer_missing_tables_v2.py	remote_scripts/build_scp682_sc_reviewer_missing_tables_v2.py	LW	support	为审稿人补充生成SC11各外部队列per-readout Spearman统计汇总表（v2版本）
+分析	ppko	2_analysis\ppko\build_signed_phospho_regulatory_prior_v9.py	remote_scripts/build_signed_phospho_regulatory_prior_v9.py	LW	support	构建PPKO V10B所需的signed磷酸化调控先验图v9（整合CoPheeMap/KSTAR/文献调控关系）
+分析	sc	2_analysis\sc\download_and_inspect_gse300551_metadata.py	remote_scripts/download_and_inspect_gse300551_metadata.py	LW	support	下载并检视GSE300551 icCITE-plex元数据（实验设计表、barcode overlap、h5特征）
+分析	ppko	2_analysis\ppko\download_decryptm_pxd037285_curves.py	remote_scripts/download_decryptm_pxd037285_curves.py	LW	support	从PRIDE下载DecryptM PXD037285剂量曲线原始数据（PPKO训练原始数据下载）
+分析	bulk	2_analysis\bulk\download_external_bulk_large_validation_assets_v2.py	remote_scripts/download_external_bulk_large_validation_assets_v2.py	LW	support	下载bulk外部验证队列大体积原始质谱文件（v2，FTP/MassIVE多源）
+分析	bulk	2_analysis\bulk\download_external_bulk_phospho_validation_v1.py	remote_scripts/download_external_bulk_phospho_validation_v1.py	LW	support	批量下载bulk外部磷酸化验证队列原始数据（FU-iCCA/TU-SCLC/CHCC-HBV等，v1）
+分析	ppko	2_analysis\ppko\download_lincs_p100_lvl4.py	remote_scripts/download_lincs_p100_lvl4.py	LW	support	从PanoramaWeb爬取并下载LINCS P100 Level4 GCT文件（PPKO训练数据获取）
+分析	sc	2_analysis\sc\download_scimilarity_model_v1_1.cmd	remote_scripts/download_scimilarity_model_v1_1.cmd	L	support	用aria2c下载SCimilarity v1.1基线模型权重（SC benchmark基线之一）
+分析	sc	2_analysis\sc\download_signal_seq_processed_h5ad.py	remote_scripts/download_signal_seq_processed_h5ad.py	LW	support	下载SIGNAL-seq HeLa/PDO-CAF已处理h5ad文件（SC11外部验证数据获取）
+分析	sc	2_analysis\sc\download_signal_seq_v1.py	remote_scripts/download_signal_seq_v1.py	LW	support	下载SIGNAL-seq GSE256405原始数据（包含HeLa和PDO系列，SC11验证数据获取v1）
+分析	sc	2_analysis\sc\download_single_cell_phospho_validation_v1.py	remote_scripts/download_single_cell_phospho_validation_v1.py	LW	support	统一下载SC11所有外部验证队列原始数据（QuRIE/GSE300551/SIGNAL-seq/Blair/Vivo-seq）
+分析	clinical	2_analysis\clinical\download_tcga_cbioportal_clinical_covariates.py	remote_scripts/download_tcga_cbioportal_clinical_covariates.py	LU	support	从cBioPortal API批量拉取TCGA临床协变量（OS/DFS/分期/分级等，供Fig5生存分析用）
+分析	sc	2_analysis\sc\download_transcriptformer_tf_sapiens.cmd	remote_scripts/download_transcriptformer_tf_sapiens.cmd	LW	support	用aria2c下载Transcriptformer tf_sapiens模型权重（SC benchmark基线候选）
+分析	sc	2_analysis\sc\export_sc11_ctnnd1_hela_scatter.py	remote_scripts/export_sc11_ctnnd1_hela_scatter.py	LW	canonical	导出 SC11 在 HeLa CTNND1 T310 位点的 per-cell 预测值 vs 观测值散点图数据（Fig3f 数据源）
+分析	sc	2_analysis\sc\export_sc11_hela_umap.py	remote_scripts/export_sc11_hela_umap.py	LW	canonical	生成 HeLa 细胞 scFoundation 嵌入的 UMAP 坐标（Fig3f 底图数据）
+分析	sc	2_analysis\sc\extract_obsm_embeddings_to_model_input.py	remote_scripts/extract_obsm_embeddings_to_model_input.py	LW	support	从 h5ad 文件的 obsm 字段提取基础模型嵌入，写成 SC 模型输入格式（支持多种 foundation model baseline 对比）
+分析	bulk	2_analysis\bulk\extract_scp682_paper_materials.py	remote_scripts/extract_scp682_paper_materials.py	LU	support	汇集 bulk 模型论文所需文件（结果表、代码、性能文件）打包成 paper_materials_SCP682 目录
+分析	sc	2_analysis\sc\gse300551_barcode_overlap.py	remote_scripts/gse300551_barcode_overlap.py	LW	support	检查 GSE300551 icCITE-plex TSB 与 RNA barcode 的重叠（Fig3 外部验证数据准备工具）
+分析	sc	2_analysis\sc\inspect_gse300551_iccite_plex.py	remote_scripts/inspect_gse300551_iccite_plex.py	LW	support	检查 GSE300551 icCITE-plex 原始数据结构（SC 外部验证数据准备工具）
+分析	sc	2_analysis\sc\inspect_hela_evaluable_sites.py	remote_scripts/inspect_hela_evaluable_sites.py	LW	support	统计 HeLa 数据集中各输入目录下可评估 phosphosite 的数量与映射关系
+分析	sc	2_analysis\sc\inspect_iccite_seq_tcell_2025.py	remote_scripts/inspect_iccite_seq_tcell_2025.py	LW	support	检查 iccite T细胞 2025 数据集的 RNA/phospho/intra 矩阵维度与特征
+分析	bulk	2_analysis\bulk\inspect_scp682_benchmark_inputs.py	remote_scripts/inspect_scp682_benchmark_inputs.py	LU	support	核查 SCP682-22 论文包中 benchmark 输入数据的结构（Fig2b 数据验证工具）
+分析	bulk	2_analysis\bulk\inspect_scp682_portable_runtime.py	remote_scripts/inspect_scp682_portable_runtime.py	LW	support	检查 SCP682_PORTABLE 运行时状态文件的张量形状与键结构
+分析	ppko	2_analysis\ppko\inspect_signed_phospho_prior.py	remote_scripts/inspect_signed_phospho_prior.py	LW	support	检查 canonical V10B 所需 signed 磷酸化调控先验 v9 的边数与符号分布
+分析	bulk	2_analysis\bulk\launch_external_bulk_large_validation_assets_v2_download_schtask.ps1	remote_scripts/launch_external_bulk_large_validation_assets_v2_download_schtask.ps1	LW	support	创建并运行 Windows 计划任务下载外部 bulk 验证大文件（Fig2c 数据获取）
+分析	bulk	2_analysis\bulk\launch_external_bulk_massive_pxd063604_v2_download_schtask.ps1	remote_scripts/launch_external_bulk_massive_pxd063604_v2_download_schtask.ps1	LW	support	创建并运行 Windows 计划任务下载 PXD063604 超大外部验证文件
+分析	bulk	2_analysis\bulk\launch_external_bulk_pride_large_assets_v2_download_schtask.ps1	remote_scripts/launch_external_bulk_pride_large_assets_v2_download_schtask.ps1	LW	support	创建并运行 Windows 计划任务从 PRIDE 下载外部 bulk 验证数据（Fig2c 数据获取）
+训练	bulk	1_training\bulk\launch_scp682_consistent_graph_controls_e160_windows.py	remote_scripts/launch_scp682_consistent_graph_controls_e160_windows.py	LW	support	Windows 并行启动 7 组图控制消融训练（train_scp682_consistent_graph_controls），对应 Fig2d 图消融
+分析	bulk	2_analysis\bulk\launch_scp682_fast_fullsite_baselines.sh	remote_scripts/launch_scp682_fast_fullsite_baselines.sh	LU	support	启动全站点 8 RNA baseline（mean/lasso/elasticnet/pls/rf/gbm/xgboost/mlp）基准评估，Fig2b 对比数据
+训练	bulk	1_training\bulk\launch_scp682_general_graph_residual_e160__LU.sh	remote_scripts/launch_scp682_general_graph_residual_e160.sh	LU	canonical	启动 canonical train_scp682_general_graph_residual.py 160 epoch 训练（论文包单冻结 baseline 版），Fig2b/c 复现入口
+训练	bulk	1_training\bulk\launch_scp682_m4_knowledge_graph_controls_e160_windows.ps1	remote_scripts/launch_scp682_m4_knowledge_graph_controls_e160_windows.ps1	LW	support	PowerShell 串行启动 4 组知识图来源消融（rewired/no_copheemap/no_copheeksa/no_kstar），Fig2d 边源消融
+训练	bulk	1_training\bulk\launch_scp682_m4_knowledge_graph_controls_e160.sh	remote_scripts/launch_scp682_m4_knowledge_graph_controls_e160.sh	LU	support	Ubuntu 串行启动 4 组知识图来源消融（train_scp682_missing_ablation_degree_rewire），Fig2d 边源消融
+训练	bulk	1_training\bulk\launch_scp682_m4_windows_parallel.py	remote_scripts/launch_scp682_m4_windows_parallel.py	LW	support	Windows 并行启动 4 组知识图来源消融训练（train_scp682_missing_ablation_degree_rewire），Fig2d 数据
+训练	bulk	1_training\bulk\launch_scp682_m4_wsl_parallel.sh	remote_scripts/launch_scp682_m4_wsl_parallel.sh	LW	support	WSL 双 GPU 并行启动 4 组知识图来源消融训练，Fig2d 边源消融
+训练	bulk	1_training\bulk\launch_scp682_missing_ablation_grid_e160.sh	remote_scripts/launch_scp682_missing_ablation_grid_e160.sh	LU	support	启动 6 组双轴×边源 160 epoch 消融训练（train_scp682_missing_ablation），Fig2d 消融参考
+训练	bulk	1_training\bulk\launch_scp682_missing_ablation_grid_e40__LU.sh	remote_scripts/launch_scp682_missing_ablation_grid_e40.sh	LU	canonical	启动 canonical 6 组双轴×边源 40 epoch 消融训练（train_scp682_missing_ablation），Fig2d 正式消融入口
+分析	bulk	2_analysis\bulk\launch_scp682_ml_baseline_benchmark_full.sh	remote_scripts/launch_scp682_ml_baseline_benchmark_full.sh	LU	support	启动 run_scp682_ml_baseline_benchmark.py 完整 5 折 benchmark（9 RNA 方法），Fig2b baseline 对比数据
+分析	bulk	2_analysis\bulk\launch_scp682_site_attention_export_e160.sh	remote_scripts/launch_scp682_site_attention_export_e160.sh	LU	canonical	启动 export_scp682_site_attention.py 从 canonical 权重导出磷酸化位点图边注意力，Fig2d 可解释性数据来源
+分析	bulk	2_analysis\bulk\local_download_external_bulk_then_push.py	remote_scripts/local_download_external_bulk_then_push.py	L	support	从 PRIDE 和 MassIVE FTP 下载外部磷酸化队列数据并推送至远程服务器，Fig2c 原始数据准备
+分析	sc	2_analysis\sc\merge_scfoundation_multidomain_shards.py	remote_scripts/merge_scfoundation_multidomain_shards.py	LW	support	将 scFoundation 多分片 embedding 按 barcode 顺序合并为单一矩阵，供 SC benchmark 使用
+分析	bulk	2_analysis\bulk\package_scp682_exact_scnet_main_release.py	remote_scripts/package_scp682_exact_scnet_main_release.py	LU	support	将 canonical exact_scnet 训练结果打包为正式冻结发布包并更新 SCP682_CURRENT.json，复现分发基础
+画图	clinical	3_plotting\clinical\plot_kirc_rps6_umap_malignancy.py	remote_scripts/plot_kirc_rps6_umap_malignancy.py	L	support	绘制 KIRC 单细胞 UMAP（恶性/非恶性标注 + 预测 RPS6 pS235/S236），Fig5 SC 恶性程序面板
+分析	sc	2_analysis\sc\precompute_scfoundation_embeddings_multidomain.py	remote_scripts/precompute_scfoundation_embeddings_multidomain.py	LW	support	为 7 个 SC 数据集批量计算 scFoundation 细胞嵌入，Fig3d/e 基线 benchmark 数据准备
+分析	sc	2_analysis\sc\precompute_scgpt_cell_gene_embeddings_forced.py	remote_scripts/precompute_scgpt_cell_gene_embeddings_forced.py	LW	support	为 SC benchmark 计算 scGPT 嵌入（强制包含 RPS6 等核糖体基因），Fig3d/e 基线数据
+分析	sc	2_analysis\sc\precompute_scgpt_embeddings_multidomain.py	remote_scripts/precompute_scgpt_embeddings_multidomain.py	LW	support	为 7 个 SC 数据集批量计算 scGPT 冻结嵌入，Fig3d/e 基线 benchmark
+分析	sc	2_analysis\sc\precompute_scimilarity_embeddings_multidomain.py	remote_scripts/precompute_scimilarity_embeddings_multidomain.py	LW	support	为 7 个 SC 数据集批量计算 SCimilarity v1.1 细胞嵌入，Fig3d/e 基线 benchmark
+分析	sc	2_analysis\sc\precompute_tgpt_embeddings_multidomain.py	remote_scripts/precompute_tgpt_embeddings_multidomain.py	LW	support	为 7 个 SC 数据集批量计算 tGPT（TranscriptFormer）细胞嵌入，Fig3d/e 基线 benchmark
+分析	sc	2_analysis\sc\prepare_geneformer_pathway_flatten_benchmark_input.py	remote_scripts/prepare_geneformer_pathway_flatten_benchmark_input.py	LW	support	将 Geneformer 3D pathway 特征展平为 2D embedding 格式，与其他基线统一，供 Fig3d/e benchmark
+分析	sc	2_analysis\sc\prepare_signal_seq_processed_h5ad.py	remote_scripts/prepare_signal_seq_processed_h5ad.py	LW	support	解压并构建 SIGNAL-seq HeLa/PDO-CAF 配对 RNA-磷酸化矩阵，SC11 外部验证（Fig3b/c/f）数据准备
+分析	sc	2_analysis\sc\prepare_transcriptformer_h5ad_inputs.py	remote_scripts/prepare_transcriptformer_h5ad_inputs.py	LW	support	将 SC 数据集 h5ad 转换为 TranscriptFormer 所需基因 Ensembl ID 格式，供 tGPT 嵌入计算
+分析	sc	2_analysis\sc\repair_fullgene_shard0_iccite.py	remote_scripts/repair_fullgene_shard0_iccite.py	LW	support	修复iCCITE-seq scFoundation嵌入shard0元数据（SC11训练前置数据准备）
+分析	bulk	2_analysis\bulk\run_deepgxp_cptac_5fold_oof_20260526.py	remote_scripts/run_deepgxp_cptac_5fold_oof_20260526.py	LU	support	在CPTAC上运行DeepGxP基线5折OOF推理，作为Fig2b benchmark对比方法（本文含DeepGxP架构实现）
+分析	sc	2_analysis\sc\run_download_single_cell_phospho_validation_v1.cmd	remote_scripts/run_download_single_cell_phospho_validation_v1.cmd	LW	support	下载SC外部验证数据集（Fig3所需外部队列原始数据）的CMD启动包装
+分析	bulk	2_analysis\bulk\run_external_bulk_large_validation_assets_v2_download.ps1	remote_scripts/run_external_bulk_large_validation_assets_v2_download.ps1	LW	support	下载外部bulk磷酸化验证大文件（PRIDE+MASSIVE）的PowerShell启动包装
+分析	bulk	2_analysis\bulk\run_external_bulk_massive_pxd063604_v2_download.ps1	remote_scripts/run_external_bulk_massive_pxd063604_v2_download.ps1	LW	support	从MASSIVE下载PXD063604数据集（FU-iCCA等外部队列原始数据）的PowerShell包装
+分析	bulk	2_analysis\bulk\run_external_bulk_pride_large_assets_v2_download.ps1	remote_scripts/run_external_bulk_pride_large_assets_v2_download.ps1	LW	support	从PRIDE下载外部bulk验证大文件的PowerShell包装
+分析	sc	2_analysis\sc\run_foundation_multidomain_persite_linear_regression.py	remote_scripts/run_foundation_multidomain_persite_linear_regression.py	LW	support	对任意foundation embedding在多域数据上运行per-site线性回归（OLS）基线（Fig3d/e基线之一）
+分析	clinical	2_analysis\clinical\run_kirc_rps6_validation_full.ps1	remote_scripts/run_kirc_rps6_validation_full.ps1	LW	support	在KIRC GSE242299队列上运行SC11对RPS6的完整验证（Fig5临床深度分析PowerShell启动器）
+分析	ppko	2_analysis\ppko\run_ppko_p100_published_baselines_windows.cmd	remote_scripts/run_ppko_p100_published_baselines_windows.cmd	LW	support	在Windows上运行已发表PPKO P100基线方法评估（Fig4 benchmark支持）
+分析	sc	2_analysis\sc\run_remaining_foundation_models.cmd	remote_scripts/run_remaining_foundation_models.cmd	LW	support	运行剩余foundation模型embedding提取+per-site ridge回归基线（Fig3d/e benchmark全流程CMD）
+分析	sc	2_analysis\sc\run_scfoundation_bs8_followup_20260519.cmd	remote_scripts/run_scfoundation_bs8_followup_20260519.cmd	LW	support	等待scFoundation bs8 shard1完成后执行merge+assemble+ridge全流程CMD脚本
+分析	sc	2_analysis\sc\run_scfoundation_embedding_shard_20260519.cmd	remote_scripts/run_scfoundation_embedding_shard_20260519.cmd	LW	support	分片计算scFoundation (cap12000) embedding的CMD启动脚本
+分析	sc	2_analysis\sc\run_scfoundation_embedding_shard_20260519.ps1	remote_scripts/run_scfoundation_embedding_shard_20260519.ps1	LW	support	分片计算scFoundation (cap12000) embedding的PowerShell启动脚本
+分析	sc	2_analysis\sc\run_scfoundation_gpu0_followup_20260519.cmd	remote_scripts/run_scfoundation_gpu0_followup_20260519.cmd	LW	support	GPU0等待shard0后串行运行shard1+merge+assemble+ridge全流程CMD
+分析	sc	2_analysis\sc\run_scfoundation_multidomain_eval_20260519.ps1	remote_scripts/run_scfoundation_multidomain_eval_20260519.ps1	LW	support	并行双GPU启动scFoundation embedding+merge+assemble+ridge全流程PowerShell主控脚本
+分析	sc	2_analysis\sc\run_scfoundation_multidomain_persite_ridge.py	remote_scripts/run_scfoundation_multidomain_persite_ridge.py	LW	support	对scFoundation (cap12000) embedding运行per-site RidgeCV回归基线（Fig3d baseline）
+分析	bulk	2_analysis\bulk\run_scp682_consistent_external_from_bphi.py	remote_scripts/run_scp682_consistent_external_from_bphi.py	LU	canonical	使用canonical SCP682_PORTABLE图残差引擎对外部队列（FU-iCCA/TU-SCLC/CHCC-HBV/APOLLO等）运行冻结推理，生成Fig2c外部验证数据
+分析	bulk	2_analysis\bulk\run_scp682_consistent_gamma_sensitivity.py	remote_scripts/run_scp682_consistent_gamma_sensitivity.py	LW	support	对SCP682 consistent版本gamma(shrinkage=0.3)系数进行敏感性分析，验证缩放选取稳健性
+分析	bulk	2_analysis\bulk\run_scp682_consistent_graph_controls_foreground.cmd	remote_scripts/run_scp682_consistent_graph_controls_foreground.cmd	LW	support	前台运行SCP682 consistent图消融控制实验（边源消融，支持Fig2b/Fig2d）
+分析	bulk	2_analysis\bulk\run_scp682_fast_fullsite_baselines.py	remote_scripts/run_scp682_fast_fullsite_baselines.py	LU	canonical	在CPTAC上运行完整快速baseline套件(7方法×6组织分层OOF)，产出Fig2b对比所需per-site Spearman矩阵
+分析	clinical	2_analysis\clinical\run_scp682_fig5_v2_exports_20260528.py	remote_scripts/run_scp682_fig5_v2_exports_20260528.py	LU	canonical	利用冻结SCP682 PORTABLE对TCGA-KIRC/LUAD/PAAD进行推理并导出Fig5所需pS6等靶点预测-观测对照数据
+分析	bulk	2_analysis\bulk\run_scp682_kinpred_rna_style_baseline.py	remote_scripts/run_scp682_kinpred_rna_style_baseline.py	LU	canonical	实现kinpred式RNA→激酶活性baseline(聚合Ridge)，计算per-kinase Spearman与SCP682对比，响应审稿人补充benchmark
+分析	bulk	2_analysis\bulk\run_scp682_lambda_sensitivity_20260602.py	remote_scripts/run_scp682_lambda_sensitivity_20260602.py	L	canonical	在lambda=[0,0.1,0.2,0.3,0.5,0.75,1.0,1.5]扫描shrinkage系数，验证0.3为最优，支撑canonical shrinkage=0.3参数敏感性分析
+分析	bulk	2_analysis\bulk\run_scp682_m4_wsl_foreground.sh	remote_scripts/run_scp682_m4_wsl_foreground.sh	LW	canonical	WSL前台启动bulk图消融(degree_rewire)训练的Shell包装，属Fig2d/ED图边源消融canonical复现链
+分析	bulk	2_analysis\bulk\run_scp682_main_external_fig2c_additional_20260530.py	remote_scripts/run_scp682_main_external_fig2c_additional_20260530.py	LU	canonical	调用冻结SCP682 PORTABLE对Apollo-LUAD和CAS-LUAD两个额外外部队列进行推理，补充Fig2c外部验证数据
+分析	bulk	2_analysis\bulk\run_scp682_ml_baseline_benchmark.py	remote_scripts/run_scp682_ml_baseline_benchmark.py	LU	canonical	在CPTAC上跑全套ML baseline OOF benchmark(9方法)，产出Fig2b所需per-site Spearman对比表格
+分析	bulk	2_analysis\bulk\run_scp682_oof_branch_benchmark__LU.py	remote_scripts/run_scp682_oof_branch_benchmark.py	LU	canonical	比较SCP682-22内部各baseline分支(parent_only/ridge/rna_direct/general)的OOF Spearman，支撑Fig2b分支消融说明
+分析	bulk	2_analysis\bulk\run_scp682_reviewer_benchmarks.py	remote_scripts/run_scp682_reviewer_benchmarks.py	LU	canonical	计算SCP682 vs 各baseline的head-to-head per-site Spearman和paired Wilcoxon，响应审稿人要求的严格统计检验
+分析	bulk	2_analysis\bulk\run_scp682_reviewer_strict_holdout_extra.py	remote_scripts/run_scp682_reviewer_strict_holdout_extra.py	LU	canonical	对HNSCC/STAD额外cancer-type holdout复现评估，比较SCP682 vs v4_official，响应审稿人严格holdout要求
+分析	bulk	2_analysis\bulk\run_scp682_reviewer_strict_holdout.py	remote_scripts/run_scp682_reviewer_strict_holdout.py	LU	canonical	对GBM/PDA cancer-type holdout评估，比较SCP682 vs v4_official，响应审稿人严格holdout验证要求
+分析	sc	2_analysis\sc\run_scp682_sc_raw_expression_selected_gene_ridge.py	remote_scripts/run_scp682_sc_raw_expression_selected_gene_ridge.py	LW	canonical	用原始scRNA表达的parent gene构建cognate-mRNA Ridge baseline，计算各外部队列per-readout Spearman，产出Fig3d基线对照数据
+训练	sc	1_training\sc\run_scp682_sc11_m4_graph_controls.bat	remote_scripts/run_scp682_sc11_m4_graph_controls.bat	L	canonical	启动SC11 graph edge-source消融训练(rewired/无CoPheeMap/无CoPheeKSA/无KSTAR)，产出Fig3g SC图消融比较所需权重
+训练	sc	1_training\sc\run_scp682_sc11_no_pathway_attention_ablation.ps1	remote_scripts/run_scp682_sc11_no_pathway_attention_ablation.ps1	LW	canonical	启动SC11无pathway-attention消融训练，对应Fig3g pathway-attention消融臂
+分析	bulk	2_analysis\bulk\run_scp682_shrinkage_sensitivity_grid__LU.py	remote_scripts/run_scp682_shrinkage_sensitivity_grid.py	LU	support	对 bulk shrinkage 系数 0-1 做灵敏度扫描，确定 canonical 0.3 参数（支撑 Fig2a 架构选择）
+分析	clinical	2_analysis\clinical\run_scp682_tcga_tcpa_overlap_20260526.py	remote_scripts/run_scp682_tcga_tcpa_overlap_20260526.py	LU	support	分析 TCGA-TCPA 样本 RNA-RPPA 匹配度并对 TCPA RPPA 抗体做磷酸位点映射，为 Fig5 临床验证准备
+分析	data	2_analysis\data\run_signal_seq_fastq_download.cmd	remote_scripts/run_signal_seq_fastq_download.cmd	LW	support	下载 SIGNAL-seq GSE256405 原始 FASTQ 数据（SC 外部验证队列）
+分析	data	2_analysis\data\run_signal_seq_processed_h5ad_download.cmd	remote_scripts/run_signal_seq_processed_h5ad_download.cmd	LW	support	下载 SIGNAL-seq GSE256405 预处理 h5ad 数据（SC 外部验证）
+分析	sc	2_analysis\sc\run_transcriptformer_linear_pipeline.cmd	remote_scripts/run_transcriptformer_linear_pipeline.cmd	LW	support	运行 TranscriptFormer 嵌入提取+线性回归 benchmark 全流程（Fig3d SC 基准对照之一）
+分析	sc	2_analysis\sc\run_transcriptformer_multidomain_embeddings.py	remote_scripts/run_transcriptformer_multidomain_embeddings.py	LW	support	从多域单细胞 h5ad 批量提取 TranscriptFormer 嵌入（SC 基准 backbone 之一）
+分析	sc	2_analysis\sc\run_uce_multidomain_embeddings.py	remote_scripts/run_uce_multidomain_embeddings.py	LW	support	从多域单细胞 h5ad 批量提取 UCE 4-layer 嵌入（SC 基准 backbone 之一）
+分析	sc	2_analysis\sc\run_uce_pdo_caf_embedding.cmd	remote_scripts/run_uce_pdo_caf_embedding.cmd	LW	support	对 PDO/CAF 数据集单独运行 UCE 嵌入提取
+分析	data	2_analysis\data\start_download_single_cell_phospho_validation_v1.ps1	remote_scripts/start_download_single_cell_phospho_validation_v1.ps1	LW	support	通过 Windows 计划任务启动单细胞磷酸验证数据下载（SIGNAL-seq 等外部 SC 队列）
+训练	bulk	1_training\bulk\start_scp682_consistent_graph_controls_background.cmd	remote_scripts/start_scp682_consistent_graph_controls_background.cmd	LW	support	后台启动 bulk consistent graph controls 消融训练（Fig2b 对照实验 launcher）
+训练	bulk	1_training\bulk\start_scp682_m4_wsl_process.cmd	remote_scripts/start_scp682_m4_wsl_process.cmd	LW	support	CMD wrapper 通过 WSL 启动 m4 知识图谱控制消融训练（Fig2b 消融验证）
+训练	bulk	1_training\bulk\start_scp682_m4_wsl_process.ps1	remote_scripts/start_scp682_m4_wsl_process.ps1	LW	support	PS1 wrapper 后台异步启动 WSL m4 并行消融训练（Fig2b 消融验证）
+训练	bulk	1_training\bulk\start_scp682_m4_wsl_single_rewired.sh	remote_scripts/start_scp682_m4_wsl_single_rewired.sh	LW	support	WSL bash 直接启动单次 dual-axis rewired_all 边缘消融训练（Fig2b 消融验证子任务）
+分析	bulk	2_analysis\bulk\summarize_copheemap_overlap.py	remote_scripts/summarize_copheemap_overlap.py	L	support	统计 CoPheeMap/KSA/n2v 与模型位点的序列重叠，用于图先验覆盖审计（支撑 Fig2a 图边统计）
+分析	ppko	2_analysis\ppko\summarize_lincs_p100_local_coverage.py	remote_scripts/summarize_lincs_p100_local_coverage.py	LW	support	统计本地 LINCS P100 LVL4 数据集覆盖率及条件分布，支撑 PPKO 训练数据审计
+分析	bulk	2_analysis\bulk\summarize_scp682_missing_ablation_grid__LUW.py	remote_scripts/summarize_scp682_missing_ablation_grid.py	LUW	support	汇总 bulk 双轴消融网格各条件的 Spearman 及图统计，支撑 Fig2d 消融结果整理
+分析	ppko	2_analysis\ppko\summarize_scp682_ppko_dataset_features.py	remote_scripts/summarize_scp682_ppko_dataset_features.py	LW	support	对 PPKO 训练数据集做全面特征审计（条件/剂量/时间/覆盖率），支撑 Fig4a 数据描述
+分析	sc	2_analysis\sc\summarize_scp682_sc11_internal_5fold__LW.py	remote_scripts/summarize_scp682_sc11_internal_5fold.py	LW	support	汇总 SC11 五折内部交叉验证 Spearman（median 0.469），支撑 Fig3b 内部重建结果
+训练	bulk	1_training\bulk\train_scp682_consistent_graph_controls.py	remote_scripts/train_scp682_consistent_graph_controls.py	LW	canonical	bulk图双轴/边源消融训练器（支持--axis-mode/--edge-mode含rewired_*），对应Fig2d注意力富集消融
+训练	bulk	1_training\bulk\train_scp682_exact_scnet_gnn_v1.py	remote_scripts/train_scp682_exact_scnet_gnn_v1.py	LU	canonical	canonical bulk训练脚本：ExactScNETGraph双轴GNN + SCP682ExactScNETResidual，pred=baseline+0.3*delta
+训练	bulk	1_training\bulk\train_scp682_general_graph_residual__LU.py	remote_scripts/train_scp682_general_graph_residual.py	LU	canonical	paper_materials论文包curated版canonical bulk训练（SCP682GeneralGraphResidual，单一冻结baseline输入）
+训练	bulk	1_training\bulk\train_scp682_missing_ablation_degree_rewire.py	remote_scripts/train_scp682_missing_ablation_degree_rewire.py	LUW	canonical	带degree-preserving rewire的图消融训练，支撑Fig2d注意力边富集对照
+训练	bulk	1_training\bulk\train_scp682_missing_ablation__LU.py	remote_scripts/train_scp682_missing_ablation.py	LU	canonical	图结构消融训练（axis-mode/edge-mode参数化），支撑Fig2d注意力富集图
+训练	sc	1_training\sc\train_scp682_sc11_expanded_scnet_site_gnn_no_attention_ablation.py	remote_scripts/train_scp682_sc11_expanded_scnet_site_gnn_no_attention_ablation.py	LW	canonical	SC11去注意力消融训练，支撑Fig3g图消融对照
+训练	sc	1_training\sc\train_scp682_sc11_expanded_scnet_site_gnn__2.py	remote_scripts/train_scp682_sc11_expanded_scnet_site_gnn.py	L	canonical	canonical SC模型(SCP682-SC11)训练脚本：scFoundation+pathway attention+expanded ScNET site GNN五折正式版
+画图	bulk	3_plotting\bulk\_build_attn_heatmap_proto.R	SCP682_MAIN/attention_export/_build_attn_heatmap_proto.R	L	canonical	绘制18个hub蛋白76个位点的site-site注意力热图，用于Fig2d可解释性面板
+画图	atlas	3_plotting\atlas\_build_nmf_heatmap.R	SCP682_MAIN/attention_export/_build_nmf_heatmap.R	L	canonical	绘制30个NMF磷酸化模块×癌种z-score热图，用于Fig2e泛癌图谱面板
+分析	shared	2_analysis\shared\check_remote_torch_env.py	SCP682_MAIN/scripts/check_remote_torch_env.py	LW	support	检查远程PyTorch/CUDA/torch_geometric环境版本，训练启动前环境诊断工具
+训练	bulk	1_training\bulk\launch_faithful_scnet_direct_full.ps1	SCP682_MAIN/scripts/launch_faithful_scnet_direct_full.ps1	LW	support	PowerShell启动包装：后台异步启动faithful_scnet_direct_bulk训练并记录PID
+训练	bulk	1_training\bulk\run_faithful_scnet_direct_full_logged.cmd	SCP682_MAIN/scripts/run_faithful_scnet_direct_full_logged.cmd	LW	support	带日志重定向的CMD包装，调用full训练脚本并写入状态文件
+训练	bulk	1_training\bulk\run_faithful_scnet_direct_full.cmd	SCP682_MAIN/scripts/run_faithful_scnet_direct_full.cmd	LW	support	CMD批处理启动train_faithful_scnet_direct_bulk.py完整训练（160 epochs）
+训练	bulk	1_training\bulk\run_faithful_scnet_direct_smoke.cmd	SCP682_MAIN/scripts/run_faithful_scnet_direct_smoke.cmd	LW	support	CMD批处理启动1-epoch smoke test用于快速验证训练流程可运行
+分析	bulk	2_analysis\bulk\export_graph_runtime_state__LW.py	SCP682_PORTABLE/scripts/export_graph_runtime_state.py	LW	canonical	从canonical bulk权重导出图运行时状态（row/col嵌入+decoder参数），供portable推理包使用
+训练	bulk	1_training\bulk\run_scp682_consistent_shrinkage_loss_gpu0.cmd	SCP682_PORTABLE/scripts/run_scp682_consistent_shrinkage_loss_gpu0.cmd	LW	canonical	CMD批处理启动PORTABLE canonical bulk训练（consistent-loss版，shrinkage=0.3，160 epochs）
+训练	bulk	1_training\bulk\train_scp682_main_v4_exact_scnet_gnn_consistent_loss.py	SCP682_PORTABLE/scripts/train_scp682_main_v4_exact_scnet_gnn_consistent_loss.py	LW	canonical	PORTABLE生产canonical bulk训练脚本（consistent-loss版，与remote_scripts/exact_scnet_gnn_v1同核）
+分析	bulk	2_analysis\bulk\scp682_v4_0_input_guard_and_sample_centering_20260503__LUW.py	SCP682_PORTABLE/v4_baseline_release/scripts/scp682_v4_0_input_guard_and_sample_centering_20260503.py	LUW	canonical	bulk canonical baseline推理前输入守卫与样本中位数中心化预处理，v4.0部署必需步骤
+分析	bulk	2_analysis\bulk\predict_scp682_v4_0_public_bulk_20260508.py	SCP682_PORTABLE/v4_engine/code/predict_scp682_v4_0_public_bulk_20260508.py	LU	canonical	SCP682 v4.0公共bulk磷酸化图谱推理：对cBioPortal数据集批量预测，用于外部验证与泛癌图谱
+训练	bulk	1_training\bulk\train_cptac_joint_total_phosphosite_residual_nas_v2_20260429.py	SCP682_PORTABLE/v4_engine/code/train_cptac_joint_total_phosphosite_residual_nas_v2_20260429.py	LU	canonical	训练bulk canonical v4 baseline组件（FiLM条件化残差NAS搜索），为exact_scnet_gnn提供冻结baseline
+训练	ppko	1_training\ppko\pretrain_v10b_strong300__LW.py	SCP682_PPKO_V10B_transferable/scripts/pretrain_v10b_strong300.py	LW	canonical	canonical PPKO训练脚本：AttentionPriorManifoldV10异构图+strong300配置（V10B canonical）
+分析	ppko	2_analysis\ppko\validate_v10b_p100_all_drugs.py	SCP682_PPKO_V10B_transferable/scripts/validate_v10b_p100_all_drugs.py	LW	canonical	canonical V10B PPKO模型在P100全药物集上的验证（n=125，AUC 0.72来源实验）
+分析	ppko	2_analysis\ppko\tcga_tcpa_general_score_controls_v1.py	tcga_tcpa_general_score_controls_v1.py	LW	support	生成 V10B PPKO 患者响应预测的随机/全局磷酸化基线对照 AUC 与置信区间以支持 Fig4 特异性论证
+分析	ppko	2_analysis\ppko\tcga_tcpa_ppko_patient_response_v1.py	tcga_tcpa_ppko_patient_response_v1.py	LW	canonical	用 V10B strong300 对 TCGA-TCPA 患者做 PPKO 推断并计算 AUC(0.72)，支持 Fig4 患者级临床响应主分析
+分析	bulk	2_analysis\bulk\run_cptac_rna_phosphosite_pure_correlation_20260504.py	03_code/biological_validation/run_cptac_rna_phosphosite_pure_correlation_20260504.py	U	support	计算 CPTAC pan-cancer 每个磷酸化位点与其亲本基因 RNA 的相关性，用于支持 Fig2d 注意力可解释性分析和 cognate-mRNA 基线对照
+分析	bulk	2_analysis\bulk\run_lau_pcb2022_external_string200_studyz_20260506.py	03_code/model_validation/run_lau_pcb2022_external_string200_studyz_20260506.py	U	support	Lau PCB2022 基线(STRING200特征+study_z)在外部队列外推评估，用于 Fig2b 基线对比
+分析	bulk	2_analysis\bulk\run_lau_pcb2022_external_string200_transcriptome_20260506.py	03_code/model_validation/run_lau_pcb2022_external_string200_transcriptome_20260506.py	U	support	Lau PCB2022 基线(全转录组特征)在外部队列外推评估，用于 Fig2b 基线对比
+分析	bulk	2_analysis\bulk\run_lau_pcb2022_fivefold_reproduction_20260505.py	03_code/model_validation/run_lau_pcb2022_fivefold_reproduction_20260505.py	U	support	复现 Lau PLOS Comput Biol 2022 多算法(Ridge/ENR/RF/GB)在SCP682五折分割的内部OOF评估（Fig2b RNA基线）
+分析	bulk	2_analysis\bulk\run_lau_pcb2022_fivefold_reproduction_full_ridge_20260505.py	03_code/model_validation/run_lau_pcb2022_fivefold_reproduction_full_ridge_20260505.py	U	support	Lau 2022 全转录组 Ridge 版本在五折分割的 OOF 评估（Fig2b 全转录组 Ridge 基线）
+分析	bulk	2_analysis\bulk\scp682_input_guard_and_sample_centering.py	03_code/model_validation/scp682_input_guard_and_sample_centering.py	U	support	SCP682 推理前输入格式检查与样本中位数中心化工具（ubuntu 子目录版）
+分析	shared	2_analysis\shared\audit_open_kinase_prior.py	03_code/pathway_prior/audit_open_kinase_prior.py	U	support	审计 PhosphoNetworks+OmniPath 激酶底物先验的覆盖率和质量（先验数据构建流程上游审计工具）
+分析	shared	2_analysis\shared\augment_kinhub_audit.py	03_code/pathway_prior/augment_kinhub_audit.py	U	support	用 KinHub 人类激酶列表补充审计激酶覆盖率（先验构建辅助工具）
+分析	shared	2_analysis\shared\build_modeling_prior_v1.py	03_code/pathway_prior/build_modeling_prior_v1.py	U	support	从 PhosphoNetworks+OmniPath+KinHub 构建 SCP682 共享激酶底物先验 v1（graph prior 数据准备）
+分析	data	2_analysis\data\acquire_public_gbm_resources.py	03_code/shared/data_acquisition/acquire_public_gbm_resources.py	U	support	下载 GBM 相关公开多组学资源（PDC/GDC/cBioPortal 数据采集工具）
+分析	shared	2_analysis\shared\compute_gsva.R	compute_gsva.R	U	support	通用 GSVA 计算脚本：Ensembl→symbol 映射后计算通路得分（多模块共用辅助工具）
+分析	bulk	2_analysis\bulk\build_correct_scp682_main_release.py	remote_scripts/build_correct_scp682_main_release.py	U	support	将 SCP682-30 (exact_scnet_gnn) 产出打包为 canonical main release 并生成校验清单
+分析	bulk	2_analysis\bulk\scp682_input_guard_and_sample_centering__U.py	SCP682/03_code/model_validation/scp682_input_guard_and_sample_centering.py	U	support	SCP682 目录下推理输入守卫与样本中位数中心化工具（与 ubuntu/03_code/model_validation 同名文件功能相同）
+分析	bulk	2_analysis\bulk\rebuild_scp682_phosphosite_release.py	SCP682/scripts/rebuild_scp682_phosphosite_release.py	U	support	SCP682 package 内的 release 重建包装脚本，调用 finalize 脚本重新生成官方 release
+分析	bulk	2_analysis\bulk\scp682_predict.py	SCP682/scripts/scp682_predict.py	U	support	SCP682 推理入口脚本，支持 CPTAC phosphosite head 和 TCPA RPPA head 两种输出（canonical 推理包装）
+分析	bulk	2_analysis\bulk\__init__.py	01_data/external_models/SCP682_scGPT_bridge/package/SCP682_scGPT_bridge/scp682_scgpt_bridge/__init__.py	UW	support	SCP682_scGPT_bridge 包初始化，导出 SCP682Bridge/Encoder/Manifest/V4PhosphositeRelease 等接口
+分析	sc	2_analysis\sc\run_build_h5ad.cmd	02_results/single_cell/20260531_foundation_model_h5ad_inputs_v1/logs/run_build_h5ad.cmd	W	support	构建 foundation model benchmark 所需 h5ad 格式输入数据（Fig3d 基线比较前置数据准备）
+分析	sc	2_analysis\sc\run_scgpt_missing.cmd	02_results/single_cell/20260531_scp682_sc_foundation_model_benchmark_scgpt_missing_embeddings_v1/logs/run_scgpt_missing.cmd	W	support	为 GSE300551/HeLa/PDO-CAF 三个缺失数据集补充计算冻结 scGPT embeddings（Fig3d 基线数据准备）
+分析	ppko	2_analysis\ppko\tcga_tcpa_ppko_patient_response_v1__W.py	03_code/clinical_validation/tcga_tcpa_ppko_patient_response_v1.py	W	canonical	用 PPKO V10B 对 TCGA-TCPA RPPA500 患者磷酸化谱预测药物扰动 delta，计算 AUC 评估患者响应区分能力（Fig4 临床验证核心脚本）
+训练	bulk	1_training\bulk\train_scp682_exact_scnet_gnn_v1__W.py	03_code/model_validation/train_scp682_exact_scnet_gnn_v1.py	W	canonical	定义并训练 bulk SCP682 canonical 模型（ExactScNETGraph+SCP682ExactScNETResidual，shrinkage=0.3，pred=baseline+0.3*delta）
+分析	sc	2_analysis\sc\download_core_geo.ps1	03_code/single_cell/download/download_core_geo.ps1	W	support	用curl批量下载Blair-2025和Vivo-seq-Th17两个外部SC磷酸化验证队列的原始GEO文件。
+分析	sc	2_analysis\sc\download_small_geo.ps1	03_code/single_cell/download/download_small_geo.ps1	W	support	download_core_geo.ps1的精简平铺版，功能相同但用数组逐条curl下载同批GEO文件。
+分析	sc	2_analysis\sc\launch_download_core_geo.ps1	03_code/single_cell/download/launch_download_core_geo.ps1	W	support	以隐藏窗口后台启动download_core_geo.ps1并记录PID。
+分析	sc	2_analysis\sc\start_bits_downloads.ps1	03_code/single_cell/download/start_bits_downloads.ps1	W	support	通过Windows BITS异步后台服务下载Vivo-seq和Blair-2025的大文件。
+分析	sc	2_analysis\sc\run_scfoundation_embedding_shard_20260519_bs8.cmd	03_code/single_cell/modeling/run_scfoundation_embedding_shard_20260519_bs8.cmd	W	support	批量分片计算SC外部验证所需scFoundation嵌入(GSE300551/SIGNAL-seq HeLa/PDO-CAF)的CMD启动脚本
+分析	sc	2_analysis\sc\diagnose_sc11_nan.py	diagnose_sc11_nan.py	W	support	诊断SC11训练前置transfer prior数组及smoke test输出中的NaN/数值范围问题（支持SC11 canonical训练调试）
+分析	ppko	2_analysis/ppko/_server_ppko_tcga_stats.py	L:_server_ppko_tcga_stats.py		support(gap-add)	Fig4g AUC bootstrap/permutation(model_score_auc_ci_permutation.tsv)唯一来源 gap-P0
+分析	shared	2_analysis/shared/compute_gsva.R	U:compute_gsva.R		support(gap-add)	GSVA 通路得分 framework/gap
+分析	data	2_analysis/data/get_tcga_rnaseq.R	U:src/R/get_tcga_rnaseq.R		support(gap-add)	TCGA/TCPA 下载与RNA预处理 gap-P1
+分析	data	2_analysis/data/get_tcpa_l4.R	U:src/R/get_tcpa_l4.R		support(gap-add)	TCGA/TCPA 下载与RNA预处理 gap-P1
+分析	data	2_analysis/data/preprocess_rna_tpm.R	U:src/R/preprocess_rna_tpm.R		support(gap-add)	TCGA/TCPA 下载与RNA预处理 gap-P1
+分析	data	2_analysis/data/preprocess_rna_tpm_all.R	U:src/R/preprocess_rna_tpm_all.R		support(gap-add)	TCGA/TCPA 下载与RNA预处理 gap-P1
+分析	data	2_analysis/data/build_pairing_manifest.py	U:scripts/external_validation/build_pairing_manifest.py		support(gap-add)	外部验证delta计算/配对/GEO解析/映射 gap-P1
+分析	data	2_analysis/data/compute_egfr_deltas_from_manifest.py	U:scripts/external_validation/compute_egfr_deltas_from_manifest.py		support(gap-add)	外部验证delta计算/配对/GEO解析/映射 gap-P1
+分析	data	2_analysis/data/compute_predicted_deltas_from_manifest.py	U:scripts/external_validation/compute_predicted_deltas_from_manifest.py		support(gap-add)	外部验证delta计算/配对/GEO解析/映射 gap-P1
+分析	data	2_analysis/data/egfr_case_study_gse156054.py	U:scripts/external_validation/egfr_case_study_gse156054.py		support(gap-add)	外部验证delta计算/配对/GEO解析/映射 gap-P1
+分析	data	2_analysis/data/map_ensembl_to_symbol.R	U:scripts/external_validation/map_ensembl_to_symbol.R		support(gap-add)	外部验证delta计算/配对/GEO解析/映射 gap-P1
+分析	data	2_analysis/data/parse_geo_series_matrix.py	U:scripts/external_validation/parse_geo_series_matrix.py		support(gap-add)	外部验证delta计算/配对/GEO解析/映射 gap-P1
+分析	data	2_analysis/data/plot_grouped_violin.py	U:scripts/external_validation/plot_grouped_violin.py		support(gap-add)	外部验证delta计算/配对/GEO解析/映射 gap-P1
+分析	data	2_analysis/data/plot_violin_deltas.py	U:scripts/external_validation/plot_violin_deltas.py		support(gap-add)	外部验证delta计算/配对/GEO解析/映射 gap-P1
+分析	data	2_analysis/data/stats_test_external_deltas.py	U:scripts/external_validation/stats_test_external_deltas.py		support(gap-add)	外部验证delta计算/配对/GEO解析/映射 gap-P1
+分析	data	2_analysis/data/summarize_external_predicted_deltas.py	U:scripts/external_validation/summarize_external_predicted_deltas.py		support(gap-add)	外部验证delta计算/配对/GEO解析/映射 gap-P1

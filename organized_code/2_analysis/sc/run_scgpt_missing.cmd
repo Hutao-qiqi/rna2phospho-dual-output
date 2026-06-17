@@ -1,0 +1,5 @@
+@echo off
+D:
+cd /d D:\data\lsy\vm_lsy_parent\lsy\03_code\single_cell\modeling
+D:\data\lsy\envs\scgpt\python.exe D:\data\lsy\vm_lsy_parent\lsy\03_code\single_cell\modeling\precompute_scgpt_embeddings_multidomain.py --root D:\data\lsy\vm_lsy_parent\lsy --model-dir D:\data\lsy\models\scgpt-human --datasets gse300551_iccite_plex_kinase_2025 signal_seq_gse256403_hela_2024 signal_seq_gse256404_pdo_caf_2024 --output-dir 01_data\single_cell\intermediate\scgpt_embeddings\frozen_multidomain_missing_v1 --batch-size 64 --chunk-size 256 --device cuda:1 --skip-existing > D:\data\lsy\vm_lsy_parent\lsy\02_results\single_cell\20260531_scp682_sc_foundation_model_benchmark_scgpt_missing_embeddings_v1\logs\scgpt_missing_stdout.log 2> D:\data\lsy\vm_lsy_parent\lsy\02_results\single_cell\20260531_scp682_sc_foundation_model_benchmark_scgpt_missing_embeddings_v1\logs\scgpt_missing_stderr.log
+echo %ERRORLEVEL% > D:\data\lsy\vm_lsy_parent\lsy\02_results\single_cell\20260531_scp682_sc_foundation_model_benchmark_scgpt_missing_embeddings_v1\logs\scgpt_missing_exit_code.txt
