@@ -27,7 +27,7 @@
 分析	ppko	tcga_tcpa_ppko_patient_response_v1.py	E:\data\gongke\TCGA-TCPA\tcga_tcpa_ppko_patient_response_v1.py	LW	用V10B strong300对TCGA-TCPA患者做PPKO推断并计算AUC(0.72)，Fig4患者级主分析（canonical）
 分析	ppko	tcga_tcpa_general_score_controls_v1.py	E:\data\gongke\TCGA-TCPA\tcga_tcpa_general_score_controls_v1.py	LW	生成V10B PPKO患者响应预测的随机/全局对照AUC与CI（support，Fig4特异性论证）
 分析	ppko	03_code/clinical_validation/run_ppko_tcga_survival_analysis.py	E:\data\gongke\TCGA-TCPA\03_code\clinical_validation\run_ppko_tcga_survival_analysis.py	L	PPKO V10B TCGA-TCPA患者响应预测与OS生存分析（Cox+KM+logrank），产出Fig4g数据（canonical）
-分析	ppko	paper_materials_SCP682_PPKO/03_code/evaluation/rerun_missing_items.py	E:\data\gongke\TCGA-TCPA\paper_materials_SCP682_PPKO\03_code\evaluation\rerun_missing_items.py	L	重新计算PPKO论文包缺失的P100指定口径/独立队列性能/图统计/超参数表等补充数据（support）
+分析	ppko	2_analysis/ppko/rerun_missing_items.py	E:\data\gongke\TCGA-TCPA\organized_code\2_analysis\ppko\rerun_missing_items.py	L	V10B冻结包补跑调度入口，指向validate_v10b_p100_all_drugs、evaluate_ppko_p100_published_baselines和位点级导出脚本（support）
 分析	ppko	02_results/figure_outputs/fig4_v3/scripts/00_check_packages.R	E:\data\gongke\TCGA-TCPA\02_results\figure_outputs\fig4_v3\scripts\00_check_packages.R	L	检查Fig4出图所需R包是否安装完整（support）
 分析	ppko	02_results/figure_outputs/fig4_v3/scripts/00b_check.R	E:\data\gongke\TCGA-TCPA\02_results\figure_outputs\fig4_v3\scripts\00b_check.R	L	补充检查pheatmap/ggbeeswarm等Fig4额外依赖包（support）
 画图	ppko	03_code/figure_generation/make_scp682_ppko_methods_schematic.py	E:\data\gongke\TCGA-TCPA\03_code\figure_generation\make_scp682_ppko_methods_schematic.py	L	用matplotlib绘制SCP682-PPKO架构示意图（Fig4a schematic，canonical）

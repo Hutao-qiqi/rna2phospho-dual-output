@@ -1,13 +1,14 @@
 from pathlib import Path
 import json
+import os
 import re
 import numpy as np
 import pandas as pd
 
-ROOT = Path(r"D:\data\lsy\vm_lsy_parent\lsy")
-PPKO_OUT = ROOT / "02_results" / "clinical_validation" / "20260527_tcga_tcpa_ppko_patient_response_v1"
+ROOT = Path(os.environ.get("SCP682_DATA_ROOT", r"D:\data\lsy\vm_lsy_parent\lsy" if os.name == "nt" else "/mnt/d/data/lsy/vm_lsy_parent/lsy"))
+PPKO_OUT = ROOT / "02_results" / "clinical_validation" / "20260531_tcga_tcpa_ppko_patient_response_v1_targeted_expanded"
 PAN_RPPA = ROOT / "01_data" / "bulk_external" / "tcpa_rppa500_20260527" / "extracted" / "TCPA_TCGA_RPPA500.tsv"
-OUT = ROOT / "02_results" / "clinical_validation" / "20260527_tcga_tcpa_ppko_patient_response_v1"
+OUT = PPKO_OUT
 
 TARGET_TOTAL_ALIASES = {
     "EGFR": ["EGFR"],

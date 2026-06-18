@@ -13,7 +13,7 @@ from torch import nn
 import torch.nn.functional as F
 
 
-ROOT = Path(r"D:\data\lsy\vm_lsy_parent\lsy")
+ROOT = Path(os.environ.get("SCP682_DATA_ROOT", r"D:\data\lsy\vm_lsy_parent\lsy" if os.name == "nt" else "/mnt/d/data/lsy/vm_lsy_parent/lsy"))
 DEFAULT_INPUT = ROOT / r"01_data\single_cell\intermediate\phospho_perturb\decryptm_comparison_delta_v8"
 DEFAULT_GRAPH = ROOT / r"01_data\pathway_prior\intermediate\global_phosphoprotein_heterograph_v10_measured_string700_top50"
 DEFAULT_OUT = ROOT / r"02_results\single_cell\20260520_scp682_ppko_1_attention_prior_v10b_strong_contrast"
@@ -304,22 +304,26 @@ def main():
             print(json.dumps(row), flush=True)
             if row["site_cosine"] > best["site_cosine"]:
                 best = row
-                torch.save({
+                checkpoint = {
                     "model_state_dict": model.state_dict(),
                     "proteins": proteins.to_dict(orient="records"),
                     "sites": sites.to_dict(orient="records"),
                     "comparisons": comp.to_dict(orient="records"),
                     "args": vars(args),
                     "best": best,
-                }, out / "models" / "scp682_ppko_attention_prior_v10_best.pt")
-    torch.save({
+                }
+                torch.save(checkpoint, out / "models" / "scp682_ppko_v10b_strong300_best.pt")
+                torch.save(checkpoint, out / "models" / "scp682_ppko_attention_prior_v10_best.pt")
+    final_checkpoint = {
         "model_state_dict": model.state_dict(),
         "proteins": proteins.to_dict(orient="records"),
         "sites": sites.to_dict(orient="records"),
         "comparisons": comp.to_dict(orient="records"),
         "args": vars(args),
         "best": best,
-    }, out / "models" / "scp682_ppko_attention_prior_v10_final.pt")
+    }
+    torch.save(final_checkpoint, out / "models" / "scp682_ppko_v10b_strong300_final.pt")
+    torch.save(final_checkpoint, out / "models" / "scp682_ppko_attention_prior_v10_final.pt")
     pd.DataFrame(logs).to_csv(out / "tables" / "training_log.tsv", sep="\t", index=False)
     summary = {
         "model": "attention-prior phosphoprotein manifold V10",

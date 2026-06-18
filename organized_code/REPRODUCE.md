@@ -90,7 +90,7 @@ organized_code/
 **对抗式验证结论**（`reproduction_chains/verify_Fig2..5.md` + `gap_resolution.md`，逐脚本 grep 印证；已全部完成）：
 - **Fig2**：panel g 链最完整。缺口：(d) `analyze_site_attention.py` 产 `site_attention_functional_enrichment.tsv` 但 `panel_d.R` 读 `attn_bar_data.tsv`，名不符、缺转换脚本；(e–g) `run_nmf.py` 读 `20260612_*/X_nmf.npy`，而全 TCGA 推理 `22_repredict_tcga_full_*` 输出在 `20260529_*`，中间 signed-split 矩阵构建步骤无脚本；(c) 文档写"4 外部队列"但定稿 `panel_c.R` 只渲染 3 个；(f) `n=9,102`(有OS子集) vs 文档 10,023 需统一措辞；(b) 唯一产表脚本全为 Ubuntu 绝对路径。
 - **Fig3**：外部推理脚本多指向旧 checkpoint 路径 `20260522_`（非 5 折正式版 `20260529_`），需确认论文 final 用哪个；Blair、Vivo-seq Th17 预处理脚本缺失；m4 图消融(Fig3g)用 SC7 warm-start 而 full model 无，配对基线不齐。
-- **Fig4**：⚠ checkpoint 实名为 `scp682_ppko_attention_prior_v10_best.pt`（非第 3 节原写的 `..._v10b_strong300_best.pt`）；患者响应脚本导入 V10(release_v1) 架构、P100 部分数字实出自 V10 而非 V10B（`rerun_missing_items.py` 注明）；TCGA AUC bootstrap 脚本=`_server_ppko_tcga_stats.py`（已补入 `2_analysis/ppko/`）。
+- **Fig4**：PPKO 已统一到 `SCP682_PPKO_V10B_transferable` 冻结包；训练脚本会输出正式权重 `scp682_ppko_v10b_strong300_best.pt`，并保留旧名别名；P100 全药物验证脚本和 TCGA 患者响应脚本均从冻结包导入 `pretrain_v10b_strong300.py` 与正式权重；TCGA AUC bootstrap 脚本=`_server_ppko_tcga_stats.py`（已补入 `2_analysis/ppko/`）。
 - **Fig5**：panel d(KIRC KM+Cox，BH-FDR+联合Cox LRT) 口径正确、链最完整；panel f(DepMap)/g(全位点模块)/h(PTM-SEA) 上游数据准备脚本**缺失(需新建)**；`20260530_fig5_exact_site_anchor_search_v1` 产出脚本未入册；panel b 仍用 nominal-p(非 BH-q)；文件名残留 `fig5b_`/`fig5d_`/`panel_c_` 历史前缀。
 - **gap_resolution**：28 项 needs_review 在 Ubuntu 暂存下均找到实体；**已补 15 个 support 脚本**入 `2_analysis/{ppko,shared,data}/`（AUC bootstrap、`compute_gsva.R`、TCGA/TCPA 下载与 RNA 预处理 R、外部验证 delta 计算等）。
 

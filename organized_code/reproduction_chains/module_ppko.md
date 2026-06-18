@@ -2,7 +2,7 @@
 
 模块范围：药物扰动算子 PPKO V10B (strong300)、P100 验证 (n=125)、患者级 TCGA-TCPA 响应 (AUC 0.72)、Fig4 全部 panel (a-h) 及 ED baseline 图。
 
-canonical 模型身份：`SCP682_PPKO_V10B_transferable` / `paper_materials_SCP682_PPKO`，架构 `AttentionPriorManifoldV10`，训练 strong300 (300 epoch)，权重 `scp682_ppko_v10b_strong300_best.pt`。
+canonical 模型身份：`SCP682_PPKO_V10B_transferable` / `paper_materials_SCP682_PPKO`，架构 `AttentionPriorManifoldV10`，训练脚本默认 620 epoch，权重 `scp682_ppko_v10b_strong300_best.pt`。
 
 ---
 
@@ -52,7 +52,7 @@ canonical 模型身份：`SCP682_PPKO_V10B_transferable` / `paper_materials_SCP6
 | **canonical 训练（transferable版）** | `SCP682_PPKO_V10B_transferable/scripts/pretrain_v10b_strong300.py` | LW | `decryptm_comparison_delta_v8` + `global_phosphoprotein_heterograph_v10_measured_string700_top50` | `scp682_ppko_v10b_strong300_best.pt` |
 | canonical 训练（paper_materials 版，同架构） | `paper_materials_SCP682_PPKO/03_code/training/pretrain_v10b_strong300.py` | L | 同上 | 同上 |
 
-**版本漂移说明**：`_pretrain_v10.py`（V10 架构，非 strong300）及全部 pre-V10B 版本（v1–v22，包括 cophee_atlas_v6、signed_manifold_v9、context_ppi_v11、scnet_dualview_v12、expert_fusion_v19 等）均已标记为 legacy，不纳入复现集。canonical 以 `pretrain_v10b_strong300.py`（300 epoch + AttentionPriorManifoldV10）为准，两个位置的脚本内容等价，transferable 版为对外分发版。
+**版本漂移说明**：`_pretrain_v10.py`（旧入口）及全部 pre-V10B 版本（v1–v22，包括 cophee_atlas_v6、signed_manifold_v9、context_ppi_v11、scnet_dualview_v12、expert_fusion_v19 等）均已标记为 legacy，不纳入复现集。canonical 以 `pretrain_v10b_strong300.py`（AttentionPriorManifoldV10，默认 620 epoch）为准；训练脚本会输出 `scp682_ppko_v10b_strong300_best.pt`，并保留旧名 checkpoint 作为兼容别名。
 
 ---
 
@@ -72,7 +72,7 @@ canonical 模型身份：`SCP682_PPKO_V10B_transferable` / `paper_materials_SCP6
 |------|------|------|------|
 | V10B vs 已发表基线（评估主脚本） | `03_code/model_validation/evaluate_ppko_p100_published_baselines.py` | LW | `p100_baseline_comparison 表` |
 | Windows 启动包装 | `remote_scripts/run_ppko_p100_published_baselines_windows.cmd` | LW | 同上 |
-| **缺口** | paper_materials 评估补充计算 | L | `paper_materials_SCP682_PPKO/03_code/evaluation/rerun_missing_items.py`（support，补充特定口径） |
+| 当前补跑入口 | V10B 冻结包补跑调度 | L | `2_analysis/ppko/rerun_missing_items.py`（support，指向冻结包验证、P100 基线和位点级导出脚本） |
 
 ### 3-3. P100 全药物集验证（canonical，Fig4c）
 
@@ -131,7 +131,7 @@ Fig4 画图主目录：`02_results/figure_outputs/fig4_v3/scripts/`
 | 缺口 | 说明 |
 |------|------|
 | **Fig4a 正式 SVG** | `11_panel_a_placeholder.R` 只生成占位 ggplot；正式架构示意图由 BioRender SVG 提供，源文件路径未在记录中出现（`make_scp682_ppko_methods_schematic.py` 产出 matplotlib 版，但与论文最终版本的关系需确认） |
-| **P100 已发表基线比较汇总表** | `40_ed_baselines.R` 依赖 `p100_v10b_published_baseline_comparison_summary.tsv`；该表由 `evaluate_ppko_p100_published_baselines.py` + `rerun_missing_items.py` 产出，但 `rerun_missing_items.py` 依赖 `paper_materials_SCP682_PPKO` 目录下的已有评估结果，需要先跑完 `paper_materials_SCP682_PPKO/03_code/evaluation/validate_v10b_p100_all_drugs.py`（records 中标 exploratory，因为用的是 v22 checkpoint 而非 V10B strong300）；需核实该脚本是否已更新为 V10B |
+| **P100 已发表基线比较汇总表** | `40_ed_baselines.R` 依赖 `p100_v10b_published_baseline_comparison_summary.tsv`；该表由 `evaluate_ppko_p100_published_baselines.py` 生成，固定读取 `SCP682_PPKO_V10B_transferable` 冻结权重，并输出到 `results/p100_published_baselines/`。release-v1 补表脚本已归档到 `organized_code/legacy/ppko/`，不作为 Fig4 基线主链路。 |
 | **TCGA 生存分析输入** | `run_ppko_tcga_survival_analysis.py` 需要 `v10b_300_patient_predictions.tsv` 和 `TCGA_survival_data.tsv`，后者来源未在 records 中单独列为一个数据下载/准备脚本（可能直接依赖 TCGA 公开文件） |
 | **Fig4a 图统计数（graph_statistics）** | 异质图节点/边统计（8192 site / 8751 protein 节点，用于 Fig4a 标注）无专用导出脚本，需由 `build_global_phosphoprotein_heterograph_v10.py` 产出的 TSV 直接读数 |
 | **panel_g/h 数据表锁定路径** | `figure_sources/20260528_fig4_locked_p100_v10b_cosine_direction/` 是 `02_load_data.R` 的硬编码路径，该锁定目录是由哪个分析脚本写入的，records 中无直接对应项（可能是 `make_fig4_locked_p100_tables.py` 写出但路径存在差异） |

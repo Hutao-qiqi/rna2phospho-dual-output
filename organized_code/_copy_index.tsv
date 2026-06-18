@@ -219,7 +219,7 @@
 画图	bulk	3_plotting\bulk\_build_panel_c__L.R	paper_materials_SCP682/04_figure_source_data/fig2/_scripts/panels/_build_panel_c.R	L	support	调用 panel_c.R 生成外部 3 队列 benchmark 测试 PDF，panel c 开发辅助脚本
 画图	bulk	3_plotting\bulk\panel_d__L.R	paper_materials_SCP682/04_figure_source_data/fig2/_scripts/panels/panel_d.R	L	canonical	Fig2d 正式 panel：图轴与边源消融 lollipop/bar/forest，数值 hardcoded 来自消融网格结果，为最终 panel d 渲染模块
 画图	bulk	3_plotting\bulk\panel_enrichment_heatmap.R	paper_materials_SCP682/04_figure_source_data/fig2/_scripts/panels/panel_enrichment_heatmap.R	L	support	渲染 top100 vs bottom100 预测位点 Hallmark 超几何富集热图（BH-FDR），供 Extended Data 使用
-分析	ppko	2_analysis\ppko\rerun_missing_items.py	paper_materials_SCP682_PPKO/03_code/evaluation/rerun_missing_items.py	L	support	重新计算 PPKO 论文包缺失的 P100 指定口径、独立队列性能、图统计和超参数表等补充数据
+分析	ppko	2_analysis\ppko\rerun_missing_items.py	organized_code/2_analysis/ppko/rerun_missing_items.py	L	support	V10B冻结包补跑调度入口，指向P100全药物验证、published-baseline评估和位点级导出脚本
 训练	ppko	1_training\ppko\build_global_phosphoprotein_heterograph_v10.py	paper_materials_SCP682_PPKO/03_code/preprocessing/build_global_phosphoprotein_heterograph_v10.py	L	canonical	构建 PPKO V10B 训练所需全局磷酸化蛋白异构图（STRING700 top50），是 pretrain_v10b_strong300 的必需训练前置
 训练	ppko	1_training\ppko\build_joint_decryptm_p100_phospho_inputs.py	paper_materials_SCP682_PPKO/03_code/preprocessing/build_joint_decryptm_p100_phospho_inputs.py	L	canonical	合并 decryptM 与 LINCS P100 磷酸化扰动输入，构建 PPKO V10B 联合训练数据集
 训练	ppko	1_training\ppko\build_signed_phospho_regulatory_prior_v9.py	paper_materials_SCP682_PPKO/03_code/preprocessing/build_signed_phospho_regulatory_prior_v9.py	L	canonical	构建 PPKO 所需有符号磷酸化调控先验图 v9（CoPheeMap+KSTAR+PhosphoSitePlus），是 heterograph_v10 的上游数据准备

@@ -1,12 +1,14 @@
 from pathlib import Path
 import json
 import importlib.util
+import os
 import numpy as np
 import pandas as pd
 import torch
 
-ROOT = Path(r"D:\data\lsy\vm_lsy_parent\lsy")
-PRETRAIN = ROOT / "02_results" / "single_cell" / "20260520_SCP682_PPKO_release_v1" / "scripts" / "pretrain_scp682_ppko_attention_prior_v10.py"
+ROOT = Path(os.environ.get("SCP682_DATA_ROOT", r"D:\data\lsy\vm_lsy_parent\lsy" if os.name == "nt" else "/mnt/d/data/lsy/vm_lsy_parent/lsy"))
+PPKO_PACKAGE = ROOT / "SCP682_PPKO_V10B_transferable"
+PRETRAIN = PPKO_PACKAGE / "scripts" / "pretrain_v10b_strong300.py"
 GRAPH_DIR = ROOT / "01_data" / "pathway_prior" / "intermediate" / "global_phosphoprotein_heterograph_v10_measured_string700_top50"
 TRAIN_DIR = ROOT / "01_data" / "single_cell" / "intermediate" / "phospho_perturb" / "decryptm_comparison_delta_v8"
 PAN_RPPA = ROOT / "01_data" / "bulk_external" / "tcpa_rppa500_20260527" / "extracted" / "TCPA_TCGA_RPPA500.tsv"
@@ -15,7 +17,7 @@ OUT = ROOT / "02_results" / "clinical_validation" / "20260531_tcga_tcpa_ppko_pat
 
 MODELS = {
     "release_v10": ROOT / "02_results" / "single_cell" / "20260520_SCP682_PPKO_release_v1" / "models" / "SCP682_PPKO_best.pt",
-    "v10b_300": ROOT / "02_results" / "single_cell" / "20260520_scp682_ppko_1_attention_prior_v10b_strong_contrast_300" / "models" / "scp682_ppko_attention_prior_v10_best.pt",
+    "v10b_300": PPKO_PACKAGE / "models" / "scp682_ppko_v10b_strong300_best.pt",
 }
 
 DRUG_TARGETS = {
@@ -110,7 +112,7 @@ TCPA_MARKER_GENES = {
 
 
 def load_pretrain_module():
-    spec = importlib.util.spec_from_file_location("ppko_v10", PRETRAIN)
+    spec = importlib.util.spec_from_file_location("ppko_v10b", PRETRAIN)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
