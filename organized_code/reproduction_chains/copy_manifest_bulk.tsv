@@ -4,7 +4,7 @@
 训练	bulk	paper_materials_SCP682/03_code/training/launch_scp682_missing_ablation_grid_e40.sh	E:\data\gongke\TCGA-TCPA\paper_materials_SCP682\03_code\training\launch_scp682_missing_ablation_grid_e40.sh	LU	启动canonical 6组双轴×边源消融40 epoch训练，Fig2d正式消融入口
 训练	bulk	remote_scripts/launch_scp682_general_graph_residual_e160.sh	E:\data\gongke\TCGA-TCPA\remote_scripts\launch_scp682_general_graph_residual_e160.sh	LU	canonical train_scp682_general_graph_residual.py 160 epoch训练启动（论文包单冻结baseline版）
 训练	bulk	remote_scripts/launch_scp682_missing_ablation_grid_e40.sh	E:\data\gongke\TCGA-TCPA\remote_scripts\launch_scp682_missing_ablation_grid_e40.sh	LU	canonical 6组消融40 epoch训练启动（Fig2d消融）
-训练	bulk	03_code/model_validation/training/train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\training\train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py	LU	B_phi冻结基线组件训练：CPTAC总蛋白FiLM+VAE_z直接残差v2，被exact_scnet引用
+训练	bulk	03_code/model_validation/training/train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\training\train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py	LU	S_phi冻结状态估计器内部组件训练：CPTAC总蛋白FiLM+VAE_z直接残差v2，被图残差算子引用
 训练	bulk	portable_src/scp682_graph_runtime.py	E:\data\gongke\TCGA-TCPA\portable_src\scp682_graph_runtime.py	LUW	SCP682图残差runtime引擎：SCP682GraphDecoder(baseline+0.3*delta)+SCP682GraphRuntime推理核心
 训练	bulk	portable_src/scp682_v4_engine.py	E:\data\gongke\TCGA-TCPA\portable_src\scp682_v4_engine.py	LUW	SCP682 v4 baseline引擎封装：加载CPTAC多任务冻结baseline并推理
 训练	bulk	remote_scripts/launch_scp682_consistent_graph_controls_e160_windows.py	E:\data\gongke\TCGA-TCPA\remote_scripts\launch_scp682_consistent_graph_controls_e160_windows.py	LW	Windows并行启动7组图控制消融训练，对应Fig2d图消融
@@ -21,7 +21,7 @@
 分析	bulk	03_code/model_validation/prepare_cptac_phosphosite_gene_site_locked_v1.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\prepare_cptac_phosphosite_gene_site_locked_v1.py	LU	对CPTAC磷酸化位点做study-wise z-score标准化并锁定为v1训练标签
 分析	bulk	03_code/model_validation/data_preparation/prepare_cptac_multi_task_locked_v2_20260429.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\data_preparation\prepare_cptac_multi_task_locked_v2_20260429.py	LU	为canonical bulk SCP682训练构建锁定版v2 CPTAC多任务输入矩阵
 分析	bulk	03_code/model_validation/prepare_gsea_pathway_aux_labels.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\prepare_gsea_pathway_aux_labels.py	LU	从RNA表达构建Hallmark和信号通路辅助标签供模型训练使用，Fig2b
-分析	bulk	03_code/model_validation/scp682_v4_0_input_guard_and_sample_centering_20260503.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\scp682_v4_0_input_guard_and_sample_centering_20260503.py	LU	SCP682 v4.0部署输入特征验证与样本中位数中心化预处理工具，canonical链support
+分析	bulk	03_code/model_validation/scp682_v4_0_input_guard_and_sample_centering_20260503.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\scp682_v4_0_input_guard_and_sample_centering_20260503.py	LU	S_phi状态估计器输入特征验证与样本中位数中心化预处理工具，canonical链support
 分析	bulk	03_code/model_validation/run_deepgxp_cptac_half_retrain_20260511.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\run_deepgxp_cptac_half_retrain_20260511.py	LU	CPTAC上半量重训练DeepGxP基线，产出Fig2b/2c所需DeepGxP比较结果
 分析	bulk	03_code/model_validation/run_deepgxp_tcpa_reproduction_20260507.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\run_deepgxp_tcpa_reproduction_20260507.py	LU	在TCGA-TCPA RPPA上复现DeepGxP获得参考baseline(ref17，Fig2b比较器)
 分析	bulk	03_code/model_validation/run_srivastava_lau2022_rppa_baseline.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\run_srivastava_lau2022_rppa_baseline.py	LU	在TCGA RPPA上适配Srivastava/Lau2022 RNA-to-蛋白基线，用于Fig2b对照
@@ -29,7 +29,7 @@
 分析	bulk	03_code/model_validation/run_lau2022_total_protein_protocol_controls_20260504.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\run_lau2022_total_protein_protocol_controls_20260504.py	LU	Lau-style总蛋白协议对照(logratio vs study-zscore)，Fig2c
 分析	bulk	03_code/model_validation/run_lau2022_total_protein_protocol_controls_fast_ridge_20260504.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\run_lau2022_total_protein_protocol_controls_fast_ridge_20260504.py	LU	Ridge矩阵快速版Lau-style总蛋白协议对照，Fig2c
 分析	bulk	03_code/model_validation/run_scp682_2_lau_total_benchmark_and_external_20260505.py	E:\data\gongke\TCGA-TCPA\03_code\model_validation\run_scp682_2_lau_total_benchmark_and_external_20260505.py	LU	Lau-style总蛋白协议并对外部队列评估，生成Fig2c外部benchmark比较基线
-分析	bulk	03_code/model_interpretation/build_scp682_bulk_main_panels.py	E:\data\gongke\TCGA-TCPA\03_code\model_interpretation\build_scp682_bulk_main_panels.py	LU	基于canonical SCP682-22 OOF构建bulk主分析面板(per-site Spearman多基线对比)，Fig2b
+分析	bulk	03_code/model_interpretation/build_scp682_bulk_main_panels.py	E:\data\gongke\TCGA-TCPA\03_code\model_interpretation\build_scp682_bulk_main_panels.py	LU	基于canonical SCP682 main OOF构建bulk主分析面板(per-site Spearman多基线对比)，Fig2b
 分析	bulk	paper_materials_SCP682/03_code/training/run_scp682_oof_branch_benchmark.py	E:\data\gongke\TCGA-TCPA\paper_materials_SCP682\03_code\training\run_scp682_oof_branch_benchmark.py	LU	计算Fig2b五种RNA基线OOF Spearman，供SCP682 benchmark对比
 分析	bulk	paper_materials_SCP682/03_code/training/run_scp682_shrinkage_sensitivity_grid.py	E:\data\gongke\TCGA-TCPA\paper_materials_SCP682\03_code\training\run_scp682_shrinkage_sensitivity_grid.py	LU	α=0~1.0网格扫描baseline+α*delta公式，产出Fig2a α-scan支撑数据（确认α=0.3最优）
 分析	bulk	paper_materials_SCP682/03_code/training/summarize_scp682_missing_ablation_grid.py	E:\data\gongke\TCGA-TCPA\paper_materials_SCP682\03_code\training\summarize_scp682_missing_ablation_grid.py	LU	聚合missing ablation网格各run指标到单一汇总表，供Fig2d消融对比
@@ -57,10 +57,10 @@
 分析	bulk	remote_scripts/launch_scp682_site_attention_export_e160.sh	E:\data\gongke\TCGA-TCPA\remote_scripts\launch_scp682_site_attention_export_e160.sh	LU	启动export_scp682_site_attention.py从canonical权重导出磷酸化位点图边注意力，Fig2d
 分析	bulk	remote_scripts/audit_original_copheemap_local.py	E:\data\gongke\TCGA-TCPA\remote_scripts\audit_original_copheemap_local.py	L	本地审计CoPheeMap/CoPheeKSA/n2v原始文件与SCP682靶位点重叠覆盖率（图先验质控）
 分析	bulk	remote_scripts/audit_original_gnn_tables.py	E:\data\gongke\TCGA-TCPA\remote_scripts\audit_original_gnn_tables.py	LU	远程服务器审计CoPheeMap/n2v/KSA与SCP682靶点重叠配套版本
-分析	bulk	remote_scripts/inspect_scp682_benchmark_inputs.py	E:\data\gongke\TCGA-TCPA\remote_scripts\inspect_scp682_benchmark_inputs.py	LU	核查SCP682-22论文包中benchmark输入数据的结构（Fig2b数据验证工具）
+分析	bulk	remote_scripts/inspect_scp682_benchmark_inputs.py	E:\data\gongke\TCGA-TCPA\remote_scripts\inspect_scp682_benchmark_inputs.py	LU	核查SCP682 main论文包中benchmark输入数据的结构（Fig2b数据验证工具）
 分析	bulk	remote_scripts/extract_scp682_paper_materials.py	E:\data\gongke\TCGA-TCPA\remote_scripts\extract_scp682_paper_materials.py	LU	汇集bulk模型论文所需文件（结果表、代码、性能文件）打包成paper_materials_SCP682目录
 分析	bulk	03_code/rna2phospho_web/predict_uploaded_bulk.py	E:\data\gongke\TCGA-TCPA\03_code\rna2phospho_web\predict_uploaded_bulk.py	LU	SCP682 web服务实际推断脚本：加载canonical权重，对用户上传bulk RNA执行推理
-分析	bulk	03_code/rna2phospho_web/app.py	E:\data\gongke\TCGA-TCPA\03_code\rna2phospho_web\app.py	LU	SCP682 FastAPI web服务主入口，依赖SCP682-22 canonical权重
+分析	bulk	03_code/rna2phospho_web/app.py	E:\data\gongke\TCGA-TCPA\03_code\rna2phospho_web\app.py	LU	SCP682 FastAPI web服务主入口，依赖SCP682 main portable权重
 分析	bulk	03_code/rna2phospho_web/server_stdlib.py	E:\data\gongke\TCGA-TCPA\03_code\rna2phospho_web\server_stdlib.py	LU	Python标准库HTTP版SCP682 web服务，与app.py功能等价
 分析	bulk	03_code/rna2phospho_web/start_scp682_server.sh	E:\data\gongke\TCGA-TCPA\03_code\rna2phospho_web\start_scp682_server.sh	LU	启动SCP682 web服务并写PID/log，做健康检查验证
 分析	atlas	02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/run_nmf.py	E:\data\gongke\TCGA-TCPA\02_results\model_validation\20260612_tcga_pancancer_nmf_v1\scripts\run_nmf.py	L	对TCGA泛癌SCP682预测磷酸组运行signed-split NMF(k=30主+k=20/40稳健性)，产出W/H矩阵

@@ -19,7 +19,7 @@ def show(path: Path) -> None:
 
 
 base = Path("/data/lsy/Infinite_Stream")
-pkg = base / "SCP682-22/frozen_release/SCP682_22_paper_package_20260520"
+pkg = base / "SCP682_PORTABLE"
 
 paths = [
     pkg / "training_set/observed_phosphosite.parquet",
@@ -28,8 +28,8 @@ paths = [
     pkg / "training_set/oof_candidate_rna_direct_phosphosite.parquet",
     pkg / "training_set/sample_manifest.tsv",
     pkg / "training_set/phosphosite_target_manifest.tsv",
-    base / "SCP682-22/results/20260516_cancer_group_pathway_residual_s0p3/predictions/scp682_22_cancer_group_pathway_residual_s0p3_oof_phosphosite.parquet",
-    base / "SCP682-22/results/20260516_cancer_group_pathway_residual_s0p3/tables/scp682_22_per_site_spearman.tsv",
+    pkg / "predictions/scp682_main_oof_phosphosite.parquet",
+    pkg / "performance/per_site_spearman.tsv",
     base / "SCP682/02_results/model_validation/20260503_cptac_phosphosite_robust_stacking_v3_9/predictions/oof_candidate_v3_9_sample_centered_robust_equal_plus_cvae_0_2_phosphosite.parquet",
     base / "01_data/pathway_prior/processed/kinase_substrate_prior_for_modeling_v1.tsv",
     base / "01_data/pathway_prior/processed/copheemap_v1/copheeksa_model_phosphosite_kinase_predictions.tsv",
@@ -37,3 +37,4 @@ paths = [
 
 for path in paths:
     show(path)
+

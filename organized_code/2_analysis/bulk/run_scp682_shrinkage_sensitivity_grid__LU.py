@@ -12,7 +12,7 @@ import pandas as pd
 
 
 ROOT = Path("/data/lsy/Infinite_Stream")
-DEFAULT_PACKAGE = ROOT / "SCP682-22/frozen_release/SCP682_22_paper_package_20260520"
+DEFAULT_PACKAGE = ROOT / "SCP682_PORTABLE"
 DEFAULT_BASELINE = ROOT / "SCP682-main/inputs/general_baseline_predictions/general_baseline_internal_cptac_pdc_phosphosite.parquet"
 DEFAULT_MAIN = ROOT / "SCP682-main/results/20260523_general_graph_residual_e160"
 DEFAULT_OUT = ROOT / "SCP682-main/results/20260523_shrinkage_sensitivity_grid"
@@ -113,3 +113,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

@@ -143,7 +143,7 @@ def main() -> int:
         pred = graph_out["scp682"]
         delta = graph_out["graph_delta"]
         pred.to_parquet(OUT / "predictions" / f"{key}_scp682_consistent_phosphosite.parquet")
-        baseline.to_parquet(OUT / "predictions" / f"{key}_B_phi.parquet")
+        baseline.to_parquet(OUT / "predictions" / f"{key}_S_phi.parquet")
         delta.to_parquet(OUT / "predictions" / f"{key}_U_theta.parquet")
 
         per_site, n_samples, n_targets = per_site_spearman(pred, observed)
@@ -186,7 +186,7 @@ def main() -> int:
     (OUT / "reports" / "run_summary.json").write_text(
         json.dumps(
             {
-                "formula": "Y_hat=B_phi+0.3*U_theta",
+                "formula": "Y_hat=S_phi+0.3*U_theta",
                 "runtime_state": str(PACKAGE / "models/scp682_graph_runtime_state.pt"),
                 "summary": str(OUT / "tables/external_summary.tsv"),
                 "fig2_panel_c_data": str(OUT / "tables/fig2_panel_c_data.tsv"),

@@ -36,7 +36,7 @@
 分析	ppko	2_analysis\ppko\make_pxd063604_reusable_candidate_tables.py	03_code/figure_generation/make_pxd063604_reusable_candidate_tables.py	L	canonical	从 PXD063604/CoPheeAtlas 生成可复用 KRAS 通路节点汇总表（Fig4 数据准备）
 画图	ppko	3_plotting\ppko\make_pxd063604_v10b_mechanism_panels.py	03_code/figure_generation/make_pxd063604_v10b_mechanism_panels.py	LW	canonical	渲染 Fig4 PPKO PXD063604 KRAS抑制外部验证机制面板
 画图	ppko	3_plotting\ppko\make_scp682_ppko_methods_schematic.py	03_code/figure_generation/make_scp682_ppko_methods_schematic.py	L	canonical	用 matplotlib 绘制 SCP682-PPKO 架构示意图（Fig4a schematic）
-分析	bulk	2_analysis\bulk\build_scp682_bulk_main_panels.py	03_code/model_interpretation/build_scp682_bulk_main_panels.py	LU	canonical	基于 canonical SCP682-22 OOF 构建 bulk 主分析面板（per-site Spearman 多基线对比）
+分析	bulk	2_analysis\bulk\build_scp682_bulk_main_panels.py	03_code/model_interpretation/build_scp682_bulk_main_panels.py	LU	canonical	基于 canonical SCP682 main OOF 构建 bulk 主分析面板（per-site Spearman 多基线对比）
 分析	bulk	2_analysis\bulk\audit_scp682_final_model_contract_20260501.py	03_code/model_validation/audit_scp682_final_model_contract_20260501.py	LU	support	审计SCP682 v1.0模型合约：CPTAC v2 vs TCPA 32项目覆盖度
 分析	data	2_analysis\data\audit_tcpa_32_project_data_contract_20260501.py	03_code/model_validation/audit_tcpa_32_project_data_contract_20260501.py	LU	support	核查TCPA 32项目RNA/RPPA匹配缺口并生成GDC下载清单
 分析	data	2_analysis\data\build_tcpa_32_project_rna_rppa_contract_20260501.py	03_code/model_validation/build_tcpa_32_project_rna_rppa_contract_20260501.py	LU	support	为TCGA-TCPA 32项目下载缺失RNA并构建RNA/RPPA配对锁定矩阵
@@ -71,10 +71,10 @@
 分析	bulk	2_analysis\bulk\run_srivastava_lau2022_rppa_baseline.py	03_code/model_validation/run_srivastava_lau2022_rppa_baseline.py	LU	support	在TCGA RPPA上适配Srivastava/Lau2022 RNA-to-蛋白基线(ElasticNet/Ridge/RF/GB)，用于Fig2b对照
 分析	clinical	2_analysis\clinical\run_tcga_existing_predicted_site_survival_concordance_20260527.py	03_code/model_validation/run_tcga_existing_predicted_site_survival_concordance_20260527.py	LU	support	验证CPTAC实测位点生存信号在SCP682 TCGA预测磷酸化中的一致性（Fig5 pS6 BH-FDR候选验证）
 分析	clinical	2_analysis\clinical\run_tcga_predicted_site_survival_concordance_20260527.py	03_code/model_validation/run_tcga_predicted_site_survival_concordance_20260527.py	L	support	在SCP682 TCGA预测磷酸化上运行癌症特异性位点Cox生存筛查并与RNA/总蛋白null对照（Fig5 KIRC pS6 BH-FDR主线）
-分析	bulk	2_analysis\bulk\scp682_v4_0_input_guard_and_sample_centering_20260503.py	03_code/model_validation/scp682_v4_0_input_guard_and_sample_centering_20260503.py	LU	support	SCP682 v4.0部署时输入特征验证与样本中位数中心化预处理工具（canonical链support）
-训练	bulk	1_training\bulk\train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py	03_code/model_validation/training/train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py	LU	support	CPTAC总蛋白FiLM+VAE_z直接残差v2，产出SCP682-22 exact_scnet所冻结引用的v4 baseline组件
-分析	bulk	2_analysis\bulk\app.py	03_code/rna2phospho_web/app.py	LU	support	SCP682 FastAPI web服务主入口：提供bulk RNA上传推断API、atlas预测文件下载、任务状态查询；依赖SCP682-22 canonical权重，是canonical模型的对外部署支撑
-分析	bulk	2_analysis\bulk\predict_uploaded_bulk.py	03_code/rna2phospho_web/predict_uploaded_bulk.py	LU	support	SCP682 web服务的实际推断脚本：加载SCP682-22 canonical权重，对用户上传bulk RNA执行输入QC(log2TPM验证)和磷酸化预测
+分析	bulk	2_analysis\bulk\scp682_v4_0_input_guard_and_sample_centering_20260503.py	03_code/model_validation/scp682_v4_0_input_guard_and_sample_centering_20260503.py	LU	support	SCP682 S_phi 状态估计器部署时输入特征验证与样本中位数中心化预处理工具（canonical链support）
+训练	bulk	1_training\bulk\train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py	03_code/model_validation/training/train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py	LU	support	CPTAC总蛋白FiLM+VAE_z直接残差v2，产出SCP682 main graph-residual所冻结引用的S_phi 状态估计器内部组件
+分析	bulk	2_analysis\bulk\app.py	03_code/rna2phospho_web/app.py	LU	support	SCP682 FastAPI web服务主入口：提供bulk RNA上传推断API、atlas预测文件下载、任务状态查询；依赖SCP682 main权重，是canonical模型的对外部署支撑
+分析	bulk	2_analysis\bulk\predict_uploaded_bulk.py	03_code/rna2phospho_web/predict_uploaded_bulk.py	LU	support	SCP682 web服务的实际推断脚本：加载SCP682 main权重，对用户上传bulk RNA执行输入QC(log2TPM验证)和磷酸化预测
 分析	bulk	2_analysis\bulk\server_stdlib.py	03_code/rna2phospho_web/server_stdlib.py	LU	support	使用Python标准库ThreadingHTTPServer实现的SCP682 web服务(无fastapi依赖)，功能与app.py等价
 分析	bulk	2_analysis\bulk\smoke_test_scp682_api.py	03_code/rna2phospho_web/smoke_test_scp682_api.py	L	support	对SCP682 web API进行端到端冒烟测试，验证上传推断流程正确性
 分析	bulk	2_analysis\bulk\start_scp682_server.sh	03_code/rna2phospho_web/start_scp682_server.sh	LU	support	启动SCP682 web服务并写PID/log，做/api/health健康检查验证
@@ -229,7 +229,7 @@
 画图	sc	3_plotting\sc\generate_fig3.py	paper_materials_SCP682_SC11/03_code/generate_fig3.py	L	canonical	生成 SCP682-SC Fig3 全部 panel 的图源表和 SVG（外部验证/基线/消融/UMAP），是 Fig3 正式画图脚本
 画图	sc	3_plotting\sc\generate_scp682_sc11_all_visualizations.py	paper_materials_SCP682_SC11/03_code/generate_scp682_sc11_all_visualizations.py	L	support	生成 SC11 论文候选可视化全套面板（外部验证/注意力/通路/UMAP 等），供图稿筛选
 分析	sc	2_analysis\sc\export_sc11_external_predicted_observed_all.py	paper_materials_SCP682_SC11/03_code/inference/export_sc11_external_predicted_observed_all.py	LW	canonical	导出 SC11 五外部验证队列的逐细胞预测/实测明细和 per-target Spearman，产出 Fig3b/c/f 数据源
-训练	sc	1_training\sc\export_scp682_main_sc_transfer_prior.py	paper_materials_SCP682_SC11/03_code/preprocessing/export_scp682_main_sc_transfer_prior.py	LW	canonical	从 bulk canonical SCP682-22 抽取 teacher transfer prior（site attention+bulk Spearman），是 SC11 训练的必需数据准备前置步骤
+训练	sc	1_training\sc\export_scp682_main_sc_transfer_prior.py	paper_materials_SCP682_SC11/03_code/preprocessing/export_scp682_main_sc_transfer_prior.py	LW	canonical	从 bulk canonical SCP682 main 抽取 teacher transfer prior（site attention+bulk Spearman），是 SC11 训练的必需数据准备前置步骤
 训练	sc	1_training\sc\run_scp682_sc11_formal_internal_5fold.bat	paper_materials_SCP682_SC11/03_code/training/run_scp682_sc11_formal_internal_5fold.bat	L	canonical	SC11 正式五折交叉验证启动脚本：先 export prior 再循环 5 fold 训练 + summarize，产出 Fig3b 0.469 中位数
 训练	sc	1_training\sc\run_scp682_sc11_formal.bat	paper_materials_SCP682_SC11/03_code/training/run_scp682_sc11_formal.bat	L	canonical	SC11 正式单次训练启动脚本（warm-start from SC7，pathway-token transfer），产出论文最终 SC11 权重和全部外部验证结果
 训练	sc	1_training\sc\run_scp682_sc11_no_site_graph_matched_ablation.bat	paper_materials_SCP682_SC11/03_code/training/run_scp682_sc11_no_site_graph_matched_ablation.bat	L	canonical	启动SC11无site-graph消融训练（site-graph-weight=0）复现Fig3g图残差贡献对照
@@ -283,7 +283,7 @@
 分析	sc	2_analysis\sc\inspect_gse300551_iccite_plex.py	remote_scripts/inspect_gse300551_iccite_plex.py	LW	support	检查 GSE300551 icCITE-plex 原始数据结构（SC 外部验证数据准备工具）
 分析	sc	2_analysis\sc\inspect_hela_evaluable_sites.py	remote_scripts/inspect_hela_evaluable_sites.py	LW	support	统计 HeLa 数据集中各输入目录下可评估 phosphosite 的数量与映射关系
 分析	sc	2_analysis\sc\inspect_iccite_seq_tcell_2025.py	remote_scripts/inspect_iccite_seq_tcell_2025.py	LW	support	检查 iccite T细胞 2025 数据集的 RNA/phospho/intra 矩阵维度与特征
-分析	bulk	2_analysis\bulk\inspect_scp682_benchmark_inputs.py	remote_scripts/inspect_scp682_benchmark_inputs.py	LU	support	核查 SCP682-22 论文包中 benchmark 输入数据的结构（Fig2b 数据验证工具）
+分析	bulk	2_analysis\bulk\inspect_scp682_benchmark_inputs.py	remote_scripts/inspect_scp682_benchmark_inputs.py	LU	support	核查 SCP682 main 论文包中 benchmark 输入数据的结构（Fig2b 数据验证工具）
 分析	bulk	2_analysis\bulk\inspect_scp682_portable_runtime.py	remote_scripts/inspect_scp682_portable_runtime.py	LW	support	检查 SCP682_PORTABLE 运行时状态文件的张量形状与键结构
 分析	ppko	2_analysis\ppko\inspect_signed_phospho_prior.py	remote_scripts/inspect_signed_phospho_prior.py	LW	support	检查 canonical V10B 所需 signed 磷酸化调控先验 v9 的边数与符号分布
 分析	bulk	2_analysis\bulk\launch_external_bulk_large_validation_assets_v2_download_schtask.ps1	remote_scripts/launch_external_bulk_large_validation_assets_v2_download_schtask.ps1	LW	support	创建并运行 Windows 计划任务下载外部 bulk 验证大文件（Fig2c 数据获取）
@@ -338,7 +338,7 @@
 分析	bulk	2_analysis\bulk\run_scp682_m4_wsl_foreground.sh	remote_scripts/run_scp682_m4_wsl_foreground.sh	LW	canonical	WSL前台启动bulk图消融(degree_rewire)训练的Shell包装，属Fig2d/ED图边源消融canonical复现链
 分析	bulk	2_analysis\bulk\run_scp682_main_external_fig2c_additional_20260530.py	remote_scripts/run_scp682_main_external_fig2c_additional_20260530.py	LU	canonical	调用冻结SCP682 PORTABLE对Apollo-LUAD和CAS-LUAD两个额外外部队列进行推理，补充Fig2c外部验证数据
 分析	bulk	2_analysis\bulk\run_scp682_ml_baseline_benchmark.py	remote_scripts/run_scp682_ml_baseline_benchmark.py	LU	canonical	在CPTAC上跑全套ML baseline OOF benchmark(9方法)，产出Fig2b所需per-site Spearman对比表格
-分析	bulk	2_analysis\bulk\run_scp682_oof_branch_benchmark__LU.py	remote_scripts/run_scp682_oof_branch_benchmark.py	LU	canonical	比较SCP682-22内部各baseline分支(parent_only/ridge/rna_direct/general)的OOF Spearman，支撑Fig2b分支消融说明
+分析	bulk	2_analysis\bulk\run_scp682_oof_branch_benchmark__LU.py	remote_scripts/run_scp682_oof_branch_benchmark.py	LU	canonical	比较SCP682 main内部各baseline分支(parent_only/ridge/rna_direct/general)的OOF Spearman，支撑Fig2b分支消融说明
 分析	bulk	2_analysis\bulk\run_scp682_reviewer_benchmarks.py	remote_scripts/run_scp682_reviewer_benchmarks.py	LU	canonical	计算SCP682 vs 各baseline的head-to-head per-site Spearman和paired Wilcoxon，响应审稿人要求的严格统计检验
 分析	bulk	2_analysis\bulk\run_scp682_reviewer_strict_holdout_extra.py	remote_scripts/run_scp682_reviewer_strict_holdout_extra.py	LU	canonical	对HNSCC/STAD额外cancer-type holdout复现评估，比较SCP682 vs v4_official，响应审稿人严格holdout要求
 分析	bulk	2_analysis\bulk\run_scp682_reviewer_strict_holdout.py	remote_scripts/run_scp682_reviewer_strict_holdout.py	LU	canonical	对GBM/PDA cancer-type holdout评估，比较SCP682 vs v4_official，响应审稿人严格holdout验证要求
@@ -380,9 +380,9 @@
 分析	bulk	2_analysis\bulk\export_graph_runtime_state__LW.py	SCP682_PORTABLE/scripts/export_graph_runtime_state.py	LW	canonical	从canonical bulk权重导出图运行时状态（row/col嵌入+decoder参数），供portable推理包使用
 训练	bulk	1_training\bulk\run_scp682_consistent_shrinkage_loss_gpu0.cmd	SCP682_PORTABLE/scripts/run_scp682_consistent_shrinkage_loss_gpu0.cmd	LW	canonical	CMD批处理启动PORTABLE canonical bulk训练（consistent-loss版，shrinkage=0.3，160 epochs）
 训练	bulk	1_training\bulk\train_scp682_main_v4_exact_scnet_gnn_consistent_loss.py	SCP682_PORTABLE/scripts/train_scp682_main_v4_exact_scnet_gnn_consistent_loss.py	LW	canonical	PORTABLE生产canonical bulk训练脚本（consistent-loss版，与remote_scripts/exact_scnet_gnn_v1同核）
-分析	bulk	2_analysis\bulk\scp682_v4_0_input_guard_and_sample_centering_20260503__LUW.py	SCP682_PORTABLE/v4_baseline_release/scripts/scp682_v4_0_input_guard_and_sample_centering_20260503.py	LUW	canonical	bulk canonical baseline推理前输入守卫与样本中位数中心化预处理，v4.0部署必需步骤
-分析	bulk	2_analysis\bulk\predict_scp682_v4_0_public_bulk_20260508.py	SCP682_PORTABLE/v4_engine/code/predict_scp682_v4_0_public_bulk_20260508.py	LU	canonical	SCP682 v4.0公共bulk磷酸化图谱推理：对cBioPortal数据集批量预测，用于外部验证与泛癌图谱
-训练	bulk	1_training\bulk\train_cptac_joint_total_phosphosite_residual_nas_v2_20260429.py	SCP682_PORTABLE/v4_engine/code/train_cptac_joint_total_phosphosite_residual_nas_v2_20260429.py	LU	canonical	训练bulk canonical v4 baseline组件（FiLM条件化残差NAS搜索），为exact_scnet_gnn提供冻结baseline
+分析	bulk	2_analysis\bulk\scp682_v4_0_input_guard_and_sample_centering_20260503__LUW.py	SCP682_PORTABLE/v4_baseline_release/scripts/scp682_v4_0_input_guard_and_sample_centering_20260503.py	LUW	canonical	bulk canonical baseline推理前输入守卫与样本中位数中心化预处理，S_phi 状态估计器部署必需步骤
+分析	bulk	2_analysis\bulk\predict_scp682_v4_0_public_bulk_20260508.py	SCP682_PORTABLE/v4_engine/code/predict_scp682_v4_0_public_bulk_20260508.py	LU	canonical	SCP682 S_phi公共bulk磷酸化图谱推理：对cBioPortal数据集批量预测，用于外部验证与泛癌图谱
+训练	bulk	1_training\bulk\train_cptac_joint_total_phosphosite_residual_nas_v2_20260429.py	SCP682_PORTABLE/v4_engine/code/train_cptac_joint_total_phosphosite_residual_nas_v2_20260429.py	LU	canonical	训练bulk canonical S_phi 状态估计器内部组件（FiLM条件化残差NAS搜索），为exact_scnet_gnn提供冻结baseline
 训练	ppko	1_training\ppko\pretrain_v10b_strong300__LW.py	SCP682_PPKO_V10B_transferable/scripts/pretrain_v10b_strong300.py	LW	canonical	canonical PPKO训练脚本：AttentionPriorManifoldV10异构图+strong300配置（V10B canonical）
 分析	ppko	2_analysis\ppko\validate_v10b_p100_all_drugs.py	SCP682_PPKO_V10B_transferable/scripts/validate_v10b_p100_all_drugs.py	LW	canonical	canonical V10B PPKO模型在P100全药物集上的验证（n=125，AUC 0.72来源实验）
 分析	ppko	2_analysis\ppko\tcga_tcpa_general_score_controls_v1.py	tcga_tcpa_general_score_controls_v1.py	LW	support	生成 V10B PPKO 患者响应预测的随机/全局磷酸化基线对照 AUC 与置信区间以支持 Fig4 特异性论证

@@ -22,10 +22,10 @@ ATLAS = ROOT / "02_results/public_bulk_phosphoproteome_atlas/20260430_fixed_v2_b
 TCPA_ALL_TCGA = ROOT / "02_results/model_prediction/20260428_tcpa_rppa_film_vae_z_direct_residual_all_tcga_predictions_v1"
 MODEL_CONTRACT = ROOT / "SCP682/SCP682_model_contract.json"
 CURRENT_MODEL = ROOT / "SCP682_CURRENT.json"
-FINAL_RELEASE_DIR = ROOT / "SCP682-22/frozen_release/SCP682_final_20260518_scp682_22"
+FINAL_RELEASE_DIR = ROOT / "SCP682_PORTABLE"
 FINAL_PACKAGE = FINAL_RELEASE_DIR.with_suffix(".tar")
 FINAL_PACKAGE_SHA256 = FINAL_PACKAGE.with_suffix(".tar.sha256")
-PREDICT_SCRIPT = APP_DIR / "predict_uploaded_bulk.py"
+PREDICT_SCRIPT = APP_DIR / "predict_scp682.py"
 JOBS_DIR = ROOT / "02_results/public_bulk_phosphoproteome_atlas/web_user_jobs"
 MODEL_FULL_NAME = "Sample-centered Cross-platform Proteome and Phosphoproteome Predictor from Bulk RNA"
 
@@ -199,7 +199,7 @@ def health() -> dict:
         "final_release_dir": str(FINAL_RELEASE_DIR),
         "final_package": str(FINAL_PACKAGE),
         "final_package_exists": FINAL_PACKAGE.exists(),
-        "upload_prediction_status": "release_site_only_for_scp682_22; uploaded CPTAC/PDC inference is not exposed in this runner",
+        "upload_prediction_status": "current_main_predictor_available",
         "atlas_dir": str(ATLAS),
         "model_contract": str(MODEL_CONTRACT),
         "predict_script": str(PREDICT_SCRIPT),

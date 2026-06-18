@@ -103,7 +103,7 @@ def main() -> int:
             {
                 "dataset": args.dataset,
                 "gamma": float(gamma),
-                "effective_formula": "Y_hat(gamma)=B_phi+gamma*U_theta",
+                "effective_formula": "Y_hat(gamma)=S_phi+gamma*U_theta",
                 "n_samples": int(len(samples)),
                 "n_targets": int(len(targets)),
                 "targets_tested": int(site["spearman"].notna().sum()),
@@ -142,7 +142,7 @@ def main() -> int:
     )
     report = {
         "dataset": args.dataset,
-        "formula": "Y_hat(gamma)=B_phi+gamma*U_theta",
+        "formula": "Y_hat(gamma)=S_phi+gamma*U_theta",
         "release_gamma": release_lambda,
         "source_baseline": str(baseline_path),
         "source_main_prediction": str(main_path),

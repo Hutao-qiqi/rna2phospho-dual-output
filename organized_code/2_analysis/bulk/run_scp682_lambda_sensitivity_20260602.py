@@ -198,7 +198,7 @@ def main() -> int:
     released.to_csv(OUT / "tables/lambda_sensitivity_released_lambda_rows.tsv", sep="\t", index=False)
 
     report = {
-        "formula": "phosphosite_hat(lambda) = B_phi + lambda * Delta_theta",
+        "formula": "phosphosite_hat(lambda) = S_phi + lambda * Delta_theta",
         "released_lambda": REFERENCE_LAMBDA,
         "lambda_grid": LAMBDA_GRID,
         "summary": str(OUT / "tables/lambda_sensitivity_summary.tsv"),

@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 
 
 BASE = Path("/data/lsy/Infinite_Stream")
-PKG = BASE / "SCP682-22/frozen_release/SCP682_22_paper_package_20260520"
+PKG = BASE / "SCP682_PORTABLE"
 OUT = BASE / "02_results/model_validation/20260520_scp682_reviewer_kinpred_rna_style"
 TABLES = OUT / "tables"
 LOGS = OUT / "logs"
@@ -133,10 +133,7 @@ def paired(df: pd.DataFrame, ref: str = "SCP682-derived kinase activity") -> pd.
 
 def main() -> int:
     y_site = pd.read_parquet(PKG / "training_set/observed_phosphosite.parquet")
-    scp_site = pd.read_parquet(
-        BASE
-        / "SCP682-22/results/20260516_cancer_group_pathway_residual_s0p3/predictions/scp682_22_cancer_group_pathway_residual_s0p3_oof_phosphosite.parquet"
-    )
+    scp_site = pd.read_parquet(PKG / "predictions/scp682_main_oof_phosphosite.parquet")
     sample_manifest = pd.read_csv(PKG / "training_set/sample_manifest.tsv", sep="\t").set_index("index")
     rna = pd.read_parquet(BASE / "01_data/multi_omics/processed/pancancer_multi_task_locked_v2/rna_log2_tpm_paired.parquet")
 
@@ -204,3 +201,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

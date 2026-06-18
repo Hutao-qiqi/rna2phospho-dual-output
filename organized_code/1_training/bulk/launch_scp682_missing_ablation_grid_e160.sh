@@ -7,7 +7,7 @@ ROOT=/data/lsy/Infinite_Stream
 PY=/home/USER/.local/share/mamba/envs/omicverse/bin/python
 SCRIPT=$ROOT/remote_scripts/train_scp682_missing_ablation.py
 OUT_ROOT=$ROOT/SCP682-main/results/20260524_missing_ablation_grid_e160
-PKG=$ROOT/SCP682-22/frozen_release/SCP682_22_paper_package_20260520
+PKG=$ROOT/SCP682_PORTABLE
 PRIOR=$ROOT/01_data/pathway_prior
 BASELINE=$ROOT/SCP682-main/inputs/general_baseline_predictions/general_baseline_internal_cptac_pdc_phosphosite.parquet
 GPU=${GPU:-0}
@@ -54,3 +54,4 @@ run_one axis_dual_edge_kstar dual kstar
   --output "$OUT_ROOT/tables/missing_ablation_grid_summary.tsv"
 
 echo "done $(date)" > "$OUT_ROOT/done.txt"
+

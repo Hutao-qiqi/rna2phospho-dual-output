@@ -8,7 +8,7 @@ PY=/home/USER/.local/share/mamba/envs/omicverse/bin/python
 SCRIPT=$ROOT/remote_scripts/train_scp682_missing_ablation_degree_rewire.py
 SUMMARY=$ROOT/remote_scripts/summarize_scp682_missing_ablation_grid.py
 OUT_ROOT=$ROOT/SCP682-main/results/20260602_m4_knowledge_graph_controls_e160
-PKG=$ROOT/SCP682-22/frozen_release/SCP682_22_paper_package_20260520
+PKG=$ROOT/SCP682_PORTABLE
 PRIOR=$ROOT/01_data/pathway_prior
 BASELINE=$ROOT/SCP682-main/inputs/general_baseline_predictions/general_baseline_internal_cptac_pdc_phosphosite.parquet
 RNA=$ROOT/01_data/multi_omics/processed/pancancer_multi_task_locked_v2/rna_log2_tpm_paired.parquet
@@ -58,3 +58,4 @@ run_one axis_dual_edge_no_kstar dual no_kstar
   --output "$OUT_ROOT/tables/m4_knowledge_graph_controls_summary.tsv"
 
 echo "done $(date)" > "$OUT_ROOT/done.txt"
+

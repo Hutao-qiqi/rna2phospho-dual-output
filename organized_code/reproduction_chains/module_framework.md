@@ -74,7 +74,7 @@ SC11 不从头构建图先验，而是从 bulk canonical 模型抽取 teacher pr
 
 | 脚本 rel | 机器 | primary_category | 用途 | 服务于 |
 |---|---|---|---|---|
-| `paper_materials_SCP682_SC11/03_code/preprocessing/export_scp682_main_sc_transfer_prior.py` | LW | sc / 训练 / canonical | 从 bulk SCP682-22（`SCP682_PORTABLE` runtime state + `exact_scnet_gnn` checkpoint + observed/baseline phosphosite parquet）抽取 teacher transfer prior（site attention + bulk Spearman），产出 `scp682_main_sc_transfer_prior_v1`；是 SC11 训练的必需数据准备前置 | Fig3a, Fig3g |
+| `paper_materials_SCP682_SC11/03_code/preprocessing/export_scp682_main_sc_transfer_prior.py` | LW | sc / 训练 / canonical | 从 bulk SCP682 main（`SCP682_PORTABLE` runtime state + graph checkpoint + observed/state-estimator phosphosite parquet）抽取 teacher transfer prior（site attention + bulk Spearman），产出 `scp682_main_sc_transfer_prior_v1`；是 SC11 训练的必需数据准备前置 | Fig3a, Fig3g |
 
 **说明**：SC11 同时引用 bulk 的 site graph 先验边（CoPheeMap / CoPheeKSA / KSTAR）参与图消融（Fig3g），但通过 `export_scp682_main_sc_transfer_prior.py` 的 attention 权重转移完成，而非直接重建图；SC 图消融启动脚本 `remote_scripts/run_scp682_sc11_m4_graph_controls.bat` 以 `rewired_all / no_copheemap / no_copheeksa / no_kstar` 四模式复现 Fig3g 消融结果。
 

@@ -207,14 +207,14 @@ def checkpoint_forward(release, obs, parent, ridge, rna_direct, out_dir, force=F
     count_safe = np.maximum(count, 1.0)
     comp = pd.DataFrame({
         "target": targets,
-        "mean_abs_B_phi": abs_b / count_safe,
+        "mean_abs_S_phi": abs_b / count_safe,
         "mean_abs_G_theta": abs_g / count_safe,
         "mean_abs_graph_delta": abs_graph / count_safe,
         "mean_abs_residual_delta": abs_resid / count_safe,
         "mean_attention": attention_sum / count_safe,
         "n_observed": count.astype(int),
     })
-    comp["G_theta_fraction"] = comp["mean_abs_G_theta"] / (comp["mean_abs_B_phi"] + comp["mean_abs_G_theta"] + 1e-12)
+    comp["G_theta_fraction"] = comp["mean_abs_G_theta"] / (comp["mean_abs_S_phi"] + comp["mean_abs_G_theta"] + 1e-12)
     comp["graph_delta_fraction_within_G"] = comp["mean_abs_graph_delta"] / (comp["mean_abs_graph_delta"] + comp["mean_abs_residual_delta"] + 1e-12)
     comp.to_csv(comp_path, sep="\t", index=False)
 
@@ -423,7 +423,7 @@ def panel_e_component_violin(comp, site, out_dir):
     class_order = ["KSA", "CoPheeMap", "orphan"]
     sns.violinplot(data=d[d["site_class"].isin(class_order)], x="site_class", y="G_theta_fraction", order=class_order, palette=["#92B1D9", "#C1D8E9", "#D4D4D4"], cut=0, inner="quartile", linewidth=0.8, ax=axes[0])
     axes[0].set_xlabel("Site class")
-    axes[0].set_ylabel("|G_theta| / (|B_phi| + |G_theta|)")
+    axes[0].set_ylabel("|G_theta| / (|S_phi| + |G_theta|)")
     res_order = [x for x in ["S", "T", "Y"] if x in set(d["residue"].dropna())]
     sns.violinplot(data=d[d["residue"].isin(res_order)], x="residue", y="G_theta_fraction", order=res_order, palette=["#92B1D9", "#F6C8B6", "#DBDDEF"][: len(res_order)], cut=0, inner="quartile", linewidth=0.8, ax=axes[1])
     axes[1].set_xlabel("Residue")

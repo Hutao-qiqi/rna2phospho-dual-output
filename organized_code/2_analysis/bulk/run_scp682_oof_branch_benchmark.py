@@ -22,7 +22,7 @@ import pandas as pd
 
 
 ROOT = Path("./data_root")
-DEFAULT_BRANCH = ROOT / "SCP682-22/frozen_release/SCP682_22_paper_package_20260520/training_set"
+DEFAULT_BRANCH = ROOT / "SCP682_PORTABLE/training_set"
 DEFAULT_GENERAL = ROOT / "SCP682-main/inputs/general_baseline_predictions/general_baseline_internal_cptac_pdc_phosphosite.parquet"
 DEFAULT_OUT = ROOT / "SCP682-main/results/20260523_oof_branch_benchmark"
 
@@ -135,3 +135,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

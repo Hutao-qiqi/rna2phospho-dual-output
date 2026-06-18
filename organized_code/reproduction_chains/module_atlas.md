@@ -8,7 +8,7 @@
 
 Atlas = TCGA 泛癌 signed-split NMF k=30 磷酸化图谱，对应 Fig2e（30模块×32癌种热图）、Fig2f（生存Cox森林图）、Fig2g（Hallmark ORA条形图）及 ED7a（k稳健性）/ ED7b（CPTAC投影验证）/ ED7c（33项目含LAML）。
 
-上游依赖 bulk SCP682-22/PORTABLE v4 canonical 权重（训练链在 bulk 模块中，本模块仅引用其推理输出）。
+上游依赖 bulk SCP682 main / SCP682_PORTABLE 权重（训练链在 bulk 模块中，本模块仅引用其推理输出）。
 
 ---
 
@@ -20,7 +20,7 @@ Atlas = TCGA 泛癌 signed-split NMF k=30 磷酸化图谱，对应 Fig2e（30模
 
 - `run_nmf.py` 的 inputs 字段声明其读取 `results/X_nmf.npy (10023样本x37184特征)`，说明这个矩阵在 NMF 之前已存在。
 - `04_figures/20260528_fig5_v2/code/22_repredict_tcga_full_scp682_from_raw.py`（module=clinical, canonical=support, Fig5）可重产 TCGA 全样本预测 parquet，是已知的 TCGA 全样本推理路径，但挂在 clinical 模块下，并非 atlas 专属。
-- `SCP682_PORTABLE/v4_engine/code/predict_scp682_v4_0_public_bulk_20260508.py`（module=bulk, canonical=canonical, Fig2c）可对任意 bulk RNA 队列推理，可作为 TCGA atlas 推理的执行器，但 records 目标为 Fig2c（外部验证），无 TCGA atlas 专属入口脚本。
+- `organized_code/2_analysis/bulk/predict_scp682.py` 是当前主模型推理入口；历史文件名 `predict_scp682_v4_0_public_bulk_20260508.py` 已保留为兼容入口。
 - **结论**：TCGA atlas 推理脚本（生成 X_nmf.npy/parquet 的环节）**在 atlas 模块 records 中存在缺口**，需手动核查 `02_results/model_validation/20260612_tcga_pancancer_nmf_v1/` 目录根部是否有 `prepare_*.py` 或 `build_*.py`，或由 paper_final 版中未记录的脚本产出。
 
 ---
@@ -111,7 +111,7 @@ Atlas = TCGA 泛癌 signed-split NMF k=30 磷酸化图谱，对应 Fig2e（30模
 
 | 编号 | 缺口描述 | 影响 panel |
 |---|---|---|
-| GAP-0 | 未找到 atlas 模块专属的"TCGA 全样本 SCP682 推理 → X_nmf.npy 构建"脚本；`22_repredict_tcga_full_scp682_from_raw.py` 挂在 clinical 模块下，`predict_scp682_v4_0_public_bulk_20260508.py` 挂在 bulk 模块下 | Fig2e/f/g 全部 |
+| GAP-0 | 未找到 atlas 模块专属的"TCGA 全样本 SCP682 推理 → X_nmf.npy 构建"脚本；`22_repredict_tcga_full_scp682_from_raw.py` 挂在 clinical 模块下，当前通用推理入口为 `predict_scp682.py` | Fig2e/f/g 全部 |
 | GAP-1 | `paper_final/fig2/fig_tcga_pancancer_atlas/scripts/run_nmf.py`, `analyze_modules.py`, `project_to_cptac.py` 磁盘存在但未在 records c*.tsv 中登记，当前以 02_results 版 records 作代理 | Fig2e/f/g |
 | GAP-2 | `build_figD_survival.R` 内嵌 lifelines Cox 统计计算，无独立 Python Cox 分析脚本（all-in-one R 实现）；如需跨语言复现需关注 | Fig2f |
 | GAP-3 | ED7b 的 `build_ED7b_cptac.py` 归类为"画图"但实际包含 masked NNLS 投影计算——与 `project_to_cptac.py` 功能有重叠，records 未说明二者关系 | ED7b |

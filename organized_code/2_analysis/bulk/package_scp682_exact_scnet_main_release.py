@@ -13,7 +13,7 @@ import pandas as pd
 ROOT = Path("/data/lsy/Infinite_Stream")
 SCP682 = ROOT / "SCP682"
 SOURCE = ROOT / "02_results/model_validation/20260522_scp682_exact_scnet_gnn_v1_ubuntu_full"
-TRAINING = ROOT / "SCP682-22/frozen_release/SCP682_22_paper_package_20260520/training_set"
+TRAINING = ROOT / "SCP682_PORTABLE/training_set"
 SCRIPT = ROOT / "remote_scripts/train_scp682_exact_scnet_gnn_v1.py"
 PRIOR_ROOT = ROOT / "01_data/pathway_prior"
 RELEASE_ID = "SCP682_main_exact_scnet_gnn_20260522"
@@ -185,3 +185,4 @@ phosphosite_hat = baseline_mean + 0.3 * exact_scnet_gnn_delta
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

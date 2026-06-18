@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from scp682_graph_runtime import SCP682GraphRuntime
-from scp682_v4_engine import SCP682V4Engine
+from scp682_v4_engine import SCP682V4Engine as SCP682StateEstimator
 
 
 def read_matrix(path: Path) -> pd.DataFrame:
@@ -67,7 +67,8 @@ def main() -> int:
     ap.add_argument("--manifest", default=None, help="可选样本信息表，列含 sample_id, cptac_cancer_label, cptac_study_id")
     ap.add_argument("--rna-scale", default="auto", choices=["auto", "log2tpm", "tpm", "cpm", "fpkm", "rpkm"])
     ap.add_argument("--device", default="auto")
-    ap.add_argument("--v4-batch-size", type=int, default=32)
+    ap.add_argument("--state-batch-size", type=int, default=32, help="S_phi state-estimator batch size")
+    ap.add_argument("--v4-batch-size", type=int, default=None, help=argparse.SUPPRESS)
     ap.add_argument("--graph-batch-size", type=int, default=2)
     ap.add_argument("--knn", type=int, default=25)
     ap.add_argument("--temperature", type=float, default=0.08)
@@ -84,15 +85,18 @@ def main() -> int:
     rna, transform = transform_rna(rna_raw, args.rna_scale)
     manifest = read_manifest(Path(args.manifest)) if args.manifest else None
 
-    v4 = SCP682V4Engine(package_dir=package_dir, device=args.device, batch_size=args.v4_batch_size)
-    v4_out = v4.predict(rna, manifest)
-    v4_out["v4_raw"].to_parquet(outdir / "predictions" / "scp682_v4_baseline_raw_before_sample_median_centering.parquet")
-    v4_out["v4_centered"].to_parquet(outdir / "predictions" / "scp682_v4_baseline.parquet")
-    v4_out["sample_median_offsets"].to_csv(outdir / "tables" / "sample_median_offsets.tsv", sep="\t", index=False)
-    v4_out["manifest"].to_csv(outdir / "tables" / "prediction_manifest.tsv", sep="\t", index=False)
+    state_batch_size = args.state_batch_size if args.v4_batch_size is None else args.v4_batch_size
+    state_estimator = SCP682StateEstimator(package_dir=package_dir, device=args.device, batch_size=state_batch_size)
+    state_out = state_estimator.predict(rna, manifest)
+    if "total_protein" in state_out:
+        state_out["total_protein"].to_parquet(outdir / "predictions" / "scp682_total_protein.parquet")
+    state_out["v4_raw"].to_parquet(outdir / "predictions" / "scp682_state_estimator_raw_before_sample_median_centering.parquet")
+    state_out["v4_centered"].to_parquet(outdir / "predictions" / "scp682_state_estimator.parquet")
+    state_out["sample_median_offsets"].to_csv(outdir / "tables" / "sample_median_offsets.tsv", sep="\t", index=False)
+    state_out["manifest"].to_csv(outdir / "tables" / "prediction_manifest.tsv", sep="\t", index=False)
 
     graph = SCP682GraphRuntime(package_dir=package_dir, device=args.device, knn=args.knn, temperature=args.temperature, batch_size=args.graph_batch_size)
-    graph_out = graph.predict(v4_out["v4_centered"])
+    graph_out = graph.predict(state_out["v4_centered"])
     graph_out["scp682"].to_parquet(outdir / "predictions" / "scp682_main_phosphosite.parquet")
     graph_out["graph_delta"].to_parquet(outdir / "predictions" / "scp682_exact_scnet_gnn_delta.parquet")
     if args.write_attention:
@@ -100,13 +104,15 @@ def main() -> int:
 
     summary = {
         "model": "SCP682",
-        "formula": "phosphosite_hat = SCP682_V4_baseline + 0.3 * exact_scnet_gnn_delta",
+        "formula": "phosphosite_hat = S_phi + 0.3 * graph_residual_delta",
         "n_samples": int(graph_out["scp682"].shape[0]),
         "n_phosphosite_targets": int(graph_out["scp682"].shape[1]),
+        "n_total_protein_targets": int(state_out["total_protein"].shape[1]) if "total_protein" in state_out else 0,
         "rna_input_transform": transform,
         "outputs": {
+            "total_protein": "predictions/scp682_total_protein.parquet",
             "main_prediction": "predictions/scp682_main_phosphosite.parquet",
-            "v4_baseline": "predictions/scp682_v4_baseline.parquet",
+            "state_estimator": "predictions/scp682_state_estimator.parquet",
             "graph_delta": "predictions/scp682_exact_scnet_gnn_delta.parquet",
         },
     }

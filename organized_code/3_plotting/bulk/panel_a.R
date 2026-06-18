@@ -7,19 +7,19 @@
 #   1. 全部 annotate text 改用 `pt / .pt` 写法，字号直接以 pt 标注，体内主文字最小 6 pt
 #   2. Site graph 顶框去掉第三行 "CoPheeMap / CoPheeKSA / KSTAR" 细分，框内只留汇总
 #   3. Sample graph 底框压扁到约 0.85 单位高，两行字垂直拉开
-#   4. Bφ / Gθ 方框内三行文字垂直行距加大（原 0.42 / 0.65 / 0.32 拉到 0.55 / 0.75 / 0.50）
+#   4. Sφ / Gθ 方框内三行文字垂直行距加大（原 0.42 / 0.65 / 0.32 拉到 0.55 / 0.75 / 0.50）
 #   5. ŷ 方框宽度从 1.3→1.1 单位略缩，让中间留出更多空白
 #
 # 设计要点：
 #   - 坐标系 xlim=c(0,17) ylim=c(0,5.5)，对应 170×55 mm 横长比例
 #   - 顶部 Site graph 横长矩形 / 底部 Sample graph 横长矩形（横向铺满）
-#   - 中部三方框 Bφ / Gθ / ŷ phospho 横向拉开间距
-#   - 箭头流向：Bφ → Gθ → ŷ；Site graph ↓ Gθ；Sample graph ↑ Gθ
-#   - Bφ → ŷ skip 连接（虚线弧）
+#   - 中部三方框 Sφ / Gθ / ŷ phospho 横向拉开间距
+#   - 箭头流向：Sφ → Gθ → ŷ；Site graph ↓ Gθ；Sample graph ↑ Gθ
+#   - Sφ → ŷ skip 连接（虚线弧）
 #
 # 配色（sci-plot SKILL 低饱和度）：
 #   Site/Sample graph + Gθ  金色系：fill #F5E8D0 / stroke #D4A56B / text #6B4A1F
-#   Bφ                       蓝色系：fill #C1D8E9 / stroke #5680B0 / text #1F3A5F
+#   Sφ                       蓝色系：fill #C1D8E9 / stroke #5680B0 / text #1F3A5F
 #   ŷ                        深蓝填充：fill #3D5A80 / stroke #1F3A5F / text white
 #
 # 字体：Arial；标题 7 pt（外部 theme_fig2 注入）；
@@ -73,7 +73,7 @@ make_panel_a <- function() {
   mid_y_center <- (mid_ymin + mid_ymax) / 2  # = 2.675
 
   # 方框内 3 行文字的 y 坐标（v2：行距加大）
-  # 顶行：粗体大字符号 (Bφ / Gθ / ŷ)
+  # 顶行：粗体大字符号 (Sφ / Gθ / ŷ)
   # 中行：主描述
   # 底行：斜体小说明
   row_top    <- mid_ymax - 0.55
@@ -103,7 +103,7 @@ make_panel_a <- function() {
              color = COL_GOLD_SUB) +
 
     # ------------------------------------------------------------------
-    # Bφ 方框（左）
+    # Sφ 方框（左）
     # ------------------------------------------------------------------
     annotate("rect",
              xmin = bphi_xmin, xmax = bphi_xmax,
@@ -111,17 +111,17 @@ make_panel_a <- function() {
              fill = COL_BLUE_FILL, color = COL_BLUE_STROKE, linewidth = 0.4) +
     annotate("text",
              x = (bphi_xmin + bphi_xmax) / 2, y = row_top,
-             label = "Bφ",
+             label = "Sφ",
              family = "Arial", size = 11 / .pt, fontface = "bold",
              color = COL_BLUE_TEXT) +
     annotate("text",
              x = (bphi_xmin + bphi_xmax) / 2, y = row_middle,
-             label = "general expression baseline",
+             label = "phosphosite-state estimator",
              family = "Arial", size = 6.5 / .pt,
              color = COL_BLUE_TEXT) +
     annotate("text",
              x = (bphi_xmin + bphi_xmax) / 2, y = row_bottom,
-             label = "OOF-calibrated on RNA + cancer group",
+             label = "calibrated on RNA + cancer group",
              family = "Arial", size = 6 / .pt, fontface = "italic",
              color = COL_BLUE_TEXT) +
 
@@ -169,7 +169,7 @@ make_panel_a <- function() {
              family = "Arial", size = 6.5 / .pt, fontface = "bold", color = "white") +
 
     # ------------------------------------------------------------------
-    # 水平主箭头：Bφ → Gθ → ŷ
+    # 水平主箭头：Sφ → Gθ → ŷ
     # ------------------------------------------------------------------
     annotate("segment",
              x = bphi_xmax + 0.05, xend = gtheta_xmin - 0.05,
@@ -199,12 +199,12 @@ make_panel_a <- function() {
              arrow = arrow(length = unit(0.95, "mm"))) +
 
     # ------------------------------------------------------------------
-    # Skip 连接：Bφ → ŷ（虚线弧形走 Gθ 上方，避开 Site graph 横条）
+    # Skip 连接：Sφ → ŷ（虚线弧形走 Gθ 上方，避开 Site graph 横条）
     # 用两段直线 + 转折点近似弧线
     # Site graph 底边 y=4.70, 中部方框顶 y=3.70；
     # skip 走 y=4.15（位于两者中间，离 Site graph 至少 0.55 单位）
     # ------------------------------------------------------------------
-    # 上行：从 Bφ 顶部中央升到 skip 高度
+    # 上行：从 Sφ 顶部中央升到 skip 高度
     annotate("segment",
              x = (bphi_xmin + bphi_xmax) / 2,
              xend = (bphi_xmin + bphi_xmax) / 2,
@@ -253,7 +253,7 @@ make_panel_a <- function() {
     # ------------------------------------------------------------------
     # 标题
     # ------------------------------------------------------------------
-    labs(title = "Bφ baseline + Gθ graph residual") +
+    labs(title = "Sφ state estimator + Gθ graph residual") +
 
     # ------------------------------------------------------------------
     # 主题：架构图不需要坐标轴

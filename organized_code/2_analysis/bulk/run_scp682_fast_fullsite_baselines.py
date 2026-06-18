@@ -580,7 +580,7 @@ def run_tree_mode(args, methods):
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--mode", choices=["fullsite", "trees_cpu", "trees_xgb"], required=True)
-    p.add_argument("--package-dir", default="/data/lsy/Infinite_Stream/SCP682-22/frozen_release/SCP682_22_paper_package_20260520")
+    p.add_argument("--package-dir", default="/data/lsy/Infinite_Stream/SCP682_PORTABLE")
     p.add_argument("--rna-path", default="/data/lsy/Infinite_Stream/01_data/multi_omics/processed/pancancer_multi_task_locked_v2/rna_log2_tpm_paired.parquet")
     p.add_argument("--sample-manifest-path", default="/data/lsy/Infinite_Stream/01_data/multi_omics/processed/pancancer_multi_task_locked_v2/sample_manifest.tsv")
     p.add_argument("--target-list-path", default="/data/lsy/Infinite_Stream/SCP682-main/results/20260523_general_graph_residual_e160/tables/per_site_pseudo_external_spearman_best.tsv")
@@ -635,3 +635,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -243,7 +243,7 @@ def draw_bulk_lane(ax):
 
     step_badge(ax, x_base - 0.006, y0 + h - 0.028, 2, BLUE)
     rounded(ax, x_base, card_y, w_base, card_h, edge=BLUE, face=BLUE_LIGHT, lw=1.0, r=0.008)
-    label(ax, x_base + w_base / 2, card_y + card_h + 0.023, "CALIBRATED BASELINE B_phi", size=7.2, weight="bold")
+    label(ax, x_base + w_base / 2, card_y + card_h + 0.023, "CALIBRATED STATE ESTIMATOR S_phi", size=7.2, weight="bold")
     rows = [
         ("Cognate RNA-to-site", "strip"),
         ("Parent-protein constrained", "bars"),
@@ -284,7 +284,7 @@ def draw_bulk_lane(ax):
     step_badge(ax, x_out - 0.006, y0 + h - 0.028, 4, BLUE)
     rounded(ax, x_out, card_y, w_out, card_h, edge=BLUE, face="white", lw=1.0, r=0.008)
     label(ax, x_out + w_out / 2, card_y + card_h + 0.023, "OUTPUT", size=7.2, weight="bold")
-    label(ax, x_out + w_out / 2, card_y + 0.126, "y_hat = B_phi + alpha Delta", size=7.0, weight="bold", color=BLUE_DARK)
+    label(ax, x_out + w_out / 2, card_y + 0.126, "y_hat = S_phi + lambda Delta", size=7.0, weight="bold", color=BLUE_DARK)
     heatmap(ax, x_out + 0.030, card_y + 0.055, 0.050, 0.047, rows=4, cols=6, seed=33)
     label(ax, x_out + w_out / 2, card_y + 0.030, "n x 18,592 phosphosites", size=5.9)
     label(ax, x_out + w_out / 2, card_y + 0.012, "CPTAC rho=0.55", size=5.9, color=BLUE_DARK)

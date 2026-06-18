@@ -4,7 +4,7 @@
 读：
   - paper_materials_SCP682/02_data_tables/oof_branch_predictions/observed_phosphosite.parquet
   - paper_materials_SCP682/02_data_tables/oof_branch_predictions/sample_manifest.tsv  (含 cancer_label)
-  - SCP682-22 frozen tar 已解压：_cache/.../SCP682_v4_0_internal_cptac_pdc_phosphosite.parquet
+  - SCP682_PORTABLE/predictions/scp682_main_oof_phosphosite.parquet
   - _scripts/panel_f_heatmap_matrix.tsv  (2000 个目标位点 row_order/target/gene/direction)
 
 算：
@@ -28,10 +28,7 @@ from scipy.stats import spearmanr
 ROOT = Path("E:/data/gongke/TCGA-TCPA/paper_materials_SCP682")
 OBS_PQ = ROOT / "02_data_tables" / "oof_branch_predictions" / "observed_phosphosite.parquet"
 MANI_TSV = ROOT / "02_data_tables" / "oof_branch_predictions" / "sample_manifest.tsv"
-PRED_PQ = (ROOT / "04_figure_source_data" / "fig2" / "_scripts" / "_cache"
-           / "SCP682_final_20260518_scp682_22" / "bridge" / "artifacts"
-           / "official_release" / "predictions"
-           / "SCP682_v4_0_internal_cptac_pdc_phosphosite.parquet")
+PRED_PQ = Path("E:/data/gongke/TCGA-TCPA/SCP682_PORTABLE/predictions/scp682_main_oof_phosphosite.parquet")
 
 SCRIPTS = ROOT / "04_figure_source_data" / "fig2" / "_scripts"
 TARGET_TSV = SCRIPTS / "panel_f_heatmap_matrix.tsv"

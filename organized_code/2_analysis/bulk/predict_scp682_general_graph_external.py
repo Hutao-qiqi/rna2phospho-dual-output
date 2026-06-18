@@ -25,7 +25,7 @@ import torch
 ROOT = Path("./data_root")
 TRAIN_SCRIPT = ROOT / "remote_scripts/train_scp682_general_graph_residual.py"
 SCP6828_EXTERNAL = ROOT / "SCP682-8/scripts/run_scp682_8_external_validation.py"
-DEFAULT_PACKAGE = ROOT / "SCP682-22/frozen_release/SCP682_22_paper_package_20260520"
+DEFAULT_PACKAGE = ROOT / "SCP682_PORTABLE"
 DEFAULT_BASELINE_DIR = ROOT / "SCP682-main/inputs/general_baseline_predictions"
 DEFAULT_INTERNAL = ROOT / "SCP682-main/results/20260523_general_graph_residual_e160"
 DEFAULT_TRAIN_RNA = ROOT / "01_data/multi_omics/processed/pancancer_multi_task_locked_v2/rna_log2_tpm_paired.parquet"
@@ -253,3 +253,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

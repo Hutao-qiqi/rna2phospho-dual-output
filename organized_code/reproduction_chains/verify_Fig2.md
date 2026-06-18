@@ -47,7 +47,7 @@ label = "1,431 samples · 21,925 edges"   # 硬编码，非读文件
 
 1. 420,102 / 21,925 / 18,592 三个数字均硬编码，graph_statistics.tsv 专用导出脚本不在链中（REPRODUCE.md 已承认）。
 2. `ρ=0.5474` 来源文件 `headline_metrics.tsv` 不在 organized_code 中，无法追溯产出路径。
-3. B_phi 训练入口（`train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py`）命名含 `film_vae`，但 REPRODUCE.md 把 `film_vae` 系列列为 legacy 排除模式——此脚本以 "support" 身份保留，需确认其在 canonical 链中的角色是"组件训练"还是"legacy 残留"。
+3. S_phi 训练入口（`train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py`）命名含 `film_vae`，但 REPRODUCE.md 把 `film_vae` 系列列为 legacy 排除模式——此脚本以 "support" 身份保留，需确认其在 canonical 链中的角色是"组件训练"还是"legacy 残留"。
 
 **修正建议**
 

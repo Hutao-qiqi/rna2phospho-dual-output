@@ -29,8 +29,8 @@ OUT = ROOT / "paper_materials_SCP682"
 
 MAIN_RESULT = ROOT / "SCP682-main/results/20260523_general_graph_residual_e160"
 MAIN_EXTERNAL = ROOT / "SCP682-main/results/20260523_general_graph_external_fixed_anchor"
-BRANCH_DIR = ROOT / "SCP682-22/frozen_release/SCP682_22_paper_package_20260520/training_set"
-GROUP_PERF = ROOT / "SCP682-22/frozen_release/SCP682_22_paper_package_20260520/performance/scp682_22_internal_by_cancer_group.tsv"
+BRANCH_DIR = ROOT / "SCP682_PORTABLE/training_set"
+GROUP_PERF = ROOT / "SCP682_PORTABLE/performance/cancer_group_performance.tsv"
 MODEL_CONTRACT = ROOT / "SCP682/SCP682_model_contract.json"
 MISSING_ABLATION_GRID = ROOT / "SCP682-main/results/20260523_missing_ablation_grid_e40/tables/missing_ablation_grid_summary.tsv"
 SHRINKAGE_GRID = ROOT / "SCP682-main/results/20260523_shrinkage_sensitivity_grid/tables/shrinkage_sensitivity_grid.tsv"
@@ -234,7 +234,7 @@ def collect_headline() -> None:
         "核心公式:",
         "",
         "```text",
-        "general_baseline_hat = B_phi(RNA, cancer_group)",
+        "state_estimator_hat = S_phi(RNA, cancer_group)",
         "graph_residual_delta = G_theta(RNA, general_baseline_hat, site_graph, sample_graph, cancer_group)",
         "phosphosite_hat = general_baseline_hat + graph_residual_delta",
         "```",
@@ -971,14 +971,14 @@ def collect_methods() -> None:
             [
                 "# 架构组成",
                 "",
-                "SCP682 接收预处理后的 bulk RNA 表达矩阵，并输出每个样本的 phosphosite 丰度向量。模型由一般表达基线和图约束残差两部分组成。一般表达基线 `B_phi` 只使用 RNA 表达和 cancer group 条件变量，生成样本-位点级初始预测；图约束残差 `G_theta` 读取一般基线、phosphosite 图、样本图和 cancer group 条件变量，学习初始预测中未被解释的结构化残差。",
+                "SCP682 接收预处理后的 bulk RNA 表达矩阵，并输出每个样本的 phosphosite 丰度向量。模型由冻结磷酸化状态估计器和图约束残差两部分组成。状态估计器 `S_phi` 使用 RNA 表达和 cancer group 条件变量，生成样本-位点级初始磷酸化状态；图约束残差 `G_theta` 读取 `S_phi` 输出、phosphosite 图、样本图和 cancer group 条件变量，学习初始状态中未被解释的结构化残差。",
                 "",
                 "phosphosite 图包含 CoPheeMap site-site 共调控边、CoPheeKSA 相关边和 KSTAR kinase-substrate 相关边。样本图由训练样本的 RNA 表达相似性构建，用于让模型在样本轴上学习相近表达背景中的共同残差结构。",
                 "",
                 "最终输出为:",
                 "",
                 "```text",
-                "phosphosite_hat = B_phi(RNA, cancer_group) + G_theta(RNA, B_phi, site_graph, sample_graph, cancer_group)",
+                "phosphosite_hat = S_phi(RNA, cancer_group) + 0.3 * G_theta(RNA, S_phi, site_graph, sample_graph, cancer_group)",
                 "```",
             ]
         ),
@@ -1017,7 +1017,7 @@ def collect_methods() -> None:
             [
                 "# Methods paragraph draft",
                 "",
-                "SCP682 使用 bulk RNA 表达矩阵预测样本级 phosphosite 丰度。模型由一般表达基线 `B_phi` 和图约束残差 `G_theta` 组成。`B_phi` 从 RNA 表达和 cancer group 条件变量得到每个样本-位点的初始预测；`G_theta` 在此基础上使用 phosphosite 图和样本图学习残差项。phosphosite 图整合 CoPheeMap site-site 共调控边、CoPheeKSA 相关边和 KSTAR kinase-substrate 相关边，样本图由 RNA 表达相似性构建。最终预测定义为 `phosphosite_hat = B_phi(RNA, cancer_group) + G_theta(RNA, B_phi, site_graph, sample_graph, cancer_group)`。",
+                "SCP682 使用 bulk RNA 表达矩阵预测样本级 phosphosite 丰度。模型由冻结磷酸化状态估计器 `S_phi` 和图约束残差 `G_theta` 组成。`S_phi` 从 RNA 表达和 cancer group 条件变量得到每个样本-位点的初始磷酸化状态；`G_theta` 在此基础上使用 phosphosite 图和样本图学习残差项。phosphosite 图整合 CoPheeMap site-site 共调控边、CoPheeKSA 相关边和 KSTAR kinase-substrate 相关边，样本图由 RNA 表达相似性构建。最终预测定义为 `phosphosite_hat = S_phi(RNA, cancer_group) + 0.3 * G_theta(RNA, S_phi, site_graph, sample_graph, cancer_group)`。",
             ]
         ),
     )
@@ -1027,7 +1027,7 @@ def collect_methods() -> None:
             [
                 "# 方法段落草稿",
                 "",
-                "SCP682 使用 bulk RNA 表达矩阵作为输入，预测样本级 phosphosite 丰度。模型包含一般表达基线 `B_phi` 和图约束残差 `G_theta`。`B_phi` 根据 RNA 表达和 cancer group 条件变量生成初始 phosphosite 预测。`G_theta` 在 `B_phi` 的输出上引入双轴图约束: phosphosite 轴使用由 CoPheeMap、CoPheeKSA 和 KSTAR 构建的 site graph，样本轴使用 RNA 表达相似性构建的 sample graph。`G_theta` 输出每个样本-位点的残差校正项，最终预测为 `B_phi` 与图残差之和。",
+                "SCP682 使用 bulk RNA 表达矩阵作为输入，预测样本级 phosphosite 丰度。模型包含冻结磷酸化状态估计器 `S_phi` 和图约束残差 `G_theta`。`S_phi` 根据 RNA 表达和 cancer group 条件变量生成初始 phosphosite 状态。`G_theta` 在 `S_phi` 的输出上引入双轴图约束: phosphosite 轴使用由 CoPheeMap、CoPheeKSA 和 KSTAR 构建的 site graph，样本轴使用 RNA 表达相似性构建的 sample graph。`G_theta` 输出每个样本-位点的残差校正项，最终预测为 `S_phi + 0.3 * G_theta`。",
                 "",
                 "训练时，所有模型选择和参数记录均来自训练集内部评估；外部队列只用于冻结模型后的评估。外部评估包括 FU-iCCA、TU-SCLC、CHCC-HBV FPKM 和 CHCC-HBV RSEM 四个设置。",
             ]
@@ -1181,3 +1181,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

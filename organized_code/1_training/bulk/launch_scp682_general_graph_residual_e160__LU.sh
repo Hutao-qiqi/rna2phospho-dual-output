@@ -12,7 +12,7 @@ nohup env \
   CUDA_VISIBLE_DEVICES=0 \
   /data/lsy/conda-envs/3ef0fd2916e30222c6bfbc5c753696fe_/bin/python \
   /data/lsy/Infinite_Stream/remote_scripts/train_scp682_general_graph_residual.py \
-  --package-dir /data/lsy/Infinite_Stream/SCP682-22/frozen_release/SCP682_22_paper_package_20260520 \
+  --package-dir /data/lsy/Infinite_Stream/SCP682_PORTABLE \
   --prior-root /data/lsy/Infinite_Stream/01_data/pathway_prior \
   --general-baseline-path /data/lsy/Infinite_Stream/SCP682-main/inputs/general_baseline_predictions/general_baseline_internal_cptac_pdc_phosphosite.parquet \
   --output-dir "$OUT" \
@@ -31,3 +31,4 @@ nohup env \
 
 echo $! > "$OUT/run.pid"
 cat "$OUT/run.pid"
+

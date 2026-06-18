@@ -42,12 +42,14 @@ organized_code/
 
 | 模块 | 论文图 | Canonical 模型 | 关键训练脚本 | checkpoint |
 |---|---|---|---|---|
-| **bulk** | Fig2 a–d | SCP682-22 / PORTABLE，v4 exact_scnet 双轴GNN，`Ŷ=B_φ+0.3·Δ` | `remote_scripts/train_scp682_exact_scnet_gnn_v1.py`；论文包版 `paper_materials_SCP682/03_code/training/train_scp682_general_graph_residual.py` | `scp682_main_v4_exact_scnet_gnn_best.pt` |
-| └ engine/推理 | — | 部署引擎 | `portable_src/scp682_v4_engine.py`（baseline）、`portable_src/scp682_graph_runtime.py`（图残差runtime）、`portable_src/predict_scp682.py` | `scp682_graph_runtime_state.pt` |
+| **bulk** | Fig2 a–d | SCP682 主模型：冻结磷酸化状态估计器 `S_phi` + 图约束残差算子，`Y_hat=S_phi+0.3·Delta` | `1_training/bulk/train_scp682_general_graph_residual.py`；图对照为 `1_training/bulk/train_scp682_missing_ablation_degree_rewire.py` / `1_training/bulk/train_scp682_consistent_graph_controls.py` | `scp682_main_v4_exact_scnet_gnn_best.pt` |
+| └ engine/推理 | — | 可迁移部署入口 | `2_analysis/bulk/predict_scp682.py`（主入口）、`2_analysis/bulk/scp682_v4_engine.py`（`S_phi` 内部状态估计器）、`2_analysis/bulk/scp682_graph_runtime.py`（图残差 runtime） | `scp682_graph_runtime_state.pt` |
 | **atlas** | Fig2 e–g | 泛癌 signed-split NMF k=30（10,023 原发瘤） | `02_results/model_validation/20260612_tcga_pancancer_nmf_v1/scripts/run_nmf.py` | （NMF W/H 矩阵） |
 | **sc** | Fig3 | SCP682-SC11，scFoundation + pathway attention + expanded ScNET site-GNN | `paper_materials_SCP682_SC11/03_code/architecture/train_scp682_sc11_expanded_scnet_site_gnn.py` | sc11 best.pt |
 | **ppko** | Fig4 | SCP682-PPKO V10B strong300 | `paper_materials_SCP682_PPKO/03_code/training/pretrain_v10b_strong300.py` | `scp682_ppko_v10b_strong300_best.pt` |
 | **clinical** | Fig5 | 复用 bulk 预测谱 → KIRC/RPS6 beyond-parent-mRNA 预后（BH-FDR / 联合Cox LRT） | 见 `reproduction_chains/module_clinical.md` | — |
+
+说明：`scp682_v4_engine.py` 和若干 `SCP682_v4_0_*` 文件是 `S_phi` 状态估计器的内部组件名称，用于加载冻结权重和训练期候选预测矩阵。论文和复现入口统一称为 `S_phi`，不再把这些内部组件名作为主模型名称。
 
 ---
 

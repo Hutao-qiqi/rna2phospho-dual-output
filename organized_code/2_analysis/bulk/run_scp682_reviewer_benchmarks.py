@@ -9,7 +9,7 @@ from scipy.stats import pearsonr, spearmanr, wilcoxon
 
 
 BASE = Path("/data/lsy/Infinite_Stream")
-PKG = BASE / "SCP682-22/frozen_release/SCP682_22_paper_package_20260520"
+PKG = BASE / "SCP682_PORTABLE"
 OUT = BASE / "02_results/model_validation/20260520_scp682_reviewer_head_to_head"
 TABLES = OUT / "tables"
 LOGS = OUT / "logs"
@@ -150,10 +150,7 @@ def main() -> None:
     parent = pd.read_parquet(PKG / "training_set/oof_candidate_parent_only_phosphosite.parquet")
     ridge = pd.read_parquet(PKG / "training_set/oof_candidate_ridge_direct_phosphosite.parquet")
     rna = pd.read_parquet(PKG / "training_set/oof_candidate_rna_direct_phosphosite.parquet")
-    scp = pd.read_parquet(
-        BASE
-        / "SCP682-22/results/20260516_cancer_group_pathway_residual_s0p3/predictions/scp682_22_cancer_group_pathway_residual_s0p3_oof_phosphosite.parquet"
-    )
+    scp = pd.read_parquet(PKG / "predictions/scp682_main_oof_phosphosite.parquet")
 
     common_samples = y.index.intersection(scp.index)
     common_targets = y.columns.intersection(scp.columns)
@@ -216,3 +213,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

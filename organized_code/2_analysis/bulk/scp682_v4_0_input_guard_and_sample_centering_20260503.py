@@ -165,7 +165,7 @@ def main() -> int:
     passed, reasons, input_report = assess_log2tpm(rna, reference_features, args.min_gene_overlap)
 
     summary: dict[str, Any] = {
-        "model_id": "SCP682_v4_0",
+        "model_id": "SCP682_S_phi",
         "input_file": str(Path(args.input_rna)),
         "required_input_unit": "log2(TPM+1)",
         "rna_input_action": "check_only_no_sample_median_centering",
@@ -177,7 +177,7 @@ def main() -> int:
     if not passed and not args.allow_log2tpm_warning:
         (out_dir / "input_qc_report.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
         raise SystemExit(
-            "Input RNA did not pass SCP682_v4_0 log2TPM guard: "
+            "Input RNA did not pass SCP682_S_phi log2TPM guard: "
             + ", ".join(reasons)
             + ". Supply log2(TPM+1) RNA, not raw TPM, FPKM, RSEM, counts, or log2FPKM."
         )
@@ -187,8 +187,8 @@ def main() -> int:
     if args.prediction_phosphosite:
         pred = read_matrix(Path(args.prediction_phosphosite))
         centered, med_table = sample_median_center(pred)
-        centered_path = out_dir / "SCP682_v4_0_phosphosite_sample_median_centered.parquet"
-        med_path = out_dir / "SCP682_v4_0_phosphosite_sample_medians.tsv"
+        centered_path = out_dir / "SCP682_S_phi_phosphosite_sample_median_centered.parquet"
+        med_path = out_dir / "SCP682_S_phi_phosphosite_sample_medians.tsv"
         centered.to_parquet(centered_path)
         med_table.to_csv(med_path, sep="\t", index=False)
         summary["files"]["sample_median_centered_phosphosite"] = centered_path.name
@@ -201,3 +201,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

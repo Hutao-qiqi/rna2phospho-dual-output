@@ -1,13 +1,13 @@
 # SCP682 Bulk 模块复现链
 
 生成日期：2026-06-16  
-范围：bulk RNA→phospho 主模型 (SCP682-22 v4 exact_scnet) 训练/推理、CPTAC 内部 OOF benchmark、4 个外部队列验证、Fig2 a-d；及 atlas 模块 Fig2 e-f-g (NMF k30 泛癌图谱)。
+范围：bulk RNA→phospho 主模型 (SCP682 main) 训练/推理、CPTAC 内部 OOF benchmark、外部队列验证、Fig2 a-d；及 atlas 模块 Fig2 e-f-g (NMF k30 泛癌图谱)。
 
 ---
 
 ## 模块边界与版本说明
 
-- **Canonical 模型**：SCP682-22 / SCP682_PORTABLE（v4 exact_scnet_gnn，公式 Y=B_phi+0.3*delta）
+- **Canonical 模型**：SCP682 main / SCP682_PORTABLE（冻结磷酸化状态估计器 `S_phi` + 图约束残差算子，公式 Y=S_phi+0.3*Delta）
 - **Canonical atlas**：10,023 TCGA 原发瘤，signed-split NMF k=30，模块活性→Cox生存
 - **排除（legacy）**：SCP682-7~21、SCP682-23~28（编号 < 22 或 > 22 均为 legacy dev 编号）、film_vae/72-pathway-token/CVAE v3.x/DANN系列、NAS v1/v2 stacking 路线、SCP682-30/31/32 探索版
 
@@ -15,12 +15,12 @@
 
 ## Fig2a — 架构示意图
 
-**需求**：展示 B_phi 冻结基线 + G_theta 图约束残差架构；420,102 位点图边；21,925 样本图边；α=0.3 shrinkage 系数确认。
+**需求**：展示 `S_phi` 冻结磷酸化状态估计器 + `G_theta` 图约束残差架构；420,102 位点图边；21,925 样本图边；lambda=0.3 shrinkage 系数确认。
 
 | 步骤 | 脚本 | 机器 | category |
 |------|------|------|----------|
 | 1. 图先验构建（位点图边来源） | `03_code/model_validation/priors/process_copheemap_prior_20260428.py` | LU | 分析/数据准备 |
-| 2. 总蛋白基线训练（B_phi 冻结组件） | `03_code/model_validation/training/train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py` | LU | 训练(support) |
+| 2. 总蛋白与残差组件训练（S_phi 内部组件） | `03_code/model_validation/training/train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py` | LU | 训练(support) |
 | 3. 主训练启动（canonical exact_scnet） | `paper_materials_SCP682/03_code/training/launch_scp682_general_graph_residual_e160.sh` | LU | 训练 |
 | 4. α-scan（确认0.3系数） | `paper_materials_SCP682/03_code/training/run_scp682_shrinkage_sensitivity_grid.py` | LU | 分析 |
 | 5. 图统计导出（边数数字） | `paper_materials_SCP682/04_figure_source_data/fig2_extensions/make_fig2_extensions.py` | L | 分析/support |
@@ -44,7 +44,7 @@
 | 6. CPTAC 多任务 locked v2 矩阵构建 | `03_code/model_validation/data_preparation/prepare_cptac_multi_task_locked_v2_20260429.py` | LU | 训练/support |
 | 7. 图先验构建 | `03_code/model_validation/priors/process_copheemap_prior_20260428.py` | LU | 分析/support |
 | 8. GSEA 通路辅助标签构建 | `03_code/model_validation/prepare_gsea_pathway_aux_labels.py` | LU | 分析/support |
-| 9. 总蛋白基线训练 (B_phi) | `03_code/model_validation/training/train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py` | LU | 训练/support |
+| 9. 总蛋白与残差组件训练 (S_phi 内部组件) | `03_code/model_validation/training/train_cptac_total_proteome_film_vae_z_direct_residual_v2_20260429.py` | LU | 训练/support |
 | 10. canonical 主训练 160 epoch | `paper_materials_SCP682/03_code/training/launch_scp682_general_graph_residual_e160.sh` | LU | 训练 |
 | 11. 主训练器代码 | `paper_materials_SCP682/03_code/training/train_scp682_general_graph_residual.py` | LU | 训练 |
 | 12. 8 RNA 基线 benchmark（fast baselines） | `remote_scripts/launch_scp682_fast_fullsite_baselines.sh` | LU | 分析/support |
@@ -149,7 +149,7 @@
 | 脚本 | 机器 | category | 说明 |
 |------|------|----------|------|
 | `portable_src/scp682_graph_runtime.py` | LUW | 训练/engine | 图残差 runtime 引擎（SCP682GraphDecoder + SCP682GraphRuntime） |
-| `portable_src/scp682_v4_engine.py` | LUW | 训练/engine | v4 baseline 引擎封装 |
+| `portable_src/scp682_v4_engine.py` | LUW | 训练/engine | `S_phi` 状态估计器内部引擎封装 |
 | `portable_src/scripts/export_graph_runtime_state.py` | LU | 分析/support | 从 checkpoint 导出 runtime_state.pt |
 | `remote_scripts/package_scp682_exact_scnet_main_release.py` | LU | 分析/support | 打包 canonical 发布包（frozen_release） |
 | `03_code/rna2phospho_web/predict_uploaded_bulk.py` | LU | 分析/support | web 服务推理脚本 |
@@ -173,7 +173,7 @@
 |----------|------|
 | `train_cptac_*_dann_locked_v1*.py` | DANN 域对抗系列，非 exact_scnet_gnn 架构，已排除 |
 | `train_cptac_parent_residual_kinase_cvae_v*.py` | CVAE v3.x 系列（film_vae 前身），已被 exact_scnet 取代 |
-| `SCP682-7~21 / SCP682-23~28` | dev 编号版本，不符合 canonical SCP682-22 |
+| `SCP682-7~21 / SCP682-23~28` | dev 编号版本，不属于 SCP682 main |
 | `train_scp682_1~4_*.py` / `train_spc682_*.py` | SCP682-1~4 train 系列，legacy 命名模式 |
 | `predict_tcga_*_film_vae*.py` | film_vae_z 架构，已被 portable_src 取代 |
 | `fit_cptac_phosphosite_oof_stacking*.py` | old stacking 路线（v3.x ridge stacking），已排除 |
