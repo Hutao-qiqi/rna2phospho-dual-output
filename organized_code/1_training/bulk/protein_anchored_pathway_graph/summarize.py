@@ -56,6 +56,7 @@ def main() -> int:
         "evaluation": "five-fold strict inductive; test samples aggregate only training reference nodes",
     }
     (output_dir / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    (args.result_dir / "done.txt").write_text("done\n", encoding="utf-8")
     print(json.dumps(summary, indent=2))
     return 0
 

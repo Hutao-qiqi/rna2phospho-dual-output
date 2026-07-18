@@ -70,6 +70,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--project-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--folds", default="0,1,2,3,4")
+    parser.add_argument("--worker-tag", default="worker")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--seed", type=int, default=20260718)
     parser.add_argument("--n-splits", type=int, default=5)
@@ -678,8 +679,10 @@ def main() -> int:
         args.site_chunk_size = min(args.site_chunk_size, 256)
     device = torch.device(args.device if torch.cuda.is_available() or "cuda" not in args.device else "cpu")
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    worker_tag = "".join(character if character.isalnum() or character in "-_" else "_" for character in args.worker_tag)
+    worker_tag = worker_tag or "worker"
     paths = override_paths(discover_input_paths(args.project_root), args)
-    write_input_manifest(args.output_dir / "input_paths.json", paths)
+    write_input_manifest(args.output_dir / f"input_paths_{worker_tag}.json", paths)
     inputs = read_inputs(paths, args.max_samples)
     metadata: pd.DataFrame = inputs["metadata"]  # type: ignore[assignment]
     if args.group_column not in metadata.columns:
@@ -696,7 +699,7 @@ def main() -> int:
     summaries = []
     for fold in requested:
         summaries.append(run_fold(fold, splits[fold], inputs, paths, rna_rank, args, device))
-    pd.DataFrame(summaries).to_csv(args.output_dir / "fold_summary.tsv", sep="\t", index=False)
+    pd.DataFrame(summaries).to_csv(args.output_dir / f"fold_summary_{worker_tag}.tsv", sep="\t", index=False)
     run_summary = {
         "architecture": "protein_anchored_pathway_specific_sample_graph_residual",
         "folds": requested,
@@ -704,8 +707,10 @@ def main() -> int:
         "device": str(device),
         "main_model_pointer_modified": False,
     }
-    (args.output_dir / "run_summary.json").write_text(json.dumps(run_summary, indent=2), encoding="utf-8")
-    (args.output_dir / "done.txt").write_text("done\n", encoding="utf-8")
+    (args.output_dir / f"run_summary_{worker_tag}.json").write_text(
+        json.dumps(run_summary, indent=2), encoding="utf-8"
+    )
+    (args.output_dir / f"worker_{worker_tag}.done").write_text("done\n", encoding="utf-8")
     return 0
 
 

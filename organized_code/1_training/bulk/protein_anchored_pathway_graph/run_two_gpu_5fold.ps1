@@ -15,10 +15,10 @@ $Common = @(
     "--output-dir", $OutputDir
 )
 
-$Gpu0 = Start-Process -FilePath $Python -ArgumentList ($Common + @("--folds", "0,2,4", "--device", "cuda:0")) `
+$Gpu0 = Start-Process -FilePath $Python -ArgumentList ($Common + @("--folds", "0,2,4", "--worker-tag", "gpu0", "--device", "cuda:0")) `
     -RedirectStandardOutput (Join-Path $OutputDir "logs\gpu0.stdout.log") `
     -RedirectStandardError (Join-Path $OutputDir "logs\gpu0.stderr.log") -PassThru -WindowStyle Hidden
-$Gpu1 = Start-Process -FilePath $Python -ArgumentList ($Common + @("--folds", "1,3", "--device", "cuda:1")) `
+$Gpu1 = Start-Process -FilePath $Python -ArgumentList ($Common + @("--folds", "1,3", "--worker-tag", "gpu1", "--device", "cuda:1")) `
     -RedirectStandardOutput (Join-Path $OutputDir "logs\gpu1.stdout.log") `
     -RedirectStandardError (Join-Path $OutputDir "logs\gpu1.stderr.log") -PassThru -WindowStyle Hidden
 
