@@ -1,0 +1,36 @@
+{
+  "architecture": "protein_anchored_axial_dynamic_pathway_heterogeneous_hypergraph",
+  "locked_split": {
+    "selection_train": 916,
+    "selection_validation": 229,
+    "sealed_test": 286
+  },
+  "model": {
+    "max_pathways": 128,
+    "hidden": 64,
+    "heads": 4,
+    "axial_layers": 2,
+    "pathway_adapter_rank": 8,
+    "sample_knn": 16,
+    "max_rna_members": 128,
+    "max_protein_members": 128,
+    "max_site_pathways": 8,
+    "max_site_kinases": 8,
+    "site_chunk_size": 512,
+    "initial_site_shrinkage": 0.1,
+    "dropout": 0.1
+  },
+  "optimization": {
+    "epochs": 80,
+    "patience": 10,
+    "batch_size": 32,
+    "cache_batch_size": 64,
+    "learning_rate": 0.0002,
+    "weight_decay": 0.0001,
+    "residual_loss_weight": 0.3,
+    "pearson_loss_weight": 0.2,
+    "shrinkage_regularization": 0.01
+  },
+  "checkpoint_metric": "validation_per_site_spearman_median",
+  "sealed_test_evaluated_during_development": false
+}
