@@ -82,6 +82,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--kinase-prior", type=Path, action="append", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument(
+        "--precision", choices=("float32", "bfloat16"), default="float32"
+    )
     parser.add_argument("--seed", type=int, default=20260720)
     parser.add_argument("--epochs", type=int, default=80)
     parser.add_argument("--patience", type=int, default=10)
@@ -110,6 +113,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--parent-calibration-ridge", type=float, default=1.0)
     parser.add_argument("--minimum-site-observations", type=int, default=8)
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--validate-inputs-only", action="store_true")
     return parser.parse_args()
 
 
@@ -141,6 +145,24 @@ def _target_columns(manifest: pd.DataFrame) -> tuple[list[str], list[str]]:
 
 def _torch(array: np.ndarray, device: torch.device, dtype: torch.dtype | None = None) -> torch.Tensor:
     return torch.as_tensor(array, device=device, dtype=dtype)
+
+
+def _slice_query_neighbours(
+    values: torch.Tensor, start: int, end: int
+) -> torch.Tensor:
+    """Slice the query axis for shared or pathway-expanded neighbour tensors."""
+    if values.ndim == 2:
+        return values[start:end]
+    if values.ndim == 3:
+        return values[:, start:end]
+    raise ValueError("neighbour tensor must have shape [query, k] or [pathway, query, k]")
+
+
+def _require_finite(name: str, value: torch.Tensor) -> None:
+    finite = torch.isfinite(value)
+    if not bool(finite.all()):
+        count = int((~finite).sum().detach().cpu())
+        raise FloatingPointError(f"{name} contains {count} non-finite values")
 
 
 def build_model(config: AxialHypergraphConfig, prior, device: torch.device):
@@ -184,8 +206,8 @@ def predict(
             protein_z.index_select(0, ids),
             baseline.index_select(0, ids),
             reference_cache,
-            neighbour_index[:, start:end],
-            neighbour_similarity[:, start:end],
+            _slice_query_neighbours(neighbour_index, start, end),
+            _slice_query_neighbours(neighbour_similarity, start, end),
         )
         parts.append(output["prediction"].float().cpu().numpy())
     return np.concatenate(parts, axis=0).astype(np.float32)
@@ -329,7 +351,9 @@ def main() -> int:
     train_similarity_tensor = _torch(train_similarity, device, torch.float32)
     validation_neighbour_tensor = _torch(validation_neighbour, device, torch.long)
     validation_similarity_tensor = _torch(validation_similarity, device, torch.float32)
-    use_bfloat16 = device.type == "cuda" and torch.cuda.is_bf16_supported()
+    use_bfloat16 = args.precision == "bfloat16"
+    if use_bfloat16 and (device.type != "cuda" or not torch.cuda.is_bf16_supported()):
+        raise ValueError("bfloat16 precision was requested on an unsupported device")
 
     input_manifest = {
         "rna": {"path": str(args.rna), "sha256": sha256_file(args.rna)},
@@ -357,6 +381,35 @@ def main() -> int:
         }
     ).to_csv(output / "tables/parent_protein_calibration.tsv", sep="\t", index=False)
 
+    if args.validate_inputs_only:
+        write_json(
+            output / "reports/input_validation_summary.json",
+            {
+                "status": "complete",
+                "architecture": model.checkpoint_metadata()["architecture"],
+                "n_development_samples": len(development_ids),
+                "n_training_samples": len(train_index),
+                "n_validation_samples": len(validation_index),
+                "n_sealed_samples": len(split.sealed_ids),
+                "n_rna_genes": rna_rank.shape[1],
+                "n_total_proteins": protein_prediction.shape[1],
+                "n_phosphosites": len(targets),
+                "n_pathways": len(prior.pathway_names),
+                "n_kinases": len(prior.kinase_names),
+                "mapped_parent_sites": int(prior.parent_protein_mask.sum()),
+                "mapped_kinase_sites": int(prior.site_kinase_mask.any(axis=1).sum()),
+                "mapped_specific_pathway_sites": int(
+                    ((prior.site_pathway_index != 0) & prior.site_pathway_mask)
+                    .any(axis=1)
+                    .sum()
+                ),
+                "sealed_phosphosite_rows_loaded": False,
+                "total_protein_trained_in_this_run": False,
+            },
+        )
+        (output / "INPUT_VALIDATION_SUCCESS").write_text("complete\n", encoding="utf-8")
+        return 0
+
     history: list[dict[str, float | int]] = []
     best_score = -np.inf
     best_epoch = 0
@@ -372,6 +425,8 @@ def main() -> int:
             train_similarity_tensor,
             chunk_size=args.cache_batch_size,
         )
+        for layer_index, cached_state in enumerate(reference_cache):
+            _require_finite(f"reference_cache[{layer_index}]", cached_state)
         model.train()
         generator = np.random.default_rng(args.seed + epoch)
         generator.shuffle(local_train)
@@ -411,6 +466,9 @@ def main() -> int:
                     mask_batch,
                     minimum_observations=min(args.minimum_site_observations, len(local)),
                 )
+                _require_finite("value_loss", value_loss)
+                _require_finite("residual_loss", residual_loss)
+                _require_finite("pearson_loss", pearson_loss)
                 loss = (
                     value_loss
                     + args.residual_loss_weight * residual_loss
@@ -418,7 +476,9 @@ def main() -> int:
                     + args.shrinkage_regularization * model.shrinkage_regularization()
                 )
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+            torch.nn.utils.clip_grad_norm_(
+                model.parameters(), 5.0, error_if_nonfinite=True
+            )
             optimizer.step()
             epoch_losses.append(float(loss.detach().cpu()))
             epoch_value.append(float(value_loss.detach().cpu()))
@@ -549,6 +609,7 @@ def main() -> int:
         "epochs_completed": len(history),
         "runtime_seconds": time.time() - started,
         "device": str(device),
+        "precision": args.precision,
         "total_protein_trained_in_this_run": False,
         "sealed_samples_evaluated": False,
         "sealed_phosphosite_rows_loaded": False,

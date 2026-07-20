@@ -15,6 +15,7 @@ from axial_dynamic_data import (  # noqa: E402
     build_biological_prior,
     build_query_reference_knn,
     fit_parent_calibration,
+    load_site_kinases,
     masked_row_median_center,
     validate_protein_prediction_provenance,
     validate_split_manifest,
@@ -125,3 +126,32 @@ def test_site_pathway_mapping_uses_full_gene_set():
     )
     assert prior.site_pathway_mask[0, 0]
     assert prior.site_pathway_index[0, 0] == 1
+
+
+def test_kinase_loader_supports_copheeksa_and_substrate_gene_site(tmp_path):
+    copheeksa = tmp_path / "copheeksa.tsv"
+    pd.DataFrame(
+        {"gene_site_id": ["AAK1|S624"], "kinase": ["CDK8"]}
+    ).to_csv(copheeksa, sep="\t", index=False)
+    substrate = tmp_path / "substrate.tsv"
+    pd.DataFrame(
+        {
+            "kinase_gene": ["AAK1", "MAPK1"],
+            "substrate_gene": ["ATP1A3", "AAK1"],
+            "substrate_site": ["T705", "S624"],
+        }
+    ).to_csv(substrate, sep="\t", index=False)
+    mapping = load_site_kinases(
+        [copheeksa, substrate], ["AAK1|S624", "ATP1A3|T705"]
+    )
+    assert mapping["AAK1|S624"] == {"CDK8", "MAPK1"}
+    assert mapping["ATP1A3|T705"] == {"AAK1"}
+
+
+def test_kinase_loader_supports_parent_gene_and_site(tmp_path):
+    prior_path = tmp_path / "site_prior.tsv"
+    pd.DataFrame(
+        {"kinase": ["AKT1"], "parent_gene": ["EIF4EBP1"], "site": ["T37"]}
+    ).to_csv(prior_path, sep="\t", index=False)
+    mapping = load_site_kinases([prior_path], ["EIF4EBP1|T37"])
+    assert mapping["EIF4EBP1|T37"] == {"AKT1"}

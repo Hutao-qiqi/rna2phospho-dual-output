@@ -15,6 +15,24 @@ from axial_dynamic_hypergraph import (  # noqa: E402
     masked_site_equal_mse,
     masked_site_equal_pearson_loss,
 )
+from train_axial_dynamic_hypergraph import _slice_query_neighbours  # noqa: E402
+
+
+def test_query_neighbour_slicing_uses_the_sample_axis():
+    shared = torch.arange(10 * 4).reshape(10, 4)
+    expanded = shared.unsqueeze(0).expand(3, -1, -1)
+    assert torch.equal(_slice_query_neighbours(shared, 2, 6), shared[2:6])
+    assert torch.equal(_slice_query_neighbours(expanded, 2, 6), expanded[:, 2:6])
+
+
+def test_constant_site_pearson_loss_has_finite_gradients():
+    prediction = torch.zeros(12, 4, requires_grad=True)
+    target = torch.arange(48, dtype=torch.float32).reshape(12, 4)
+    mask = torch.ones_like(target, dtype=torch.bool)
+    loss = masked_site_equal_pearson_loss(prediction, target, mask)
+    loss.backward()
+    assert torch.isfinite(loss)
+    assert torch.isfinite(prediction.grad).all()
 
 
 def make_model(site_chunk_size: int = 3):

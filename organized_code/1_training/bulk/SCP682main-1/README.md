@@ -1,5 +1,12 @@
 # SCP682main-1
 
+最新轴向动态通路图模型见：
+
+- `docs/AXIAL_DYNAMIC_HETEROGENEOUS_HYPERGRAPH.md`
+- `docs/FINAL_ARCHITECTURE_AUDIT_20260720.md`
+- `code/prepare_total_protein_anchor.py`
+- `code/train_axial_dynamic_hypergraph.py`
+
 实验性磷酸化分支。该分支修复磷酸化目标、母蛋白基线和残差的样本内中位数处理不一致，并实现总蛋白锚定的轴向动态通路图异质超图残差模型。
 
 正式主模型目录 `SCP682-main` 不受本分支影响。

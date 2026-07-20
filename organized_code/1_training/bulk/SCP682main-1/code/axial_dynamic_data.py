@@ -257,16 +257,21 @@ def select_pathways(
 def load_site_kinases(
     paths: Sequence[str | Path], targets: Sequence[str]
 ) -> dict[str, set[str]]:
-    target_set = set(map(str, targets))
+    target_lookup = {str(target).upper(): str(target) for target in targets}
+    target_set = set(target_lookup)
     mapping: dict[str, set[str]] = defaultdict(set)
     for item in paths:
         path = Path(item)
         if not path.exists():
             raise FileNotFoundError(f"missing kinase prior: {path}")
         separator = "," if path.suffix.lower() == ".csv" else "\t"
-        table = pd.read_csv(path, sep=separator)
+        table = pd.read_csv(path, sep=separator, low_memory=False)
         kinase_column = next(
-            (column for column in ["kinase", "kinases", "regulator"] if column in table.columns),
+            (
+                column
+                for column in ["kinase", "kinases", "regulator", "kinase_gene"]
+                if column in table.columns
+            ),
             None,
         )
         target_column = next(
@@ -274,9 +279,36 @@ def load_site_kinases(
             None,
         )
         if target_column is None and "target_id" in table.columns:
-            direct_overlap = table["target_id"].astype(str).isin(target_set).any()
+            direct_overlap = table["target_id"].astype(str).str.upper().isin(target_set).any()
             if direct_overlap:
                 target_column = "target_id"
+        if target_column is None and "phosphosite" in table.columns:
+            direct_overlap = table["phosphosite"].astype(str).str.upper().isin(target_set).any()
+            if direct_overlap:
+                target_column = "phosphosite"
+        if target_column is None:
+            gene_site_pairs = [
+                ("substrate_gene", "substrate_site"),
+                ("parent_gene", "site"),
+                ("gene", "site_canonical"),
+            ]
+            pair = next(
+                (
+                    (gene, site)
+                    for gene, site in gene_site_pairs
+                    if {gene, site} <= set(table.columns)
+                ),
+                None,
+            )
+            if pair is not None:
+                gene_column, site_column = pair
+                table = table.copy()
+                table["__target"] = (
+                    table[gene_column].astype(str).str.upper().str.strip()
+                    + "|"
+                    + table[site_column].astype(str).str.upper().str.strip()
+                )
+                target_column = "__target"
         if target_column is None and "target_index" in table.columns:
             target_by_index = {index: target for index, target in enumerate(targets)}
             table = table.copy()
@@ -285,9 +317,13 @@ def load_site_kinases(
         if kinase_column is None or target_column is None:
             raise ValueError(f"kinase prior has unsupported columns: {path}")
         for kinase, target in table[[kinase_column, target_column]].dropna().itertuples(index=False):
-            target = str(target)
-            if target in target_set:
-                mapping[target].add(str(kinase).upper())
+            target_key = str(target).upper().strip()
+            if target_key in target_set:
+                canonical_target = target_lookup[target_key]
+                for kinase_name in str(kinase).replace(";", ",").split(","):
+                    kinase_name = kinase_name.upper().strip()
+                    if kinase_name:
+                        mapping[canonical_target].add(kinase_name)
     return mapping
 
 

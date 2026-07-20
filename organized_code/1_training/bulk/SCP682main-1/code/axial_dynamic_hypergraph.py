@@ -150,7 +150,8 @@ class MultimodalPathwayEncoder(nn.Module):
             protein_prediction.detach(), protein_mask
         )
         summary = torch.cat([rna_moments, protein_moments], dim=-1)
-        state = self.fusion(torch.cat([rna_state, protein_state, summary], dim=-1))
+        fusion_input = torch.cat([rna_state, protein_state, summary], dim=-1)
+        state = self.fusion(fusion_input)
         pathway_ids = torch.arange(state.shape[1], device=state.device)
         return state + self.pathway_identity(pathway_ids).unsqueeze(0)
 
@@ -418,7 +419,8 @@ class HeterogeneousSiteHypergraphDecoder(nn.Module):
                 ],
                 dim=-1,
             )
-            raw_parts.append(self.decoder(decoder_input).squeeze(-1))
+            raw_part = self.decoder(decoder_input).squeeze(-1)
+            raw_parts.append(raw_part)
             if return_attention:
                 pathway_attention_parts.append(pathway_attention)
                 type_gate_parts.append(type_gate)
@@ -653,10 +655,17 @@ def masked_site_equal_pearson_loss(
     pred_centered = (prediction - pred_mean) * mask_f
     target_centered = (target - target_mean) * mask_f
     numerator = (pred_centered * target_centered).sum(dim=0)
-    denominator = pred_centered.square().sum(dim=0).sqrt()
-    denominator = denominator * target_centered.square().sum(dim=0).sqrt()
-    correlation = numerator / denominator.clamp_min(1.0e-8)
-    valid = (count >= int(minimum_observations)) & (denominator > 1.0e-8)
+    pred_square_sum = pred_centered.square().sum(dim=0)
+    target_square_sum = target_centered.square().sum(dim=0)
+    epsilon = 1.0e-8
+    denominator = pred_square_sum.clamp_min(epsilon).sqrt()
+    denominator = denominator * target_square_sum.clamp_min(epsilon).sqrt()
+    correlation = numerator / denominator
+    valid = (
+        (count >= int(minimum_observations))
+        & (pred_square_sum > epsilon)
+        & (target_square_sum > epsilon)
+    )
     if not bool(valid.any()):
         return prediction.sum() * 0.0
     return 1.0 - correlation[valid].mean()

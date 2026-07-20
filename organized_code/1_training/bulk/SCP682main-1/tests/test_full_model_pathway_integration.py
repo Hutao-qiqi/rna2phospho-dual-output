@@ -3,6 +3,10 @@ import sys
 from pathlib import Path
 
 import torch
+import pytest
+
+
+pytest.importorskip("torch_geometric")
 
 
 CODE = Path(__file__).parents[1] / "code"
