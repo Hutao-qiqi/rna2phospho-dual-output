@@ -212,6 +212,8 @@ def select_pathways(
     max_members: int = 128,
     minimum_members: int = 8,
 ) -> PathwaySelection:
+    if max_pathways < 1:
+        raise ValueError("max_pathways must be at least one")
     available = {str(gene).upper() for gene in rna_genes}
     parents = {str(gene).upper() for gene in parent_genes}
     order = np.argsort(-np.nan_to_num(train_variance, nan=-np.inf))
@@ -249,8 +251,11 @@ def select_pathways(
         selected[name] = genes
         selected_full[name] = full_genes
         existing.append(gene_set)
-    if len(selected) < 2:
-        raise ValueError("pathway selection produced fewer than two pathways")
+    required_pathways = 1 if max_pathways == 1 else 2
+    if len(selected) < required_pathways:
+        raise ValueError(
+            f"pathway selection produced fewer than {required_pathways} pathways"
+        )
     return PathwaySelection(members=selected, full_genes=selected_full)
 
 

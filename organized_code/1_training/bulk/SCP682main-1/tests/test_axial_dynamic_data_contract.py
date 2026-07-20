@@ -17,6 +17,7 @@ from axial_dynamic_data import (  # noqa: E402
     fit_parent_calibration,
     load_site_kinases,
     masked_row_median_center,
+    select_pathways,
     validate_protein_prediction_provenance,
     validate_split_manifest,
 )
@@ -45,6 +46,29 @@ def test_split_and_total_protein_provenance_contract(tmp_path):
     ).to_csv(provenance, sep="\t", index=False)
     table = validate_protein_prediction_provenance(provenance, split)
     assert set(table["sample_id"]) == {"T0", "T1", "V0"}
+
+
+def test_single_global_pathway_selection_is_explicitly_supported(tmp_path):
+    genes = [f"G{index}" for index in range(8)]
+    hallmark = tmp_path / "hallmark.gmt"
+    canonical = tmp_path / "canonical.gmt"
+    hallmark.write_text(
+        "HALLMARK_SIGNAL\tna\t" + "\t".join(genes) + "\n", encoding="utf-8"
+    )
+    canonical.write_text(
+        "CANONICAL_SIGNAL\tna\t" + "\t".join(genes) + "\n", encoding="utf-8"
+    )
+    selection = select_pathways(
+        hallmark,
+        canonical,
+        genes,
+        ["G0"],
+        np.arange(len(genes), dtype=np.float32),
+        max_pathways=1,
+        max_members=8,
+        minimum_members=8,
+    )
+    assert list(selection.members) == ["GLOBAL_CONTEXT"]
 
 
 def test_provenance_rejects_sealed_or_training_fitted_predictions(tmp_path):
