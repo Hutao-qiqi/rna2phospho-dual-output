@@ -85,6 +85,7 @@ def summarize_anchor(weights: np.ndarray, ext_index: pd.Index, train_index: pd.I
 
 def build_model(train_mod, ckpt: dict, device: torch.device):
     args = ckpt["args"]
+    pathway_prior = ckpt["pathway_prior"]
     model = train_mod.SCP682GeneralGraphResidual(
         n_sites=len(ckpt["targets"]),
         n_samples=len(ckpt["samples"]),
@@ -94,6 +95,13 @@ def build_model(train_mod, ckpt: dict, device: torch.device):
         embd_dim=int(args.get("embd_dim", 32)),
         num_layers=int(args.get("num_layers", 1)),
         sample_context_dim=int(args.get("rna_context_genes", 2048)),
+        pathway_gene_index=pathway_prior["rna_gene_index"],
+        pathway_gene_mask=pathway_prior["rna_gene_mask"],
+        site_pathway_index=pathway_prior["site_pathway_index"],
+        site_pathway_mask=pathway_prior["site_pathway_mask"],
+        pathway_hidden=int(args.get("pathway_hidden", 32)),
+        pathway_adapter_rank=int(args.get("pathway_adapter_rank", 4)),
+        site_pathway_chunk=int(args.get("site_pathway_chunk", 512)),
     ).to(device)
     model.load_state_dict(ckpt["model_state_dict"], strict=True)
     model.eval()
@@ -131,6 +139,7 @@ def run_one_dataset(args, train_mod, ext8, model, ckpt, device, dataset: str, ou
         external_rna=spec["rna"],
         external_samples=ext_base_full.index,
         n_genes=int(args.rna_context_genes),
+        fixed_genes=ckpt["rna_context_genes"],
     )[0]
     train_ctx = ctx.iloc[:len(samples)].to_numpy(np.float32)
     ext_ctx = ctx.iloc[len(samples):].to_numpy(np.float32)
@@ -144,6 +153,11 @@ def run_one_dataset(args, train_mod, ext8, model, ckpt, device, dataset: str, ou
         args.knn_rna_weight * train_mod.l2_sample_block(ext_ctx),
     ], axis=1).astype(np.float32)
     anchor_weights = topk_softmax_attention(ext_feature, train_feature, k=args.anchor_k, temperature=args.anchor_temperature)
+    pathway_neighbour, pathway_similarity = train_mod.build_query_reference_knn(
+        ext_ctx,
+        train_ctx,
+        k=int(ckpt["args"].get("pathway_knn", 12)),
+    )
 
     feature_x = np.where(train_mask.T, train_base.T, 0.0).astype(np.float32)
     mu = feature_x.mean(axis=1, keepdims=True)
@@ -166,6 +180,12 @@ def run_one_dataset(args, train_mod, ext8, model, ckpt, device, dataset: str, ou
         )
         weight_t = torch.as_tensor(anchor_weights, dtype=torch.float32, device=device)
         col_embed_ext = weight_t @ col_embed_train
+        pathway_state_ext, pathway_edge_attention = model.encode_pathways(
+            torch.as_tensor(ext_ctx, dtype=torch.float32, device=device),
+            torch.as_tensor(train_ctx, dtype=torch.float32, device=device),
+            torch.as_tensor(pathway_neighbour, dtype=torch.long, device=device),
+            torch.as_tensor(pathway_similarity, dtype=torch.float32, device=device),
+        )
         pred_parts = []
         for start in range(0, ext_base.shape[0], args.batch_size):
             end = min(ext_base.shape[0], start + args.batch_size)
@@ -175,6 +195,7 @@ def run_one_dataset(args, train_mod, ext8, model, ckpt, device, dataset: str, ou
                 torch.as_tensor(ext_base[start:end], dtype=torch.float32, device=device),
                 torch.as_tensor(ext_mask[start:end], dtype=torch.bool, device=device),
                 site_prior,
+                pathway_state_ext[start:end],
                 sample_context=torch.as_tensor(ext_ctx[start:end], dtype=torch.float32, device=device),
             )
             pred_parts.append(pred_b.detach().cpu())
@@ -187,6 +208,18 @@ def run_one_dataset(args, train_mod, ext8, model, ckpt, device, dataset: str, ou
     pred_df.to_parquet(raw_path)
     sample_median_center(pred_df).to_parquet(centered_path)
     summarize_anchor(anchor_weights, ext_base_full.index, samples, out / "tables" / f"{dataset}_anchor_top5.tsv")
+    pathway_rows = []
+    mean_attention = pathway_edge_attention.mean(dim=0).detach().cpu().numpy()
+    for p, pathway_name in enumerate(ckpt["pathway_prior"]["pathway_names"]):
+        for rank in range(mean_attention.shape[1]):
+            pathway_rows.append({
+                "pathway": pathway_name,
+                "candidate_rank": rank + 1,
+                "mean_attention": float(mean_attention[p, rank]),
+            })
+    pd.DataFrame(pathway_rows).to_csv(
+        out / "tables" / f"{dataset}_pathway_candidate_attention.tsv", sep="\t", index=False
+    )
 
     baseline_raw = ext_base_raw_df
     baseline_centered = ext_base_df
@@ -235,7 +268,8 @@ def main():
     model = build_model(train_mod, ckpt, device)
     config = vars(args).copy()
     config["device_resolved"] = str(device)
-    config["formula"] = "centered_phosphosite_hat = centered_general_baseline_hat + zero_median_graph_residual_theta(centered_general_baseline_hat, RNA, phosphosite_graph, sample_anchor_attention)"
+    config["formula"] = "centered_phosphosite_hat = centered_general_baseline_hat + zero_median_residual_theta(site_query, RNA_pathway_specific_reference_graph)"
+    config["external_graph_contract"] = "each external sample reads RNA states only from checkpoint training-reference samples"
     config["evaluation_target_transform"] = "per_sample_observed_phosphosite_median_centering"
     (out / "logs/fixed_anchor_config.json").write_text(json.dumps(config, indent=2, ensure_ascii=False), encoding="utf-8")
     all_rows = []

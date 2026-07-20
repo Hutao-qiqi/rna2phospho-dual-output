@@ -41,8 +41,20 @@ from torch_geometric.utils import negative_sampling, softmax
 
 try:
     from .centering import sample_median_center_array, project_zero_sample_median_torch
+    from .pathway_sample_graph import (
+        PathwaySpecificSampleGraph,
+        SparseSitePathwayReader,
+        build_pathway_prior,
+        build_query_reference_knn,
+    )
 except ImportError:
     from centering import sample_median_center_array, project_zero_sample_median_torch
+    from pathway_sample_graph import (
+        PathwaySpecificSampleGraph,
+        SparseSitePathwayReader,
+        build_pathway_prior,
+        build_query_reference_knn,
+    )
 
 
 EPS = 1e-15
@@ -167,7 +179,14 @@ def align_by_sample_key(df, target_index):
     return out
 
 
-def make_rna_context(train_rna, train_samples, external_rna=None, external_samples=None, n_genes=2048):
+def make_rna_context(
+    train_rna,
+    train_samples,
+    external_rna=None,
+    external_samples=None,
+    n_genes=2048,
+    fixed_genes=None,
+):
     train_rna = clean_numeric(train_rna)
     train_aligned = align_by_sample_key(train_rna, train_samples)
     if external_rna is not None and external_samples is not None:
@@ -178,8 +197,16 @@ def make_rna_context(train_rna, train_samples, external_rna=None, external_sampl
         external_aligned = None
         common = list(train_aligned.columns)
     train_block = train_aligned[common].apply(pd.to_numeric, errors="coerce")
-    var = train_block.var(axis=0, skipna=True).sort_values(ascending=False)
-    genes = list(var.index[: min(n_genes, len(var))])
+    if fixed_genes is None:
+        var = train_block.var(axis=0, skipna=True).sort_values(ascending=False)
+        genes = list(var.index[: min(n_genes, len(var))])
+    else:
+        genes = [str(g) for g in fixed_genes]
+        missing = [g for g in genes if g not in train_block.columns]
+        if external_aligned is not None:
+            missing.extend(g for g in genes if g not in external_aligned.columns)
+        if missing:
+            raise ValueError(f"RNA matrix lacks {len(set(missing))} checkpoint genes; example={sorted(set(missing))[:10]}")
     mean = train_block[genes].mean(axis=0, skipna=True)
     std = train_block[genes].std(axis=0, skipna=True).replace(0, np.nan).fillna(1.0)
     train_ctx = ((train_block[genes] - mean) / std).replace([np.inf, -np.inf], np.nan).fillna(0.0).clip(-6, 6)
@@ -511,11 +538,35 @@ class SCP682GeneralGraphResidual(nn.Module):
         embd_dim=64,
         num_layers=2,
         sample_context_dim=0,
+        pathway_gene_index=None,
+        pathway_gene_mask=None,
+        site_pathway_index=None,
+        site_pathway_mask=None,
+        pathway_hidden=32,
+        pathway_adapter_rank=4,
+        site_pathway_chunk=512,
     ):
         super().__init__()
         self.n_sites = n_sites
         self.sample_context_dim = int(sample_context_dim)
+        if any(x is None for x in (pathway_gene_index, pathway_gene_mask, site_pathway_index, site_pathway_mask)):
+            raise ValueError("SCP682main-1 requires complete pathway membership tensors")
+        self.site_pathway_chunk = int(site_pathway_chunk)
         self.graph_core = ExactScNETGraph(n_sites, n_samples, inter_dim=inter_dim, embd_dim=embd_dim, num_layers=num_layers)
+        self.pathway_graph = PathwaySpecificSampleGraph(
+            n_rna=self.sample_context_dim,
+            rna_gene_index=torch.as_tensor(pathway_gene_index, dtype=torch.long),
+            rna_gene_mask=torch.as_tensor(pathway_gene_mask, dtype=torch.bool),
+            hidden=pathway_hidden,
+            adapter_rank=pathway_adapter_rank,
+        )
+        self.site_pathway_reader = SparseSitePathwayReader(
+            site_hidden=embd_dim,
+            pathway_hidden=pathway_hidden,
+            output_hidden=latent,
+            site_pathway_index=torch.as_tensor(site_pathway_index, dtype=torch.long),
+            site_pathway_mask=torch.as_tensor(site_pathway_mask, dtype=torch.bool),
+        )
         self.site_prior_proj = nn.Sequential(nn.Linear(1, hidden), nn.GELU(), nn.LayerNorm(hidden))
         self.baseline_proj = nn.Sequential(nn.Linear(2, hidden), nn.GELU(), nn.LayerNorm(hidden))
         self.site_proj = nn.Sequential(nn.Linear(embd_dim, hidden), nn.GELU(), nn.LayerNorm(hidden))
@@ -524,15 +575,21 @@ class SCP682GeneralGraphResidual(nn.Module):
             nn.Sequential(nn.Linear(self.sample_context_dim, latent), nn.GELU(), nn.LayerNorm(latent))
             if self.sample_context_dim > 0 else None
         )
-        self.prior_attention = nn.Sequential(nn.LayerNorm(hidden + hidden + latent + 1), nn.Linear(hidden + hidden + latent + 1, hidden), nn.GELU(), nn.Linear(hidden, 1))
-        self.graph_decoder = nn.Sequential(nn.LayerNorm(hidden + hidden + latent + 1), nn.Linear(hidden + hidden + latent + 1, hidden), nn.GELU(), nn.Dropout(0.08), nn.Linear(hidden, 1))
-        self.residual = nn.Sequential(nn.LayerNorm(hidden + hidden + latent), nn.Linear(hidden + hidden + latent, hidden), nn.GELU(), nn.Dropout(0.10), nn.Linear(hidden, 1))
+        decoder_dim = hidden + hidden + latent + latent + 1
+        residual_dim = hidden + hidden + latent + latent
+        self.prior_attention = nn.Sequential(nn.LayerNorm(decoder_dim), nn.Linear(decoder_dim, hidden), nn.GELU(), nn.Linear(hidden, 1))
+        self.graph_decoder = nn.Sequential(nn.LayerNorm(decoder_dim), nn.Linear(decoder_dim, hidden), nn.GELU(), nn.Dropout(0.08), nn.Linear(hidden, 1))
+        self.residual = nn.Sequential(nn.LayerNorm(residual_dim), nn.Linear(residual_dim, hidden), nn.GELU(), nn.Dropout(0.10), nn.Linear(hidden, 1))
         self.graph_scale = nn.Parameter(torch.tensor(-0.2))
         self.residual_scale = nn.Parameter(torch.tensor(-1.4))
 
-    def decode(self, row_embed, col_embed, baseline, mask, site_prior, sample_idx=None, sample_context=None):
+    def encode_pathways(self, query_rna, reference_rna, neighbour_index, neighbour_similarity):
+        return self.pathway_graph(query_rna, reference_rna, neighbour_index, neighbour_similarity)
+
+    def decode(self, row_embed, col_embed, baseline, mask, site_prior, pathway_state, sample_idx=None, sample_context=None):
         if sample_idx is not None:
             col_embed = col_embed.index_select(0, sample_idx)
+            pathway_state = pathway_state.index_select(0, sample_idx)
         base_h = self.baseline_proj(torch.stack([baseline, mask.float()], dim=-1))
         site_h = self.site_proj(row_embed).unsqueeze(0).expand(baseline.shape[0], -1, -1)
         sample_z0 = self.sample_proj(col_embed)
@@ -541,21 +598,26 @@ class SCP682GeneralGraphResidual(nn.Module):
                 sample_context = sample_context.index_select(0, sample_idx)
             sample_z0 = sample_z0 + self.sample_context_proj(sample_context)
         sample_z = sample_z0.unsqueeze(1).expand(-1, baseline.shape[1], -1)
+        pathway_z = self.site_pathway_reader(
+            pathway_state,
+            row_embed,
+            chunk_size=self.site_pathway_chunk,
+        )
         prior = site_prior.unsqueeze(0).expand(baseline.shape[0], -1)
         prior_h = self.site_prior_proj(prior.unsqueeze(-1))
-        graph_input = torch.cat([base_h + prior_h, site_h, sample_z, prior.unsqueeze(-1)], dim=-1)
+        graph_input = torch.cat([base_h + prior_h, site_h, sample_z, pathway_z, prior.unsqueeze(-1)], dim=-1)
         attention = torch.sigmoid(self.prior_attention(graph_input)).squeeze(-1)
         graph_delta = attention * self.graph_decoder(graph_input).squeeze(-1) * torch.sigmoid(self.graph_scale)
-        residual_delta = self.residual(torch.cat([base_h, site_h, sample_z], dim=-1)).squeeze(-1) * torch.sigmoid(self.residual_scale)
+        residual_delta = self.residual(torch.cat([base_h, site_h, sample_z, pathway_z], dim=-1)).squeeze(-1) * torch.sigmoid(self.residual_scale)
         delta = graph_delta + residual_delta
         delta = project_zero_sample_median_torch(delta, mask)
         pred = baseline + delta
         return pred, delta, graph_delta, residual_delta, attention
 
-    def forward(self, feature_x, col_edge_index, row_edge_index, baseline, mask, site_prior, collect_attention=True, sample_idx=None, sample_context=None):
+    def forward(self, feature_x, col_edge_index, row_edge_index, baseline, mask, site_prior, pathway_state, collect_attention=True, sample_idx=None, sample_context=None):
         row_embed, col_embed, out_features = self.graph_core(feature_x, col_edge_index, row_edge_index, collect_attention=collect_attention)
         pred, delta, graph_delta, residual_delta, attention = self.decode(
-            row_embed, col_embed, baseline, mask, site_prior, sample_idx=sample_idx, sample_context=sample_context
+            row_embed, col_embed, baseline, mask, site_prior, pathway_state, sample_idx=sample_idx, sample_context=sample_context
         )
         return pred, delta, graph_delta, residual_delta, attention, row_embed, col_embed, out_features
 
@@ -585,6 +647,16 @@ def main():
     )
     ap.add_argument("--group-column", default="cancer_label")
     ap.add_argument("--rna-context-genes", type=int, default=2048)
+    ap.add_argument("--hallmark-gmt", required=True)
+    ap.add_argument("--canonical-pathway-gmt", required=True)
+    ap.add_argument("--max-pathways", type=int, default=128)
+    ap.add_argument("--min-pathway-genes", type=int, default=8)
+    ap.add_argument("--max-pathway-genes", type=int, default=128)
+    ap.add_argument("--max-site-pathways", type=int, default=8)
+    ap.add_argument("--pathway-knn", type=int, default=12)
+    ap.add_argument("--pathway-hidden", type=int, default=32)
+    ap.add_argument("--pathway-adapter-rank", type=int, default=4)
+    ap.add_argument("--site-pathway-chunk", type=int, default=512)
     ap.add_argument("--knn-baseline-weight", type=float, default=0.70)
     ap.add_argument("--knn-rna-weight", type=float, default=1.00)
     ap.add_argument("--anchor-k", type=int, default=25)
@@ -634,6 +706,22 @@ def main():
     residual_true[~mask] = 0.0
 
     edge_index_np, site_prior_np, source_counts = build_site_graph(targets, Path(args.prior_root))
+    pathway_prior = build_pathway_prior(
+        rna_context_genes,
+        targets,
+        args.hallmark_gmt,
+        args.canonical_pathway_gmt,
+        max_pathways=args.max_pathways,
+        min_genes=args.min_pathway_genes,
+        max_genes_per_pathway=args.max_pathway_genes,
+        max_site_pathways=args.max_site_pathways,
+    )
+    pathway_neighbour_np, pathway_similarity_np = build_query_reference_knn(
+        sample_context_df.to_numpy(np.float32),
+        sample_context_df.to_numpy(np.float32),
+        k=args.pathway_knn,
+        exclude_matching_rows=True,
+    )
     sample_feature_np = np.concatenate([
         args.knn_baseline_weight * l2_sample_block(np.where(mask, baseline, 0.0)),
         args.knn_rna_weight * l2_sample_block(sample_context_df.to_numpy(np.float32)),
@@ -660,6 +748,8 @@ def main():
         "site_prior": torch.as_tensor(site_prior_np, dtype=torch.float32, device=device),
         "site_weight": torch.as_tensor(site_weight, dtype=torch.float32, device=device),
         "sample_context": torch.as_tensor(sample_context_df.to_numpy(np.float32), dtype=torch.float32, device=device),
+        "pathway_neighbour": torch.as_tensor(pathway_neighbour_np, dtype=torch.long, device=device),
+        "pathway_similarity": torch.as_tensor(pathway_similarity_np, dtype=torch.float32, device=device),
         "sample_feature": torch.as_tensor(sample_feature_np, dtype=torch.float32, device=device),
         "row_edge_index": torch.as_tensor(edge_index_np, dtype=torch.long, device=device),
         "col_edge_index": torch.as_tensor(col_edge_np, dtype=torch.long, device=device),
@@ -674,6 +764,13 @@ def main():
         embd_dim=args.embd_dim,
         num_layers=args.num_layers,
         sample_context_dim=sample_context_df.shape[1],
+        pathway_gene_index=pathway_prior["rna_gene_index"],
+        pathway_gene_mask=pathway_prior["rna_gene_mask"],
+        site_pathway_index=pathway_prior["site_pathway_index"],
+        site_pathway_mask=pathway_prior["site_pathway_mask"],
+        pathway_hidden=args.pathway_hidden,
+        pathway_adapter_rank=args.pathway_adapter_rank,
+        site_pathway_chunk=args.site_pathway_chunk,
     ).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-5, foreach=False)
     best = {"median_spearman": -1e9, "epoch": 0}
@@ -689,7 +786,7 @@ def main():
         "device": str(device),
         "baseline": "SCP682_general_baseline_predictor",
         "general_baseline_path": str(args.general_baseline_path),
-        "formula": "centered_phosphosite_hat = centered_general_baseline_hat + zero_median_graph_residual_theta(centered_general_baseline_hat, RNA, phosphosite_graph, sample_graph)",
+        "formula": "centered_phosphosite_hat = centered_general_baseline_hat + zero_median_residual_theta(site_query, RNA_pathway_specific_sample_graph)",
         "target_transform": "per_sample_observed_phosphosite_median_centering",
         "baseline_transform": "per_sample_available_baseline_median_centering",
         "residual_projection": "per_sample_zero_median_over_available_sites",
@@ -699,6 +796,11 @@ def main():
         "group_sizes": {str(k): int(len(v)) for k, v in group_indices.items()},
         "rna_path": str(args.rna_path),
         "rna_context_genes": int(len(rna_context_genes)),
+        "pathway_graph_contract": "RNA-only shared candidate neighbours with learned pathway-specific edge weights",
+        "n_pathways": int(len(pathway_prior["pathway_names"])),
+        "pathway_names": pathway_prior["pathway_names"],
+        "pathway_knn": int(args.pathway_knn),
+        "max_site_pathways": int(args.max_site_pathways),
         "knn_baseline_weight": float(args.knn_baseline_weight),
         "knn_rna_weight": float(args.knn_rna_weight),
         "anchor_k": int(args.anchor_k),
@@ -711,6 +813,18 @@ def main():
         "observed_phosphosite_median": target_sample_offset,
         "general_baseline_median": baseline_sample_offset,
     }).to_csv(out / "tables/training_sample_centering_offsets.tsv", sep="\t", index=False)
+    pd.DataFrame([
+        {"pathway_index": p, "pathway": name, "gene": gene}
+        for p, (name, genes) in enumerate(zip(pathway_prior["pathway_names"], pathway_prior["pathway_genes"]))
+        for gene in genes
+    ]).to_csv(out / "tables/pathway_rna_membership.tsv", sep="\t", index=False)
+    site_pathway_rows = []
+    for s, target in enumerate(targets):
+        for slot, valid in enumerate(pathway_prior["site_pathway_mask"][s]):
+            if valid:
+                p = int(pathway_prior["site_pathway_index"][s, slot])
+                site_pathway_rows.append({"site_index": s, "target": target, "pathway_index": p, "pathway": pathway_prior["pathway_names"][p]})
+    pd.DataFrame(site_pathway_rows).to_csv(out / "tables/site_pathway_membership.tsv", sep="\t", index=False)
 
     group_names = list(group_indices.keys())
     all_sample_np = np.arange(len(samples), dtype=np.int64)
@@ -735,6 +849,17 @@ def main():
                     k=args.anchor_k,
                     temperature=args.anchor_temperature,
                 )
+                q_path_idx_np, q_path_sim_np = build_query_reference_knn(
+                    sample_context_df.to_numpy(np.float32)[q_np],
+                    sample_context_df.to_numpy(np.float32)[a_np],
+                    k=args.pathway_knn,
+                )
+                anchored_pathway, _ = model.encode_pathways(
+                    tensors["sample_context"].index_select(0, q_idx),
+                    tensors["sample_context"].index_select(0, a_idx),
+                    torch.as_tensor(q_path_idx_np, dtype=torch.long, device=device),
+                    torch.as_tensor(q_path_sim_np, dtype=torch.float32, device=device),
+                )
                 for local_start in range(0, q_np.shape[0], args.batch_size):
                     local_end = min(q_np.shape[0], local_start + args.batch_size)
                     src = q_idx[local_start:local_end]
@@ -744,6 +869,7 @@ def main():
                         tensors["baseline"].index_select(0, src),
                         tensors["mask"].index_select(0, src),
                         tensors["site_prior"],
+                        anchored_pathway[local_start:local_end],
                         sample_context=tensors["sample_context"].index_select(0, src),
                     )
                     pred_np[q_np[local_start:local_end], :] = pred_b.detach().cpu().numpy()
@@ -753,6 +879,12 @@ def main():
         model.train()
         row_embed, col_embed, out_features = model.graph_core(
             tensors["feature_x"], tensors["col_edge_index"], tensors["row_edge_index"], collect_attention=True
+        )
+        pathway_state, pathway_edge_attention = model.encode_pathways(
+            tensors["sample_context"],
+            tensors["sample_context"],
+            tensors["pathway_neighbour"],
+            tensors["pathway_similarity"],
         )
         n_samples = tensors["baseline"].shape[0]
         n_batches = int(math.ceil(n_samples / args.batch_size))
@@ -771,6 +903,7 @@ def main():
                 tensors["baseline"].index_select(0, idx),
                 tensors["mask"].index_select(0, idx),
                 tensors["site_prior"],
+                pathway_state,
                 sample_context=tensors["sample_context"],
                 sample_idx=idx,
             )
@@ -803,6 +936,17 @@ def main():
                     k=args.anchor_k,
                     temperature=args.anchor_temperature,
                 )
+                q_path_idx_np, q_path_sim_np = build_query_reference_knn(
+                    sample_context_df.to_numpy(np.float32)[q_np],
+                    sample_context_df.to_numpy(np.float32)[a_np],
+                    k=args.pathway_knn,
+                )
+                anchored_pathway, _ = model.encode_pathways(
+                    tensors["sample_context"].index_select(0, q_idx_all),
+                    tensors["sample_context"].index_select(0, a_idx),
+                    torch.as_tensor(q_path_idx_np, dtype=torch.long, device=device),
+                    torch.as_tensor(q_path_sim_np, dtype=torch.float32, device=device),
+                )
                 n_pseudo_batches = int(math.ceil(q_np.shape[0] / args.batch_size))
                 for local_start in range(0, q_np.shape[0], args.batch_size):
                     local_end = min(q_np.shape[0], local_start + args.batch_size)
@@ -813,6 +957,7 @@ def main():
                         tensors["baseline"].index_select(0, src),
                         tensors["mask"].index_select(0, src),
                         tensors["site_prior"],
+                        anchored_pathway[local_start:local_end],
                         sample_context=tensors["sample_context"].index_select(0, src),
                     )
                     y_b = tensors["y"].index_select(0, src)
@@ -857,6 +1002,12 @@ def main():
                 row_embed, col_embed, out_features = model.graph_core(
                     tensors["feature_x"], tensors["col_edge_index"], tensors["row_edge_index"], collect_attention=False
                 )
+                pathway_state, pathway_edge_attention = model.encode_pathways(
+                    tensors["sample_context"],
+                    tensors["sample_context"],
+                    tensors["pathway_neighbour"],
+                    tensors["pathway_similarity"],
+                )
                 pred_chunks = []
                 graph_abs_eval = []
                 residual_abs_eval = []
@@ -869,6 +1020,7 @@ def main():
                         tensors["baseline"].index_select(0, idx),
                         tensors["mask"].index_select(0, idx),
                         tensors["site_prior"],
+                        pathway_state,
                         sample_context=tensors["sample_context"],
                         sample_idx=idx,
                     )
@@ -906,6 +1058,9 @@ def main():
                 "attention_mean": float(torch.stack(att_eval).mean()),
                 "graph_abs": float(torch.stack(graph_abs_eval).mean()),
                 "residual_abs": float(torch.stack(residual_abs_eval).mean()),
+                "pathway_attention_entropy": float(
+                    (-(pathway_edge_attention.clamp_min(1e-8) * pathway_edge_attention.clamp_min(1e-8).log()).sum(dim=-1).mean()).cpu()
+                ),
                 "elapsed_sec": round(time.time() - start, 2),
             }
             logs.append(row)
@@ -921,6 +1076,10 @@ def main():
                     "site_prior": site_prior_np,
                     "site_edge_index": edge_index_np,
                     "sample_edge_index": tensors["col_edge_index"].detach().cpu(),
+                    "rna_context_genes": list(rna_context_genes),
+                    "pathway_prior": pathway_prior,
+                    "pathway_candidate_index": pathway_neighbour_np,
+                    "pathway_candidate_similarity": pathway_similarity_np,
                     "group_column": args.group_column,
                     "group_labels": group_labels.tolist(),
                     "meta": meta,
@@ -929,6 +1088,16 @@ def main():
                 per.to_csv(out / "tables/per_site_spearman_best.tsv", sep="\t", index=False)
                 pseudo_per.to_csv(out / "tables/per_site_pseudo_external_spearman_best.tsv", sep="\t", index=False)
                 pd.DataFrame([base_summary, summary, pseudo_summary]).to_csv(out / "tables/model_summary_best.tsv", sep="\t", index=False)
+                mean_pathway_attention = pathway_edge_attention.mean(dim=0).detach().cpu().numpy()
+                pd.DataFrame([
+                    {
+                        "pathway": pathway_prior["pathway_names"][p],
+                        "candidate_rank": rank + 1,
+                        "mean_attention": float(mean_pathway_attention[p, rank]),
+                    }
+                    for p in range(mean_pathway_attention.shape[0])
+                    for rank in range(mean_pathway_attention.shape[1])
+                ]).to_csv(out / "tables/pathway_candidate_attention_best.tsv", sep="\t", index=False)
                 pd.DataFrame(pred_np, index=samples, columns=targets).to_parquet(out / "predictions/scp682_general_graph_residual_trainmode_phosphosite_best.parquet")
                 pd.DataFrame(pseudo_pred_np, index=samples, columns=targets).to_parquet(out / "predictions/scp682_general_graph_residual_pseudo_external_phosphosite_best.parquet")
 
