@@ -12,8 +12,11 @@ sys.path.insert(0, str(CODE))
 from axial_dynamic_hypergraph import (  # noqa: E402
     AxialHypergraphConfig,
     ProteinAnchoredAxialDynamicHypergraph,
+    compose_training_objective,
+    masked_sample_intercept_site_equal_mse,
     masked_site_equal_mse,
     masked_site_equal_pearson_loss,
+    masked_site_equal_variance_loss,
 )
 from train_axial_dynamic_hypergraph import _slice_query_neighbours  # noqa: E402
 
@@ -78,6 +81,8 @@ def make_model(site_chunk_size: int = 3):
             dtype=torch.bool,
         ),
         site_coverage=torch.linspace(0.2, 1.0, 7),
+        site_anchor_quality=torch.linspace(0.1, 0.7, 7),
+        site_anchor_coverage=torch.linspace(0.3, 0.9, 7),
     )
 
 
@@ -94,6 +99,14 @@ def reference_inputs():
     return rna, protein, neighbour, similarity
 
 
+def reference_label_memory():
+    residual = torch.arange(35, dtype=torch.float32).reshape(5, 7) / 10.0
+    mask = torch.ones_like(residual, dtype=torch.bool)
+    mask[1, 2] = False
+    residual[1, 2] = 9999.0
+    return residual, mask
+
+
 def test_forward_backward_and_frozen_total_protein_input():
     model = make_model()
     reference_rna, reference_protein, reference_neighbour, reference_similarity = reference_inputs()
@@ -104,6 +117,7 @@ def test_forward_backward_and_frozen_total_protein_input():
     query_rna = torch.randn(2, 6, requires_grad=True)
     query_protein = torch.randn(2, 4, requires_grad=True)
     baseline = torch.randn(2, 7)
+    reference_residual, reference_residual_mask = reference_label_memory()
     output = model(
         query_rna,
         query_protein,
@@ -111,6 +125,8 @@ def test_forward_backward_and_frozen_total_protein_input():
         cache,
         torch.tensor([[0, 1], [2, 3]]),
         torch.tensor([[0.8, 0.4], [0.7, 0.3]]),
+        reference_residual,
+        reference_residual_mask,
         return_attention=True,
     )
     assert output["prediction"].shape == (2, 7)
@@ -123,6 +139,11 @@ def test_forward_backward_and_frozen_total_protein_input():
     )
     assert torch.allclose(
         torch.quantile(output["centered_residual"], 0.5, dim=1),
+        torch.zeros(2),
+        atol=1.0e-6,
+    )
+    assert torch.allclose(
+        torch.quantile(output["prediction"], 0.5, dim=1),
         torch.zeros(2),
         atol=1.0e-6,
     )
@@ -142,8 +163,12 @@ def test_external_query_is_invariant_to_other_query_samples():
     baseline = torch.randn(1, 7)
     neighbour = torch.tensor([[0, 2]])
     similarity = torch.tensor([[0.8, 0.4]])
+    reference_residual, reference_residual_mask = reference_label_memory()
     with torch.no_grad():
-        single = model(rna, protein, baseline, cache, neighbour, similarity)["prediction"]
+        single = model(
+            rna, protein, baseline, cache, neighbour, similarity,
+            reference_residual, reference_residual_mask,
+        )["prediction"]
         paired = model(
             torch.cat([rna, torch.randn_like(rna)], dim=0),
             torch.cat([protein, torch.randn_like(protein)], dim=0),
@@ -151,6 +176,8 @@ def test_external_query_is_invariant_to_other_query_samples():
             cache,
             torch.cat([neighbour, torch.tensor([[1, 3]])], dim=0),
             torch.cat([similarity, torch.tensor([[0.7, 0.2]])], dim=0),
+            reference_residual,
+            reference_residual_mask,
         )["prediction"]
     assert torch.allclose(single[0], paired[0], atol=1.0e-6)
 
@@ -171,9 +198,16 @@ def test_site_chunking_does_not_change_definition():
     baseline = torch.randn(2, 7)
     neighbour = torch.tensor([[0, 1], [2, 3]])
     similarity = torch.tensor([[0.8, 0.4], [0.7, 0.3]])
+    reference_residual, reference_residual_mask = reference_label_memory()
     with torch.no_grad():
-        left = small(query_rna, query_protein, baseline, cache_small, neighbour, similarity)
-        right = full(query_rna, query_protein, baseline, cache_full, neighbour, similarity)
+        left = small(
+            query_rna, query_protein, baseline, cache_small, neighbour, similarity,
+            reference_residual, reference_residual_mask,
+        )
+        right = full(
+            query_rna, query_protein, baseline, cache_full, neighbour, similarity,
+            reference_residual, reference_residual_mask,
+        )
     assert torch.allclose(left["prediction"], right["prediction"], atol=1.0e-6)
 
 
@@ -183,6 +217,83 @@ def test_equal_site_losses_are_finite_and_differentiable():
     mask = torch.ones(12, 5, dtype=torch.bool)
     loss = masked_site_equal_mse(prediction, target, mask)
     loss = loss + masked_site_equal_pearson_loss(prediction, target, mask)
+    loss = loss + masked_site_equal_variance_loss(prediction, target, mask)
     assert torch.isfinite(loss)
     loss.backward()
     assert torch.isfinite(prediction.grad).all()
+
+
+def test_value_loss_ignores_one_offset_per_sample():
+    target = torch.randn(12, 5)
+    prediction = target + torch.linspace(-3.0, 3.0, 12).unsqueeze(1)
+    mask = torch.ones_like(target, dtype=torch.bool)
+    loss = masked_sample_intercept_site_equal_mse(prediction, target, mask)
+    assert torch.allclose(loss, torch.zeros_like(loss), atol=1.0e-6)
+
+
+def test_reference_missing_mask_blocks_hidden_residual_value():
+    model = make_model().eval()
+    reference_rna, reference_protein, reference_neighbour, reference_similarity = reference_inputs()
+    cache = model.build_reference_cache(
+        reference_rna, reference_protein, reference_neighbour, reference_similarity
+    )
+    query_rna = torch.randn(1, 6)
+    query_protein = torch.randn(1, 4)
+    baseline = torch.randn(1, 7)
+    neighbour = torch.tensor([[1, 0]])
+    similarity = torch.tensor([[0.9, 0.1]])
+    residual, residual_mask = reference_label_memory()
+    changed = residual.clone()
+    changed[1, 2] = -9999.0
+    with torch.no_grad():
+        left = model(
+            query_rna, query_protein, baseline, cache, neighbour, similarity,
+            residual, residual_mask,
+        )["prediction"]
+        right = model(
+            query_rna, query_protein, baseline, cache, neighbour, similarity,
+            changed, residual_mask,
+        )["prediction"]
+    assert torch.allclose(left, right, atol=1.0e-6)
+
+
+def test_reference_labels_do_not_change_query_graph_attention():
+    model = make_model().eval()
+    reference_rna, reference_protein, reference_neighbour, reference_similarity = reference_inputs()
+    cache = model.build_reference_cache(
+        reference_rna, reference_protein, reference_neighbour, reference_similarity
+    )
+    query_rna = torch.randn(1, 6)
+    query_protein = torch.randn(1, 4)
+    baseline = torch.randn(1, 7)
+    neighbour = torch.tensor([[0, 2]])
+    similarity = torch.tensor([[0.8, 0.4]])
+    residual, residual_mask = reference_label_memory()
+    with torch.no_grad():
+        left = model(
+            query_rna, query_protein, baseline, cache, neighbour, similarity,
+            residual, residual_mask, return_attention=True,
+        )
+        right = model(
+            query_rna, query_protein, baseline, cache, neighbour, similarity,
+            residual + 1000.0, residual_mask, return_attention=True,
+        )
+    for left_attention, right_attention in zip(
+        left["sample_attention"], right["sample_attention"]
+    ):
+        assert torch.allclose(left_attention, right_attention, atol=1.0e-7)
+
+
+def test_training_objective_has_no_duplicate_residual_mse():
+    values = [torch.tensor(float(index), requires_grad=True) for index in range(1, 5)]
+    total, components = compose_training_objective(
+        *values,
+        pearson_weight=0.2,
+        variance_weight=0.1,
+        shrinkage_weight=0.01,
+    )
+    assert set(components) == {
+        "site_equal_mse", "site_equal_pearson", "site_equal_variance", "site_shrinkage"
+    }
+    assert "residual_mse" not in components
+    total.backward()

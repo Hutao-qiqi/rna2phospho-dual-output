@@ -14,11 +14,16 @@ sys.path.insert(0, str(CODE))
 from axial_dynamic_data import (  # noqa: E402
     build_biological_prior,
     build_query_reference_knn,
+    apply_study_site_standardization,
+    fit_study_site_standardization,
     fit_parent_calibration,
     load_site_kinases,
     masked_row_median_center,
+    read_sample_studies,
+    read_parquet_rows,
     select_pathways,
     validate_protein_prediction_provenance,
+    validate_case_split_disjointness,
     validate_split_manifest,
 )
 
@@ -42,6 +47,11 @@ def test_split_and_total_protein_provenance_contract(tmp_path):
             "sample_id": ["T0", "T1", "V0"],
             "prediction_role": ["cross_fitted", "cross_fitted", "selection_train_only"],
             "phosphosite_labels_used": [False, False, False],
+            "source_model_id": ["fold0", "fold1", "train_full"],
+            "source_fold": ["0", "1", "selection_train"],
+            "sample_in_source_training": [False, False, False],
+            "source_archive": ["a.npz", "a.npz", "b.npz"],
+            "source_row_index": [0, 1, 0],
         }
     ).to_csv(provenance, sep="\t", index=False)
     table = validate_protein_prediction_provenance(provenance, split)
@@ -79,10 +89,31 @@ def test_provenance_rejects_sealed_or_training_fitted_predictions(tmp_path):
             "sample_id": ["T0", "T1", "S0"],
             "prediction_role": ["selection_train_only", "cross_fitted", "selection_train_only"],
             "phosphosite_labels_used": [False, False, False],
+            "source_model_id": ["bad", "fold1", "train_full"],
+            "source_fold": ["all", "1", "selection_train"],
+            "sample_in_source_training": [True, False, False],
+            "source_archive": ["a.npz", "a.npz", "b.npz"],
+            "source_row_index": [0, 1, 0],
         }
     ).to_csv(provenance, sep="\t", index=False)
     with pytest.raises(ValueError):
         validate_protein_prediction_provenance(provenance, split)
+
+
+def test_legacy_crossfit_provenance_is_explicitly_downgraded(tmp_path):
+    split = validate_split_manifest(write_split(tmp_path), expected_sizes=(2, 1, 1))
+    provenance = tmp_path / "legacy.tsv"
+    pd.DataFrame(
+        {
+            "sample_id": ["T0", "T1", "V0"],
+            "prediction_role": ["cross_fitted", "cross_fitted", "selection_train_only"],
+            "phosphosite_labels_used": [False, False, False],
+            "source_archive": ["a.npz", "a.npz", "b.npz"],
+            "source_row_index": [0, 1, 0],
+        }
+    ).to_csv(provenance, sep="\t", index=False)
+    table = validate_protein_prediction_provenance(provenance, split)
+    assert table.attrs["crossfit_evidence_level"] == "audited_archive_and_role_only"
 
 
 def test_parent_calibration_uses_only_declared_training_rows():
@@ -122,6 +153,79 @@ def test_candidate_graph_excludes_the_same_training_sample():
         reference_ids=["A", "B", "C", "D"],
     )
     assert all(row not in index[row].tolist() for row in range(4))
+
+
+def test_candidate_graph_excludes_self_when_k_reaches_reference_count():
+    features = np.eye(4, dtype=np.float32)
+    index, _ = build_query_reference_knn(
+        features,
+        features,
+        99,
+        query_ids=["A", "B", "C", "D"],
+        reference_ids=["A", "B", "C", "D"],
+    )
+    assert index.shape == (4, 3)
+    assert all(row not in index[row].tolist() for row in range(4))
+
+
+def test_study_site_standardization_uses_training_rows_only():
+    values = np.asarray(
+        [[1.0, 10.0], [3.0, 14.0], [100.0, 1000.0]], dtype=np.float32
+    )
+    studies = np.asarray(["A", "A", "A"])
+    fitted = fit_study_site_standardization(values, studies, np.asarray([0, 1]))
+    changed = values.copy()
+    changed[2] = -10000.0
+    refitted = fit_study_site_standardization(changed, studies, np.asarray([0, 1]))
+    assert np.allclose(fitted.mean, refitted.mean)
+    assert np.allclose(fitted.scale, refitted.scale)
+    transformed, support = apply_study_site_standardization(values, studies, fitted)
+    assert support.all()
+    assert np.allclose(transformed[:2].mean(axis=0), 0.0)
+
+
+def test_missing_study_metadata_fails_without_fallback(tmp_path):
+    path = tmp_path / "metadata.tsv"
+    pd.DataFrame({"aliquot": ["A"], "study": ["S1"]}).to_csv(
+        path, sep="\t", index=False
+    )
+    with pytest.raises(ValueError, match="lacks"):
+        read_sample_studies(
+            path,
+            ["A", "B"],
+            study_column="study",
+            sample_id_column="aliquot",
+        )
+
+
+def test_sealed_phosphosite_rows_are_not_requested(monkeypatch, tmp_path):
+    captured = {}
+
+    def fake_read_parquet(path, *, columns, filters, engine):
+        captured["filters"] = filters
+        return pd.DataFrame({"SITE": [1.0, 2.0]}, index=["T0", "V0"])
+
+    monkeypatch.setattr(pd, "read_parquet", fake_read_parquet)
+    result = read_parquet_rows(tmp_path / "labels.parquet", ["T0", "V0"], columns=["SITE"])
+    assert result.index.tolist() == ["T0", "V0"]
+    assert "S0" not in captured["filters"][0][2]
+
+
+def test_case_identifier_cannot_cross_locked_roles(tmp_path):
+    split = validate_split_manifest(write_split(tmp_path), expected_sizes=(2, 1, 1))
+    metadata = tmp_path / "metadata.tsv"
+    pd.DataFrame(
+        {
+            "aliquot": ["T0", "T1", "V0", "S0"],
+            "case_submitter_id": ["C0", "C1", "C0", "C2"],
+        }
+    ).to_csv(metadata, sep="\t", index=False)
+    with pytest.raises(ValueError, match="overlap"):
+        validate_case_split_disjointness(
+            metadata,
+            split,
+            sample_id_column="aliquot",
+        )
 
 
 def test_masked_centering_ignores_missing_sites():

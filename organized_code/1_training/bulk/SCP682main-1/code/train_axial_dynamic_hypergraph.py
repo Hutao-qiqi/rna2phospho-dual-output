@@ -16,56 +16,70 @@ import torch
 try:
     from .axial_dynamic_data import (
         apply_feature_zscore,
+        apply_study_site_standardization,
         build_biological_prior,
         build_query_reference_knn,
         fit_feature_zscore,
         fit_parent_calibration,
+        fit_study_site_standardization,
         load_site_kinases,
         masked_row_median_center,
+        parent_anchor_statistics,
         parent_baseline,
         per_site_metrics,
         prior_metadata,
         read_parquet_rows,
         read_prediction_matrix,
+        read_sample_studies,
         sample_rank_encode,
         select_pathways,
         sha256_file,
         validate_protein_prediction_provenance,
+        validate_case_split_disjointness,
         validate_split_manifest,
         write_json,
     )
     from .axial_dynamic_hypergraph import (
         AxialHypergraphConfig,
         ProteinAnchoredAxialDynamicHypergraph,
-        masked_site_equal_mse,
+        compose_training_objective,
+        masked_sample_intercept_site_equal_mse,
         masked_site_equal_pearson_loss,
+        masked_site_equal_variance_loss,
     )
 except ImportError:
     from axial_dynamic_data import (
         apply_feature_zscore,
+        apply_study_site_standardization,
         build_biological_prior,
         build_query_reference_knn,
         fit_feature_zscore,
         fit_parent_calibration,
+        fit_study_site_standardization,
         load_site_kinases,
         masked_row_median_center,
+        parent_anchor_statistics,
         parent_baseline,
         per_site_metrics,
         prior_metadata,
         read_parquet_rows,
         read_prediction_matrix,
+        read_sample_studies,
         sample_rank_encode,
         select_pathways,
         sha256_file,
         validate_protein_prediction_provenance,
+        validate_case_split_disjointness,
         validate_split_manifest,
         write_json,
     )
     from axial_dynamic_hypergraph import (
         AxialHypergraphConfig,
         ProteinAnchoredAxialDynamicHypergraph,
-        masked_site_equal_mse,
+        compose_training_objective,
+        masked_sample_intercept_site_equal_mse,
         masked_site_equal_pearson_loss,
+        masked_site_equal_variance_loss,
     )
 
 
@@ -77,6 +91,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--phosphosite", type=Path, required=True)
     parser.add_argument("--phosphosite-manifest", type=Path, required=True)
     parser.add_argument("--split-manifest", type=Path, required=True)
+    parser.add_argument("--sample-metadata", type=Path, required=True)
+    parser.add_argument("--sample-id-column", required=True)
+    parser.add_argument("--study-column", required=True)
+    parser.add_argument("--case-id-column", default="case_submitter_id")
     parser.add_argument("--hallmark-gmt", type=Path, required=True)
     parser.add_argument("--canonical-gmt", type=Path, required=True)
     parser.add_argument("--kinase-prior", type=Path, action="append", required=True)
@@ -89,7 +107,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--epochs", type=int, default=80)
     parser.add_argument("--patience", type=int, default=10)
     parser.add_argument("--validation-interval", type=int, default=1)
-    parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--cache-batch-size", type=int, default=64)
     parser.add_argument("--sample-knn", type=int, default=16)
     parser.add_argument("--candidate-rna-genes", type=int, default=2048)
@@ -107,11 +125,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--initial-site-shrinkage", type=float, default=0.10)
     parser.add_argument("--learning-rate", type=float, default=2.0e-4)
     parser.add_argument("--weight-decay", type=float, default=1.0e-4)
-    parser.add_argument("--residual-loss-weight", type=float, default=0.30)
     parser.add_argument("--pearson-loss-weight", type=float, default=0.20)
+    parser.add_argument("--variance-loss-weight", type=float, default=0.10)
     parser.add_argument("--shrinkage-regularization", type=float, default=0.01)
     parser.add_argument("--parent-calibration-ridge", type=float, default=1.0)
     parser.add_argument("--minimum-site-observations", type=int, default=8)
+    parser.add_argument("--minimum-study-site-observations", type=int, default=8)
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--validate-inputs-only", action="store_true")
     return parser.parse_args()
@@ -165,7 +184,13 @@ def _require_finite(name: str, value: torch.Tensor) -> None:
         raise FloatingPointError(f"{name} contains {count} non-finite values")
 
 
-def build_model(config: AxialHypergraphConfig, prior, device: torch.device):
+def build_model(
+    config: AxialHypergraphConfig,
+    prior,
+    site_anchor_quality: np.ndarray,
+    site_anchor_coverage: np.ndarray,
+    device: torch.device,
+):
     return ProteinAnchoredAxialDynamicHypergraph(
         config,
         rna_pathway_index=torch.as_tensor(prior.rna_pathway_index),
@@ -181,6 +206,8 @@ def build_model(config: AxialHypergraphConfig, prior, device: torch.device):
         site_kinase_index=torch.as_tensor(prior.site_kinase_index),
         site_kinase_mask=torch.as_tensor(prior.site_kinase_mask),
         site_coverage=torch.as_tensor(prior.site_coverage),
+        site_anchor_quality=torch.as_tensor(site_anchor_quality),
+        site_anchor_coverage=torch.as_tensor(site_anchor_coverage),
     ).to(device)
 
 
@@ -194,6 +221,8 @@ def predict(
     reference_cache: tuple[torch.Tensor, ...],
     neighbour_index: torch.Tensor,
     neighbour_similarity: torch.Tensor,
+    reference_residual: torch.Tensor,
+    reference_residual_mask: torch.Tensor,
     batch_size: int,
 ) -> np.ndarray:
     model.eval()
@@ -208,6 +237,8 @@ def predict(
             reference_cache,
             _slice_query_neighbours(neighbour_index, start, end),
             _slice_query_neighbours(neighbour_similarity, start, end),
+            reference_residual,
+            reference_residual_mask,
         )
         parts.append(output["prediction"].float().cpu().numpy())
     return np.concatenate(parts, axis=0).astype(np.float32)
@@ -235,8 +266,21 @@ def main() -> int:
 
     started = time.time()
     split = validate_split_manifest(args.split_manifest)
+    validate_case_split_disjointness(
+        args.sample_metadata,
+        split,
+        sample_id_column=args.sample_id_column,
+        case_id_column=args.case_id_column,
+    )
     provenance = validate_protein_prediction_provenance(args.protein_provenance, split)
+    protein_crossfit_evidence = provenance.attrs["crossfit_evidence_level"]
     development_ids = split.development_ids.tolist()
+    studies = read_sample_studies(
+        args.sample_metadata,
+        development_ids,
+        study_column=args.study_column,
+        sample_id_column=args.sample_id_column,
+    )
     protein_frame = read_prediction_matrix(args.protein_prediction, split)
     phosphosite_manifest = pd.read_csv(args.phosphosite_manifest, sep="\t")
     targets, parent_genes = _target_columns(phosphosite_manifest)
@@ -251,11 +295,22 @@ def main() -> int:
     train_index = np.arange(n_train, dtype=np.int64)
     validation_index = np.arange(n_train, len(development_ids), dtype=np.int64)
     rna_raw = rna_frame.apply(pd.to_numeric, errors="coerce").to_numpy(np.float32)
-    phosphosite = phosphosite_frame.apply(pd.to_numeric, errors="coerce").to_numpy(np.float32)
+    phosphosite_raw = phosphosite_frame.apply(pd.to_numeric, errors="coerce").to_numpy(np.float32)
     protein_prediction = protein_frame.to_numpy(np.float32)
     rna_rank = sample_rank_encode(rna_raw)
     protein_mean, protein_scale = fit_feature_zscore(protein_prediction, train_index)
     protein_z = apply_feature_zscore(protein_prediction, protein_mean, protein_scale)
+    study_standardization = fit_study_site_standardization(
+        phosphosite_raw,
+        studies,
+        train_index,
+        minimum_observations=args.minimum_study_site_observations,
+    )
+    phosphosite, observed = apply_study_site_standardization(
+        phosphosite_raw,
+        studies,
+        study_standardization,
+    )
 
     train_variance = np.nanvar(rna_raw[train_index], axis=0)
     pathways = select_pathways(
@@ -268,7 +323,6 @@ def main() -> int:
         max_members=args.max_rna_members,
     )
     site_kinases = load_site_kinases(args.kinase_prior, targets)
-    observed = np.isfinite(phosphosite)
     prior = build_biological_prior(
         pathways.members,
         pathways.full_genes,
@@ -292,6 +346,13 @@ def main() -> int:
         train_index,
         ridge=args.parent_calibration_ridge,
         minimum_observations=args.minimum_site_observations,
+    )
+    anchor_quality, anchor_coverage, anchor_count = parent_anchor_statistics(
+        protein_prediction,
+        phosphosite,
+        prior.parent_protein_index,
+        prior.parent_protein_mask,
+        train_index,
     )
     baseline_raw = parent_baseline(
         protein_prediction,
@@ -337,7 +398,7 @@ def main() -> int:
         site_chunk_size=args.site_chunk_size,
         initial_site_shrinkage=args.initial_site_shrinkage,
     )
-    model = build_model(config, prior, device)
+    model = build_model(config, prior, anchor_quality, anchor_coverage, device)
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay
     )
@@ -347,6 +408,9 @@ def main() -> int:
     target_tensor = _torch(target_centered, device, torch.float32)
     residual_tensor = _torch(residual_target, device, torch.float32)
     mask_tensor = _torch(observed, device, torch.bool)
+    train_index_tensor = _torch(train_index, device, torch.long)
+    reference_residual_tensor = residual_tensor.index_select(0, train_index_tensor).detach()
+    reference_residual_mask_tensor = mask_tensor.index_select(0, train_index_tensor).detach()
     train_neighbour_tensor = _torch(train_neighbour, device, torch.long)
     train_similarity_tensor = _torch(train_similarity, device, torch.float32)
     validation_neighbour_tensor = _torch(validation_neighbour, device, torch.long)
@@ -359,9 +423,15 @@ def main() -> int:
         "rna": {"path": str(args.rna), "sha256": sha256_file(args.rna)},
         "protein_prediction": {"path": str(args.protein_prediction), "sha256": sha256_file(args.protein_prediction)},
         "protein_provenance": {"path": str(args.protein_provenance), "sha256": sha256_file(args.protein_provenance)},
+        "protein_crossfit_evidence": protein_crossfit_evidence,
         "phosphosite": {"path": str(args.phosphosite), "sha256": sha256_file(args.phosphosite)},
         "phosphosite_manifest": {"path": str(args.phosphosite_manifest), "sha256": sha256_file(args.phosphosite_manifest)},
         "split_manifest": {"path": str(args.split_manifest), "sha256": sha256_file(args.split_manifest)},
+        "sample_metadata": {"path": str(args.sample_metadata), "sha256": sha256_file(args.sample_metadata)},
+        "study_column": args.study_column,
+        "sample_id_column": args.sample_id_column,
+        "case_id_column": args.case_id_column,
+        "study_site_standardization_fit_role": "selection_train_only",
         "sealed_phosphosite_rows_loaded": False,
         "split_sizes": {"train": len(train_index), "validation": len(validation_index), "sealed": len(split.sealed_ids)},
     }
@@ -377,9 +447,28 @@ def main() -> int:
             "calibration_intercept": intercept,
             "calibration_slope": slope,
             "calibration_n": calibration_count,
+            "anchor_quality_abs_pearson": anchor_quality,
+            "anchor_coverage": anchor_coverage,
+            "anchor_n": anchor_count,
             "training_coverage": prior.site_coverage,
         }
     ).to_csv(output / "tables/parent_protein_calibration.tsv", sep="\t", index=False)
+    standardization_rows = []
+    for study_index, study_name in enumerate(study_standardization.study_names):
+        for site_index, target in enumerate(targets):
+            standardization_rows.append(
+                {
+                    "study_id": study_name,
+                    "target": target,
+                    "training_mean": study_standardization.mean[study_index, site_index],
+                    "training_scale": study_standardization.scale[study_index, site_index],
+                    "training_n": study_standardization.count[study_index, site_index],
+                    "available": study_standardization.available[study_index, site_index],
+                }
+            )
+    pd.DataFrame(standardization_rows).to_csv(
+        output / "tables/study_site_standardization.tsv", sep="\t", index=False
+    )
 
     if args.validate_inputs_only:
         write_json(
@@ -432,8 +521,8 @@ def main() -> int:
         generator.shuffle(local_train)
         epoch_losses = []
         epoch_value = []
-        epoch_residual = []
         epoch_pearson = []
+        epoch_variance = []
         for start in range(0, len(local_train), args.batch_size):
             local = local_train[start : start + args.batch_size]
             global_index = train_index[local]
@@ -452,28 +541,38 @@ def main() -> int:
                     reference_cache,
                     train_neighbour_tensor.index_select(0, local_ids),
                     train_similarity_tensor.index_select(0, local_ids),
+                    reference_residual_tensor,
+                    reference_residual_mask_tensor,
                 )
                 prediction = result["prediction"]
-                correction = result["correction"]
                 target_batch = target_tensor.index_select(0, ids)
-                residual_batch = residual_tensor.index_select(0, ids)
                 mask_batch = mask_tensor.index_select(0, ids)
-                value_loss = masked_site_equal_mse(prediction, target_batch, mask_batch)
-                residual_loss = masked_site_equal_mse(correction, residual_batch, mask_batch)
+                value_loss = masked_sample_intercept_site_equal_mse(
+                    prediction, target_batch, mask_batch
+                )
                 pearson_loss = masked_site_equal_pearson_loss(
                     prediction,
                     target_batch,
                     mask_batch,
                     minimum_observations=min(args.minimum_site_observations, len(local)),
                 )
+                variance_loss = masked_site_equal_variance_loss(
+                    prediction,
+                    target_batch,
+                    mask_batch,
+                    minimum_observations=min(args.minimum_site_observations, len(local)),
+                )
                 _require_finite("value_loss", value_loss)
-                _require_finite("residual_loss", residual_loss)
                 _require_finite("pearson_loss", pearson_loss)
-                loss = (
-                    value_loss
-                    + args.residual_loss_weight * residual_loss
-                    + args.pearson_loss_weight * pearson_loss
-                    + args.shrinkage_regularization * model.shrinkage_regularization()
+                _require_finite("variance_loss", variance_loss)
+                loss, _ = compose_training_objective(
+                    value_loss,
+                    pearson_loss,
+                    variance_loss,
+                    model.shrinkage_regularization(),
+                    pearson_weight=args.pearson_loss_weight,
+                    variance_weight=args.variance_loss_weight,
+                    shrinkage_weight=args.shrinkage_regularization,
                 )
             loss.backward()
             torch.nn.utils.clip_grad_norm_(
@@ -482,8 +581,8 @@ def main() -> int:
             optimizer.step()
             epoch_losses.append(float(loss.detach().cpu()))
             epoch_value.append(float(value_loss.detach().cpu()))
-            epoch_residual.append(float(residual_loss.detach().cpu()))
             epoch_pearson.append(float(pearson_loss.detach().cpu()))
+            epoch_variance.append(float(variance_loss.detach().cpu()))
 
         score = float("nan")
         if epoch % args.validation_interval == 0 or epoch == args.epochs:
@@ -504,6 +603,8 @@ def main() -> int:
                 reference_cache,
                 validation_neighbour_tensor,
                 validation_similarity_tensor,
+                reference_residual_tensor,
+                reference_residual_mask_tensor,
                 args.batch_size,
             )
             validation_metrics = per_site_metrics(
@@ -533,8 +634,8 @@ def main() -> int:
                 "epoch": epoch,
                 "train_loss": float(np.mean(epoch_losses)),
                 "value_mse": float(np.mean(epoch_value)),
-                "residual_mse": float(np.mean(epoch_residual)),
                 "pearson_loss": float(np.mean(epoch_pearson)),
+                "variance_loss": float(np.mean(epoch_variance)),
                 "validation_median_spearman": score,
                 "mean_site_shrinkage": float(
                     torch.sigmoid(model.site_decoder.site_shrinkage_logit).mean().detach().cpu()
@@ -586,13 +687,38 @@ def main() -> int:
         "protein_scale": protein_scale,
         "parent_intercept": intercept,
         "parent_slope": slope,
+        "site_anchor_quality": anchor_quality,
+        "site_anchor_coverage": anchor_coverage,
+        "study_site_standardization": {
+            "sample_id_column": args.sample_id_column,
+            "case_id_column": args.case_id_column,
+            "study_column": args.study_column,
+            "study_names": study_standardization.study_names,
+            "mean": study_standardization.mean,
+            "scale": study_standardization.scale,
+            "count": study_standardization.count,
+            "available": study_standardization.available,
+            "fit_role": "selection_train_only",
+            "minimum_observations": args.minimum_study_site_observations,
+            "validation_parameters_refit": False,
+        },
         "candidate_rna_columns": candidate_columns,
         "reference_candidate_features": candidate_features[train_index],
         "reference_sample_ids": split.train_ids.tolist(),
         "reference_cache": tuple(value.float().cpu() for value in reference_cache),
+        "reference_residual": reference_residual_tensor.float().cpu(),
+        "reference_residual_mask": reference_residual_mask_tensor.cpu(),
+        "sample_knn": int(args.sample_knn),
         "best_epoch": best_epoch,
         "best_validation_median_spearman": best_score,
         "sealed_phosphosite_rows_loaded": False,
+        "training_objective_terms": [
+            "site_equal_mse",
+            "site_equal_pearson",
+            "site_equal_variance",
+            "site_shrinkage",
+        ],
+        "protein_crossfit_evidence": protein_crossfit_evidence,
     }
     torch.save(checkpoint, output / "models/axial_dynamic_hypergraph_best.pt")
     pd.DataFrame(

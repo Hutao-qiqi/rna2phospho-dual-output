@@ -63,6 +63,8 @@ def main() -> int:
         site_kinase_index=torch.randint(0, args.kinases + 1, (args.sites, site_kinases)),
         site_kinase_mask=torch.ones(args.sites, site_kinases, dtype=torch.bool),
         site_coverage=torch.rand(args.sites),
+        site_anchor_quality=torch.rand(args.sites),
+        site_anchor_coverage=torch.rand(args.sites),
     ).to(device)
     reference_rna = torch.randn(args.references, args.rna, device=device)
     reference_protein = torch.randn(args.references, args.proteins, device=device)
@@ -80,6 +82,8 @@ def main() -> int:
     baseline = torch.randn(args.queries, args.sites, device=device)
     query_neighbour = torch.randint(0, args.references, (args.queries, args.knn), device=device)
     query_similarity = torch.rand(args.queries, args.knn, device=device)
+    reference_residual = torch.randn(args.references, args.sites, device=device)
+    reference_residual_mask = torch.rand(args.references, args.sites, device=device) > 0.2
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
     with torch.autocast(
@@ -94,6 +98,8 @@ def main() -> int:
             cache,
             query_neighbour,
             query_similarity,
+            reference_residual,
+            reference_residual_mask,
         )
     output["prediction"].square().mean().backward()
     if query_protein.grad is not None:

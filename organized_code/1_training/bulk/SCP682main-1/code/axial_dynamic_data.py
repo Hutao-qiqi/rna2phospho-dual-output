@@ -61,6 +61,87 @@ class PathwaySelection:
     full_genes: OrderedDict[str, list[str]]
 
 
+@dataclass(frozen=True)
+class StudySiteStandardization:
+    """Training-fold parameters for study-specific phosphosite scaling."""
+
+    study_names: list[str]
+    mean: np.ndarray
+    scale: np.ndarray
+    count: np.ndarray
+    available: np.ndarray
+
+
+def read_sample_studies(
+    path: str | Path,
+    sample_ids: Sequence[str],
+    *,
+    study_column: str,
+    sample_id_column: str = "sample_id",
+) -> np.ndarray:
+    """Read the required study identifier without touching outcome matrices."""
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"missing sample metadata: {path}")
+    separator = "," if path.suffix.lower() == ".csv" else "\t"
+    table = pd.read_csv(path, sep=separator, low_memory=False)
+    required = {str(sample_id_column), str(study_column)}
+    missing = required - set(table.columns)
+    if missing:
+        raise ValueError(f"sample metadata lacks required columns: {sorted(missing)}")
+    table = table.loc[:, [str(sample_id_column), str(study_column)]].copy()
+    table[str(sample_id_column)] = table[str(sample_id_column)].astype(str)
+    if table[str(sample_id_column)].duplicated().any():
+        raise ValueError("sample metadata contains duplicate sample identifiers")
+    if table[str(study_column)].isna().any():
+        raise ValueError(f"sample metadata column {study_column!r} contains missing values")
+    table[str(study_column)] = table[str(study_column)].astype(str).str.strip()
+    if (table[str(study_column)] == "").any():
+        raise ValueError(f"sample metadata column {study_column!r} contains empty values")
+    lookup = table.set_index(str(sample_id_column))[str(study_column)]
+    wanted = [str(value) for value in sample_ids]
+    absent = [sample for sample in wanted if sample not in lookup.index]
+    if absent:
+        raise ValueError(
+            f"sample metadata lacks {len(absent)} required samples; examples={absent[:5]}"
+        )
+    return lookup.loc[wanted].to_numpy(str)
+
+
+def validate_case_split_disjointness(
+    path: str | Path,
+    split: SplitContract,
+    *,
+    sample_id_column: str,
+    case_id_column: str = "case_submitter_id",
+) -> None:
+    """Reject patient/case reuse across train, validation and sealed roles."""
+    path = Path(path)
+    separator = "," if path.suffix.lower() == ".csv" else "\t"
+    table = pd.read_csv(path, sep=separator, low_memory=False)
+    required = {str(sample_id_column), str(case_id_column)}
+    missing = required - set(table.columns)
+    if missing:
+        raise ValueError(f"sample metadata lacks case-split columns: {sorted(missing)}")
+    table = table.loc[:, [str(sample_id_column), str(case_id_column)]].copy()
+    table[str(sample_id_column)] = table[str(sample_id_column)].astype(str)
+    if table[str(sample_id_column)].duplicated().any():
+        raise ValueError("sample metadata contains duplicate sample identifiers")
+    if table[str(case_id_column)].isna().any():
+        raise ValueError(f"sample metadata column {case_id_column!r} contains missing values")
+    role_lookup = dict(zip(split.sample_ids.tolist(), split.roles.tolist()))
+    table = table[table[str(sample_id_column)].isin(role_lookup)].copy()
+    if len(table) != len(split.sample_ids):
+        raise ValueError("sample metadata must cover every locked split sample for case auditing")
+    table["__role"] = table[str(sample_id_column)].map(role_lookup)
+    crossed = table.groupby(str(case_id_column))["__role"].nunique()
+    bad_cases = crossed[crossed > 1].index.astype(str).tolist()
+    if bad_cases:
+        raise ValueError(
+            "case identifiers overlap locked split roles; examples=" f"{bad_cases[:5]}"
+        )
+
+
 def sha256_file(path: str | Path, chunk_size: int = 1 << 20) -> str:
     digest = hashlib.sha256()
     with Path(path).open("rb") as handle:
@@ -111,7 +192,13 @@ def validate_protein_prediction_provenance(
 ) -> pd.DataFrame:
     """Require one auditable prediction source for every development sample."""
     table = pd.read_csv(path, sep="\t")
-    required = {"sample_id", "prediction_role", "phosphosite_labels_used"}
+    required = {
+        "sample_id",
+        "prediction_role",
+        "phosphosite_labels_used",
+        "source_archive",
+        "source_row_index",
+    }
     missing = required - set(table.columns)
     if missing:
         raise ValueError(f"protein provenance lacks columns: {sorted(missing)}")
@@ -122,6 +209,29 @@ def validate_protein_prediction_provenance(
         raise ValueError("protein provenance contains duplicate sample identifiers")
     if table["phosphosite_labels_used"].astype(str).str.lower().isin({"1", "true", "yes"}).any():
         raise ValueError("protein predictions declare use of phosphosite labels")
+    enhanced = {"source_model_id", "source_fold", "sample_in_source_training"}
+    present = enhanced & set(table.columns)
+    if present and present != enhanced:
+        raise ValueError("protein provenance contains an incomplete enhanced cross-fit contract")
+    if present == enhanced:
+        source_training_flag = (
+            table["sample_in_source_training"].astype(str).str.lower().str.strip()
+        )
+        if not source_training_flag.isin({"0", "false", "no"}).all():
+            raise ValueError("protein provenance shows a sample was used to train its own predictor")
+        for column in ["source_model_id", "source_fold"]:
+            if table[column].isna().any() or (table[column].astype(str).str.strip() == "").any():
+                raise ValueError(f"protein provenance lacks per-sample {column} evidence")
+        evidence_level = "per_sample_fold_and_model"
+    else:
+        if table["source_archive"].isna().any() or (
+            table["source_archive"].astype(str).str.strip() == ""
+        ).any():
+            raise ValueError("legacy protein provenance lacks source archive evidence")
+        source_rows = pd.to_numeric(table["source_row_index"], errors="coerce")
+        if source_rows.isna().any() or (source_rows < 0).any():
+            raise ValueError("legacy protein provenance has invalid source row evidence")
+        evidence_level = "audited_archive_and_role_only"
     expected_ids = set(split.development_ids.tolist())
     observed_ids = set(table["sample_id"].tolist())
     if observed_ids != expected_ids:
@@ -137,6 +247,7 @@ def validate_protein_prediction_provenance(
         raise ValueError("all 229 validation predictions must be marked selection_train_only")
     if set(split.sealed_ids) & observed_ids:
         raise ValueError("sealed samples are forbidden in the protein prediction input")
+    table.attrs["crossfit_evidence_level"] = evidence_level
     return table
 
 
@@ -464,6 +575,141 @@ def apply_feature_zscore(values: np.ndarray, mean: np.ndarray, scale: np.ndarray
     return np.nan_to_num(output, nan=0.0, posinf=0.0, neginf=0.0).clip(-8, 8).astype(np.float32)
 
 
+def fit_study_site_standardization(
+    phosphosite: np.ndarray,
+    studies: Sequence[str],
+    train_index: np.ndarray,
+    *,
+    minimum_observations: int = 2,
+) -> StudySiteStandardization:
+    """Fit every study-site location and scale using training rows only.
+
+    A study-site pair with insufficient training observations is marked
+    unavailable. No pooled or validation-derived fallback is permitted.
+    """
+    values = np.asarray(phosphosite, dtype=np.float32)
+    studies = np.asarray(studies, dtype=str)
+    train_index = np.asarray(train_index, dtype=np.int64)
+    if values.ndim != 2 or len(studies) != values.shape[0]:
+        raise ValueError("phosphosite matrix and study identifiers have incompatible shapes")
+    if minimum_observations < 1:
+        raise ValueError("minimum_observations must be positive")
+    study_names = sorted(set(studies[train_index].tolist()))
+    if not study_names:
+        raise ValueError("training fold contains no study identifiers")
+    n_sites = values.shape[1]
+    mean = np.zeros((len(study_names), n_sites), dtype=np.float32)
+    scale = np.ones((len(study_names), n_sites), dtype=np.float32)
+    count = np.zeros((len(study_names), n_sites), dtype=np.int64)
+    available = np.zeros((len(study_names), n_sites), dtype=bool)
+    for row, study in enumerate(study_names):
+        selected = train_index[studies[train_index] == study]
+        block = values[selected]
+        count[row] = np.isfinite(block).sum(axis=0)
+        finite = np.isfinite(block)
+        block_sum = np.where(finite, block, 0.0).sum(axis=0, dtype=np.float64)
+        block_mean = np.divide(
+            block_sum,
+            count[row],
+            out=np.full(n_sites, np.nan, dtype=np.float64),
+            where=count[row] > 0,
+        )
+        squared = np.where(finite, (block - block_mean[None, :]) ** 2, 0.0).sum(
+            axis=0, dtype=np.float64
+        )
+        block_scale = np.sqrt(
+            np.divide(
+                squared,
+                count[row],
+                out=np.full(n_sites, np.nan, dtype=np.float64),
+                where=count[row] > 0,
+            )
+        )
+        supported = (count[row] >= int(minimum_observations)) & np.isfinite(block_mean)
+        mean[row, supported] = block_mean[supported].astype(np.float32)
+        valid_scale = supported & np.isfinite(block_scale) & (block_scale > 1.0e-6)
+        if bool(valid_scale.any()):
+            scale_floor = max(
+                float(np.quantile(block_scale[valid_scale], 0.10)) * 0.10,
+                1.0e-3,
+            )
+            scale[row, valid_scale] = np.maximum(
+                block_scale[valid_scale], scale_floor
+            ).astype(np.float32)
+        available[row] = supported
+    return StudySiteStandardization(
+        study_names=study_names,
+        mean=mean,
+        scale=scale,
+        count=count,
+        available=available,
+    )
+
+
+def apply_study_site_standardization(
+    phosphosite: np.ndarray,
+    studies: Sequence[str],
+    parameters: StudySiteStandardization,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Apply locked training parameters and return values plus support mask."""
+    values = np.asarray(phosphosite, dtype=np.float32)
+    studies = np.asarray(studies, dtype=str)
+    if values.ndim != 2 or len(studies) != values.shape[0]:
+        raise ValueError("phosphosite matrix and study identifiers have incompatible shapes")
+    if values.shape[1] != parameters.mean.shape[1]:
+        raise ValueError("phosphosite site count differs from the standardization contract")
+    lookup = {study: index for index, study in enumerate(parameters.study_names)}
+    unknown = sorted(set(studies.tolist()) - set(lookup))
+    if unknown:
+        raise ValueError(
+            "study identifiers lack training-fold standardization parameters: "
+            f"{unknown[:5]}"
+        )
+    output = np.full(values.shape, np.nan, dtype=np.float32)
+    support = np.zeros(values.shape, dtype=bool)
+    for study, parameter_index in lookup.items():
+        rows = np.flatnonzero(studies == study)
+        if not len(rows):
+            continue
+        observed = np.isfinite(values[rows])
+        allowed = observed & parameters.available[parameter_index][None, :]
+        transformed = (
+            values[rows] - parameters.mean[parameter_index][None, :]
+        ) / parameters.scale[parameter_index][None, :]
+        output[rows] = np.where(allowed, transformed, np.nan)
+        support[rows] = allowed
+    return output, support
+
+
+def parent_anchor_statistics(
+    protein_prediction: np.ndarray,
+    standardized_phosphosite: np.ndarray,
+    parent_index: np.ndarray,
+    parent_mask: np.ndarray,
+    train_index: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return training-only absolute correlation, paired coverage and count."""
+    n_sites = standardized_phosphosite.shape[1]
+    quality = np.zeros(n_sites, dtype=np.float32)
+    coverage = np.zeros(n_sites, dtype=np.float32)
+    count = np.zeros(n_sites, dtype=np.int64)
+    train_index = np.asarray(train_index, dtype=np.int64)
+    for site in range(n_sites):
+        if not bool(parent_mask[site]):
+            continue
+        x = protein_prediction[train_index, int(parent_index[site])]
+        y = standardized_phosphosite[train_index, site]
+        valid = np.isfinite(x) & np.isfinite(y)
+        count[site] = int(valid.sum())
+        coverage[site] = count[site] / max(len(train_index), 1)
+        if count[site] >= 3:
+            x_valid = x[valid].astype(np.float64)
+            y_valid = y[valid].astype(np.float64)
+            if np.std(x_valid) > 1.0e-8 and np.std(y_valid) > 1.0e-8:
+                quality[site] = float(abs(np.corrcoef(x_valid, y_valid)[0, 1]))
+    return quality, coverage, count
+
+
 def fit_parent_calibration(
     protein_prediction: np.ndarray,
     phosphosite: np.ndarray,
@@ -542,19 +788,25 @@ def build_query_reference_knn(
     query = query / np.linalg.norm(query, axis=1, keepdims=True).clip(min=1.0e-6)
     reference = reference / np.linalg.norm(reference, axis=1, keepdims=True).clip(min=1.0e-6)
     similarity = query @ reference.T
+    excluded_per_row = np.zeros(similarity.shape[0], dtype=np.int64)
     if query_ids is not None and reference_ids is not None:
         reference_lookup = {str(sample): index for index, sample in enumerate(reference_ids)}
         for row, sample in enumerate(query_ids):
             match = reference_lookup.get(str(sample))
             if match is not None:
                 similarity[row, match] = -np.inf
-    available = similarity.shape[1] - int(np.isneginf(similarity).any(axis=1).all())
-    kk = min(max(int(k), 1), max(available, 1))
+                excluded_per_row[row] = 1
+    available = similarity.shape[1] - excluded_per_row
+    if int(available.min()) < 1:
+        raise ValueError("no reference neighbour remains after self exclusion")
+    kk = min(max(int(k), 1), int(available.min()))
     index = np.argpartition(-similarity, kth=kk - 1, axis=1)[:, :kk]
     values = np.take_along_axis(similarity, index, axis=1)
     order = np.argsort(-values, axis=1)
     index = np.take_along_axis(index, order, axis=1)
     values = np.take_along_axis(values, order, axis=1)
+    if not np.isfinite(values).all():
+        raise RuntimeError("self-excluded neighbour selection returned a forbidden reference")
     return index.astype(np.int64), values.astype(np.float32)
 
 

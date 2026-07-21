@@ -19,6 +19,19 @@ def _inputs(tmp_path: Path):
     sample_ids = [f"S{i}" for i in range(1431)]
     manifest = tmp_path / "sample_manifest.tsv"
     pd.DataFrame({"sample_id": sample_ids}).to_csv(manifest, sep="\t", index=False)
+    locked_split = tmp_path / "authoritative_split.tsv"
+    pd.DataFrame(
+        {
+            "sample_id": sample_ids,
+            "role": np.concatenate(
+                [
+                    np.repeat("selection_train", 916),
+                    np.repeat("selection_validation", 229),
+                    np.repeat("sealed_test", 286),
+                ]
+            ),
+        }
+    ).to_csv(locked_split, sep="\t", index=False)
     proteins = np.asarray(["A", "B", "C"])
     train = tmp_path / "train.npz"
     validation = tmp_path / "validation.npz"
@@ -27,12 +40,16 @@ def _inputs(tmp_path: Path):
         prediction=np.ones((916, 3), dtype=np.float32),
         train_indices=np.arange(916),
         protein_names=proteins,
+        source_fold=np.asarray([f"fold_{index % 5}" for index in range(916)]),
+        source_model_id=np.asarray([f"model_{index % 5}" for index in range(916)]),
     )
     np.savez_compressed(
         validation,
         prediction=np.full((229, 3), 2.0, dtype=np.float32),
         validation_indices=np.arange(916, 1145),
         protein_names=proteins,
+        source_fold=np.repeat("selection_train_full", 229),
+        source_model_id=np.repeat("selection_train_model", 229),
     )
     train_summary = tmp_path / "train_summary.json"
     train_summary.write_text(
@@ -59,7 +76,7 @@ def _inputs(tmp_path: Path):
         ),
         encoding="utf-8",
     )
-    return manifest, train, validation, train_summary, validation_summary
+    return manifest, locked_split, train, validation, train_summary, validation_summary
 
 
 def test_prepare_anchor_package_keeps_sealed_samples_out(tmp_path: Path):
@@ -67,10 +84,11 @@ def test_prepare_anchor_package_keeps_sealed_samples_out(tmp_path: Path):
     output = tmp_path / "out"
     report = prepare_anchor_package(
         sample_manifest_path=inputs[0],
-        train_prediction_path=inputs[1],
-        validation_prediction_path=inputs[2],
-        train_summary_path=inputs[3],
-        validation_summary_path=inputs[4],
+        locked_split_path=inputs[1],
+        train_prediction_path=inputs[2],
+        validation_prediction_path=inputs[3],
+        train_summary_path=inputs[4],
+        validation_summary_path=inputs[5],
         output_dir=output,
     )
     prediction = pd.read_parquet(output / "total_protein_development_predictions.parquet")
@@ -86,17 +104,42 @@ def test_prepare_anchor_package_keeps_sealed_samples_out(tmp_path: Path):
 def test_prepare_anchor_package_rejects_protein_order_change(tmp_path: Path):
     inputs = list(_inputs(tmp_path))
     np.savez_compressed(
-        inputs[2],
+        inputs[3],
         prediction=np.ones((229, 3), dtype=np.float32),
         validation_indices=np.arange(916, 1145),
         protein_names=np.asarray(["B", "A", "C"]),
+        source_fold=np.repeat("selection_train_full", 229),
+        source_model_id=np.repeat("selection_train_model", 229),
     )
     with pytest.raises(ValueError, match="protein vocabularies"):
         prepare_anchor_package(
             sample_manifest_path=inputs[0],
-            train_prediction_path=inputs[1],
-            validation_prediction_path=inputs[2],
-            train_summary_path=inputs[3],
-            validation_summary_path=inputs[4],
+            locked_split_path=inputs[1],
+            train_prediction_path=inputs[2],
+            validation_prediction_path=inputs[3],
+            train_summary_path=inputs[4],
+            validation_summary_path=inputs[5],
+            output_dir=tmp_path / "out",
+        )
+
+
+def test_prepare_anchor_package_rejects_non_authoritative_indices(tmp_path: Path):
+    inputs = list(_inputs(tmp_path))
+    np.savez_compressed(
+        inputs[2],
+        prediction=np.ones((916, 3), dtype=np.float32),
+        train_indices=np.concatenate([np.arange(915), np.asarray([1200])]),
+        protein_names=np.asarray(["A", "B", "C"]),
+        source_fold=np.asarray([f"fold_{index % 5}" for index in range(916)]),
+        source_model_id=np.asarray([f"model_{index % 5}" for index in range(916)]),
+    )
+    with pytest.raises(ValueError, match="authoritative locked split"):
+        prepare_anchor_package(
+            sample_manifest_path=inputs[0],
+            locked_split_path=inputs[1],
+            train_prediction_path=inputs[2],
+            validation_prediction_path=inputs[3],
+            train_summary_path=inputs[4],
+            validation_summary_path=inputs[5],
             output_dir=tmp_path / "out",
         )

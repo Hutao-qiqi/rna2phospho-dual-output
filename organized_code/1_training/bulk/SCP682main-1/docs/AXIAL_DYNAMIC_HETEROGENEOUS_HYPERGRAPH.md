@@ -16,7 +16,7 @@ B_{is}=a_s+\beta_s\widehat P_{i,\operatorname{parent}(s)}.
 
 斜率采用带岭惩罚的一元回归。母蛋白无法映射或有效样本不足时，回退为训练位点均值。校准参数不会使用 229 例或 286 例磷酸化标签。
 
-真实磷酸化和母蛋白基线分别执行样本内中位数中心化：
+真实磷酸化先按研究、按位点使用训练折均值和标准差变换，再执行样本内中位数中心化。验证集沿用训练参数；没有训练参数的研究—位点组合保持不可用，不允许池化回退。
 
 \[
 \widetilde Y_{is}=Y_{is}-\operatorname{median}_{s\in\Omega_i}Y_{is},
@@ -65,7 +65,9 @@ z'_{i,p}=\operatorname{PathwayAttention}_p(z_{i,1:P}).
 
 ## 异质超图位点查询
 
-位点查询包含四类状态：
+位点查询包含母蛋白基线、母蛋白预测值、训练锚点绝对皮尔森质量、训练配对覆盖度和通路特异训练残差记忆。残差记忆按位点块聚合并遵守参考缺失掩码；真实参考残差不参与查询编码和边权计算。
+
+位点查询还包含四类状态：
 
 - 位点身份；
 - 母蛋白身份、预测丰度和校准基线；
@@ -90,7 +92,7 @@ q_{is}=E_s+g^{parent}_{is}h^{parent}_{is}
 \Delta^*_{is}=\Delta_{is}-\operatorname{median}_{s}\Delta_{is}.
 \]
 
-最终预测为：
+母蛋白基线与神经修正相加后再次执行固定词表行中位数投影，最终预测为：
 
 \[
 \widehat Y_{is}=\widetilde B_{is}+\lambda_s\Delta^*_{is}.
@@ -100,7 +102,9 @@ q_{is}=E_s+g^{parent}_{is}h^{parent}_{is}
 
 ## 损失和选模
 
-每个有效位点先计算自己的跨样本均方误差，再对位点等权平均。相关损失采用跨样本逐位点皮尔森，残差监督和位点收缩分别保留独立权重。
+每个训练样本先在其可观测位点上消除一个残差截距，用来协调“观测位点中位化标签”和“固定词表中位化输出”的中心域差异。随后计算逐位点等权均方误差。附加项为逐位点皮尔森、逐位点方差恢复和位点收缩。训练目标不含额外残差均方误差。默认批量为 128，可由命令行修改。
+
+研究内位点标准化默认要求训练折内至少 8 个观测值，并对极小尺度设置训练折内下限。验证值不截断。
 
 229 例逐位点斯皮尔曼中位数用于保存检查点。逐位点皮尔森、均方误差、预测与实测标准差比同时写入表格。
 
@@ -137,8 +141,13 @@ A800 默认使用 32 位浮点训练。混合精度保留为显式参数；本�
 | `sample_id` | 与总蛋白预测矩阵行名一致 |
 | `prediction_role` | 916 例为 `cross_fitted`，229 例为 `selection_train_only` |
 | `phosphosite_labels_used` | 全部为 `false` |
+| `source_model_id` | 逐样本预测器标识 |
+| `source_fold` | 逐样本来源折标识 |
+| `sample_in_source_training` | 全部为 `false` |
 
 总蛋白预测矩阵只包含 916+229 例，列顺序为总蛋白基因词表。训练入口保存全部输入文件的 SHA-256 散列值。
+
+旧锚点包若只保存 `source_archive`、`source_row_index` 和折外角色，可以继续用于实验，但检查点会标记为 `audited_archive_and_role_only`，不能声明逐样本模型与折证据完整。新锚点包必须保存上表三项增强字段。
 
 ## 训练入口
 
@@ -150,6 +159,10 @@ python code/train_axial_dynamic_hypergraph.py \
   --phosphosite observed_phosphosite.parquet \
   --phosphosite-manifest phosphosite_target_manifest.tsv \
   --split-manifest locked_916_229_286.tsv \
+  --sample-metadata sample_manifest.tsv \
+  --sample-id-column aliquot_id \
+  --study-column study_id \
+  --case-id-column case_submitter_id \
   --hallmark-gmt h.all.v2025.1.Hs.symbols.gmt \
   --canonical-gmt c2.cp.v2025.1.Hs.symbols.gmt \
   --kinase-prior kstar_edges.tsv \

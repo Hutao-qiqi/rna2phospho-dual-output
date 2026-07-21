@@ -23,15 +23,18 @@
   "optimization": {
     "epochs": 80,
     "patience": 10,
-    "batch_size": 32,
+    "batch_size": 128,
     "cache_batch_size": 64,
     "precision": "float32",
     "learning_rate": 0.0002,
     "weight_decay": 0.0001,
-    "residual_loss_weight": 0.3,
     "pearson_loss_weight": 0.2,
+    "variance_loss_weight": 0.1,
     "shrinkage_regularization": 0.01
   },
+  "target_contract": "training-fold within-study site standardization followed by sample-row median centering",
+  "minimum_study_site_observations": 8,
+  "reference_residual_memory": "training-only, self-excluded for training queries, masked and site-chunked",
   "checkpoint_metric": "validation_per_site_spearman_median",
   "sealed_test_evaluated_during_development": false
 }

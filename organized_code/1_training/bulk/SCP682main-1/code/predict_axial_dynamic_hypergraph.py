@@ -43,8 +43,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--protein-prediction", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--device", default="cuda:0")
-    parser.add_argument("--batch-size", type=int, default=16)
-    parser.add_argument("--sample-knn", type=int, default=16)
+    parser.add_argument("--batch-size", type=int, default=128)
     return parser.parse_args()
 
 
@@ -66,6 +65,8 @@ def _build_model(checkpoint: dict[str, object], device: torch.device):
         site_kinase_index=torch.as_tensor(prior["site_kinase_index"]),
         site_kinase_mask=torch.as_tensor(prior["site_kinase_mask"]),
         site_coverage=torch.as_tensor(prior["site_coverage"]),
+        site_anchor_quality=torch.as_tensor(checkpoint["site_anchor_quality"]),
+        site_anchor_coverage=torch.as_tensor(checkpoint["site_anchor_coverage"]),
     ).to(device)
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
@@ -89,6 +90,9 @@ def main() -> int:
         raise ValueError("RNA and total-protein prediction sample sets must be identical")
     rna = rna.reindex(common)
     protein = protein.reindex(common)
+    study_contract = checkpoint.get("study_site_standardization")
+    if not isinstance(study_contract, dict):
+        raise ValueError("checkpoint lacks the required study-site standardization contract")
     required_rna = list(map(str, checkpoint["rna_genes"]))
     required_protein = list(map(str, checkpoint["protein_genes"]))
     missing_rna = [gene for gene in required_rna if gene not in rna.columns]
@@ -122,11 +126,19 @@ def main() -> int:
     neighbour, similarity = build_query_reference_knn(
         rna_rank[:, candidate_columns],
         np.asarray(checkpoint["reference_candidate_features"], dtype=np.float32),
-        args.sample_knn,
+        int(checkpoint["sample_knn"]),
+        query_ids=common,
+        reference_ids=list(map(str, checkpoint["reference_sample_ids"])),
     )
     reference_cache = tuple(
         torch.as_tensor(value, device=device) for value in checkpoint["reference_cache"]
     )
+    reference_residual = torch.as_tensor(
+        checkpoint["reference_residual"], device=device, dtype=torch.float32
+    ).detach()
+    reference_residual_mask = torch.as_tensor(
+        checkpoint["reference_residual_mask"], device=device, dtype=torch.bool
+    ).detach()
     rna_tensor = torch.as_tensor(rna_rank, device=device)
     protein_tensor = torch.as_tensor(protein_z, device=device)
     baseline_tensor = torch.as_tensor(baseline_centered, device=device)
@@ -145,6 +157,8 @@ def main() -> int:
                 reference_cache,
                 neighbour_tensor[start:end],
                 similarity_tensor[start:end],
+                reference_residual,
+                reference_residual_mask,
             )
             predictions.append(result["prediction"].float().cpu().numpy())
             corrections.append(result["correction"].float().cpu().numpy())
@@ -171,6 +185,12 @@ def main() -> int:
         "sample_graph_mode": "training_reference_only",
         "query_to_query_edges": False,
         "phosphosite_labels_used": False,
+        "study_column": study_contract["study_column"],
+        "study_site_standardization_fit_role": "selection_train_only",
+        "reference_phosphosite_residual_source": "training_reference_checkpoint_only",
+        "final_projection": "fixed-vocabulary sample-row zero median",
+        "output_scale": "training-fold within-study site standardized, then sample-row median centered",
+        "unknown_study_policy": "prediction requires no outcome-derived study scaling",
         "total_protein_source": str(args.protein_prediction),
     }
     (args.output_dir / "prediction_manifest.json").write_text(

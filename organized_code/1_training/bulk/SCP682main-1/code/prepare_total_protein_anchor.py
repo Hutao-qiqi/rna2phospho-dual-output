@@ -37,15 +37,23 @@ def _load_prediction(
     prediction_key: str,
     index_key: str,
     expected_rows: int,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     with np.load(path, allow_pickle=False) as saved:
-        required = {prediction_key, index_key, "protein_names"}
+        required = {
+            prediction_key,
+            index_key,
+            "protein_names",
+            "source_fold",
+            "source_model_id",
+        }
         missing = required - set(saved.files)
         if missing:
             raise ValueError(f"prediction archive lacks keys: {sorted(missing)}")
         prediction = np.asarray(saved[prediction_key], dtype=np.float32)
         indices = np.asarray(saved[index_key], dtype=np.int64)
         proteins = np.asarray(saved["protein_names"]).astype(str)
+        source_fold = np.asarray(saved["source_fold"]).astype(str)
+        source_model_id = np.asarray(saved["source_model_id"]).astype(str)
     if prediction.ndim != 2 or prediction.shape[0] != expected_rows:
         raise ValueError(
             f"prediction row count differs: observed={prediction.shape}, expected_rows={expected_rows}"
@@ -56,7 +64,11 @@ def _load_prediction(
         raise ValueError("protein vocabulary differs from the prediction columns")
     if not np.isfinite(prediction).all():
         raise ValueError("prediction matrix contains missing or non-finite values")
-    return prediction, indices, proteins
+    if source_fold.shape != (expected_rows,) or source_model_id.shape != (expected_rows,):
+        raise ValueError("prediction archive lacks per-sample fold/model evidence")
+    if (np.char.strip(source_fold) == "").any() or (np.char.strip(source_model_id) == "").any():
+        raise ValueError("prediction archive has empty per-sample fold/model evidence")
+    return prediction, indices, proteins, source_fold, source_model_id
 
 
 def _read_summary(path: str | Path, required_false: tuple[str, ...]) -> dict[str, Any]:
@@ -77,6 +89,8 @@ def prepare_anchor_package(
     train_summary_path: str | Path,
     validation_summary_path: str | Path,
     output_dir: str | Path,
+    locked_split_path: str | Path,
+    sample_id_column: str = "sample_id",
 ) -> dict[str, Any]:
     sample_manifest_path = Path(sample_manifest_path)
     train_prediction_path = Path(train_prediction_path)
@@ -84,21 +98,22 @@ def prepare_anchor_package(
     train_summary_path = Path(train_summary_path)
     validation_summary_path = Path(validation_summary_path)
     output_dir = Path(output_dir)
+    locked_split_path = Path(locked_split_path)
 
     manifest = pd.read_csv(sample_manifest_path, sep="\t")
-    if "sample_id" not in manifest.columns:
-        raise ValueError("sample manifest lacks sample_id")
-    sample_ids = manifest["sample_id"].astype(str).to_numpy()
+    if sample_id_column not in manifest.columns:
+        raise ValueError(f"sample manifest lacks {sample_id_column}")
+    sample_ids = manifest[sample_id_column].astype(str).to_numpy()
     if sample_ids.size != sum(EXPECTED_SIZES) or np.unique(sample_ids).size != sample_ids.size:
         raise ValueError("sample manifest must contain 1,431 unique samples")
 
-    train_prediction, train_indices, train_proteins = _load_prediction(
+    train_prediction, train_indices, train_proteins, train_folds, train_models = _load_prediction(
         train_prediction_path,
         prediction_key="prediction",
         index_key="train_indices",
         expected_rows=EXPECTED_SIZES[0],
     )
-    validation_prediction, validation_indices, validation_proteins = _load_prediction(
+    validation_prediction, validation_indices, validation_proteins, validation_folds, validation_models = _load_prediction(
         validation_prediction_path,
         prediction_key="prediction",
         index_key="validation_indices",
@@ -132,10 +147,24 @@ def prepare_anchor_package(
     if validation_summary.get("calibration_fit_source") != "selection_train_916_out_of_fold_predictions":
         raise ValueError("validation calibration source is not the 916-sample training fold")
 
-    split_roles = np.full(sample_ids.size, SEALED_ROLE, dtype=object)
-    split_roles[train_indices] = TRAIN_ROLE
-    split_roles[validation_indices] = VALIDATION_ROLE
-    split = pd.DataFrame({"sample_id": sample_ids, "role": split_roles})
+    split = pd.read_csv(locked_split_path, sep="\t")
+    if not {"sample_id", "role"}.issubset(split.columns):
+        raise ValueError("locked split lacks sample_id or role")
+    split = split.loc[:, ["sample_id", "role"]].copy()
+    split["sample_id"] = split["sample_id"].astype(str)
+    if split["sample_id"].duplicated().any() or set(split["sample_id"]) != set(sample_ids):
+        raise ValueError("locked split sample identifiers differ from the sample manifest")
+    split = split.set_index("sample_id").loc[sample_ids].reset_index()
+    expected_train_ids = set(split.loc[split["role"].eq(TRAIN_ROLE), "sample_id"])
+    expected_validation_ids = set(split.loc[split["role"].eq(VALIDATION_ROLE), "sample_id"])
+    expected_sealed_ids = set(split.loc[split["role"].eq(SEALED_ROLE), "sample_id"])
+    if expected_train_ids != set(sample_ids[train_indices]):
+        raise ValueError("training prediction indices differ from the authoritative locked split")
+    if expected_validation_ids != set(sample_ids[validation_indices]):
+        raise ValueError("validation prediction indices differ from the authoritative locked split")
+    if expected_sealed_ids != set(sample_ids[sealed_indices]):
+        raise ValueError("sealed complement differs from the authoritative locked split")
+    split_roles = split["role"].to_numpy(object)
 
     development_ids = np.concatenate([sample_ids[train_indices], sample_ids[validation_indices]])
     combined = np.concatenate([train_prediction, validation_prediction], axis=0)
@@ -151,6 +180,9 @@ def prepare_anchor_package(
                 ]
             ),
             "phosphosite_labels_used": False,
+            "source_model_id": np.concatenate([train_models, validation_models]),
+            "source_fold": np.concatenate([train_folds, validation_folds]),
+            "sample_in_source_training": False,
             "study_calibration_cross_fitted": np.concatenate(
                 [
                     np.repeat(True, EXPECTED_SIZES[0]),
@@ -206,6 +238,10 @@ def prepare_anchor_package(
                 "path": str(sample_manifest_path),
                 "sha256": sha256_file(sample_manifest_path),
             },
+            "locked_split": {
+                "path": str(locked_split_path),
+                "sha256": sha256_file(locked_split_path),
+            },
             "train_crossfit_prediction": {
                 "path": str(train_prediction_path),
                 "sha256": sha256_file(train_prediction_path),
@@ -239,6 +275,8 @@ def prepare_anchor_package(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--sample-manifest", type=Path, required=True)
+    parser.add_argument("--sample-id-column", required=True)
+    parser.add_argument("--locked-split", type=Path, required=True)
     parser.add_argument("--train-prediction", type=Path, required=True)
     parser.add_argument("--validation-prediction", type=Path, required=True)
     parser.add_argument("--train-summary", type=Path, required=True)
@@ -251,6 +289,8 @@ def main() -> int:
     args = parse_args()
     report = prepare_anchor_package(
         sample_manifest_path=args.sample_manifest,
+        sample_id_column=args.sample_id_column,
+        locked_split_path=args.locked_split,
         train_prediction_path=args.train_prediction,
         validation_prediction_path=args.validation_prediction,
         train_summary_path=args.train_summary,

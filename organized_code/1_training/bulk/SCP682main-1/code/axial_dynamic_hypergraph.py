@@ -28,6 +28,12 @@ def _logit(probability: float) -> float:
     return math.log(value / (1.0 - value))
 
 
+def project_fixed_vocabulary_zero_median(values: torch.Tensor) -> torch.Tensor:
+    """Project every prediction row over the fixed output vocabulary."""
+    median = torch.nanquantile(values.float(), 0.5, dim=1, keepdim=True)
+    return values - median.to(values.dtype)
+
+
 @dataclass(frozen=True)
 class AxialHypergraphConfig:
     n_rna: int
@@ -311,6 +317,8 @@ class HeterogeneousSiteHypergraphDecoder(nn.Module):
         site_kinase_index: torch.Tensor,
         site_kinase_mask: torch.Tensor,
         site_coverage: torch.Tensor,
+        site_anchor_quality: torch.Tensor,
+        site_anchor_coverage: torch.Tensor,
     ) -> None:
         super().__init__()
         self.config = config
@@ -322,20 +330,25 @@ class HeterogeneousSiteHypergraphDecoder(nn.Module):
         self.register_buffer("site_kinase_index", site_kinase_index.long())
         self.register_buffer("site_kinase_mask", site_kinase_mask.bool())
         self.register_buffer("site_coverage", site_coverage.float())
+        self.register_buffer("site_anchor_quality", site_anchor_quality.float())
+        self.register_buffer("site_anchor_coverage", site_anchor_coverage.float())
 
         hidden = config.hidden
         self.site_embedding = nn.Embedding(config.n_sites, hidden)
         self.parent_embedding = nn.Embedding(config.n_proteins + 1, hidden, padding_idx=config.n_proteins)
         self.kinase_embedding = nn.Embedding(config.n_kinases + 1, hidden, padding_idx=0)
-        self.parent_value = nn.Sequential(nn.Linear(2, hidden), nn.GELU(), nn.Linear(hidden, hidden))
+        self.parent_value = nn.Sequential(nn.Linear(4, hidden), nn.GELU(), nn.Linear(hidden, hidden))
         self.coverage_projection = nn.Sequential(nn.Linear(1, hidden), nn.GELU())
+        self.memory_projection = nn.Sequential(
+            nn.Linear(2, hidden), nn.GELU(), nn.Linear(hidden, hidden)
+        )
         self.pathway_key = nn.Linear(hidden, hidden, bias=False)
         self.query = nn.Linear(hidden, hidden, bias=False)
         self.type_gate = nn.Sequential(
             nn.Linear(hidden * 4, hidden), nn.GELU(), nn.Linear(hidden, 3)
         )
         self.decoder = nn.Sequential(
-            nn.Linear(hidden * 2 + 2, hidden * 2),
+            nn.Linear(hidden * 2 + 7, hidden * 2),
             nn.LayerNorm(hidden * 2),
             nn.GELU(),
             nn.Dropout(config.dropout),
@@ -365,11 +378,78 @@ class HeterogeneousSiteHypergraphDecoder(nn.Module):
         coverage = self.coverage_projection(self.site_coverage[start:end, None])
         return site + coverage, parent, kinase
 
+    def _residual_memory_chunk(
+        self,
+        start: int,
+        end: int,
+        sample_attention: torch.Tensor,
+        neighbour_index: torch.Tensor,
+        reference_residual: torch.Tensor,
+        reference_residual_mask: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Aggregate label memory with pathway-specific graph weights.
+
+        Reference values are detached and are only introduced after graph
+        attention has been computed from query RNA and predicted protein.
+        """
+        attention = sample_attention.detach() if not sample_attention.requires_grad else sample_attention
+        attention = attention.mean(dim=2)
+        residual = reference_residual.detach()
+        residual_mask = reference_residual_mask.detach().bool()
+        if residual.ndim != 2 or residual.shape != residual_mask.shape:
+            raise ValueError("reference residual and mask must share shape [reference, site]")
+        if residual.shape[1] != self.config.n_sites:
+            raise ValueError("reference residual site order differs from the decoder")
+        if neighbour_index.ndim != 3 or neighbour_index.shape[:2] != (
+            self.config.n_pathways,
+            attention.shape[0],
+        ):
+            raise ValueError("pathway neighbour index has an incompatible shape")
+        if neighbour_index.numel() and (
+            int(neighbour_index.min()) < 0
+            or int(neighbour_index.max()) >= residual.shape[0]
+        ):
+            raise IndexError("neighbour index falls outside the ordered residual reference library")
+        batch = attention.shape[0]
+        width = end - start
+        numerator = attention.new_zeros((batch, width))
+        denominator = attention.new_zeros((batch, width))
+        possible = attention.new_zeros((batch, width))
+        site_ids = torch.arange(start, end, device=attention.device)
+        pathway_index = self.site_pathway_index[start:end]
+        pathway_mask = self.site_pathway_mask[start:end]
+        pathway_weight = self.site_pathway_weight[start:end]
+        for relation in range(pathway_index.shape[1]):
+            relation_valid = pathway_mask[:, relation]
+            if not bool(relation_valid.any()):
+                continue
+            pathway = pathway_index[:, relation]
+            selected_neighbour = neighbour_index[pathway, :, :].permute(1, 0, 2)
+            selected_attention = attention[:, pathway, :]
+            selected_value = residual[selected_neighbour, site_ids.view(1, -1, 1)]
+            selected_mask = residual_mask[selected_neighbour, site_ids.view(1, -1, 1)]
+            relation_weight = (
+                pathway_weight[:, relation] * relation_valid.to(pathway_weight.dtype)
+            ).view(1, width, 1)
+            weight = selected_attention * relation_weight
+            numerator = numerator + (weight * selected_value * selected_mask).sum(dim=2)
+            denominator = denominator + (weight * selected_mask).sum(dim=2)
+            possible = possible + weight.sum(dim=2)
+        memory = numerator / denominator.clamp_min(1.0e-8)
+        memory = torch.where(denominator > 0, memory, torch.zeros_like(memory))
+        availability = denominator / possible.clamp_min(1.0e-8)
+        availability = torch.where(possible > 0, availability, torch.zeros_like(availability))
+        return memory, availability.clamp(0.0, 1.0)
+
     def forward(
         self,
         pathway_state: torch.Tensor,
         protein_prediction: torch.Tensor,
         centered_baseline: torch.Tensor,
+        sample_attention: torch.Tensor,
+        neighbour_index: torch.Tensor,
+        reference_residual: torch.Tensor,
+        reference_residual_mask: torch.Tensor,
         return_attention: bool = False,
     ) -> dict[str, torch.Tensor | None]:
         protein_prediction = protein_prediction.detach()
@@ -386,8 +466,24 @@ class HeterogeneousSiteHypergraphDecoder(nn.Module):
             parent_abundance = protein_prediction[:, parent_index]
             parent_abundance = parent_abundance * self.parent_protein_mask[start:end].unsqueeze(0)
             baseline = centered_baseline[:, start:end]
+            anchor_quality = self.site_anchor_quality[start:end].view(1, width).expand(
+                pathway_state.shape[0], -1
+            )
+            anchor_coverage = self.site_anchor_coverage[start:end].view(1, width).expand(
+                pathway_state.shape[0], -1
+            )
+            memory, memory_coverage = self._residual_memory_chunk(
+                start,
+                end,
+                sample_attention,
+                neighbour_index,
+                reference_residual,
+                reference_residual_mask,
+            )
             parent_dynamic = parent_static.unsqueeze(0) + self.parent_value(
-                torch.stack([parent_abundance, baseline], dim=-1)
+                torch.stack(
+                    [parent_abundance, baseline, anchor_quality, anchor_coverage], dim=-1
+                )
             )
             kinase_dynamic = kinase.unsqueeze(0).expand(pathway_state.shape[0], -1, -1)
             site_dynamic = site.unsqueeze(0).expand(pathway_state.shape[0], -1, -1)
@@ -410,11 +506,19 @@ class HeterogeneousSiteHypergraphDecoder(nn.Module):
                 + type_gate[..., 1:2] * kinase_dynamic
                 + type_gate[..., 2:3] * pathway_context
             )
+            fused = fused + self.memory_projection(
+                torch.stack([memory, memory_coverage], dim=-1)
+            )
             decoder_input = torch.cat(
                 [
                     site_dynamic,
                     fused,
                     baseline.unsqueeze(-1),
+                    parent_abundance.unsqueeze(-1),
+                    anchor_quality.unsqueeze(-1),
+                    anchor_coverage.unsqueeze(-1),
+                    memory.unsqueeze(-1),
+                    memory_coverage.unsqueeze(-1),
                     self.site_coverage[start:end].view(1, width, 1).expand(pathway_state.shape[0], -1, -1),
                 ],
                 dim=-1,
@@ -429,15 +533,17 @@ class HeterogeneousSiteHypergraphDecoder(nn.Module):
         # The projection uses the fixed output vocabulary. It never reads the
         # phosphosite observation mask, so external predictions are invariant
         # to label availability and query-cohort composition.
-        residual_median = torch.nanquantile(
-            raw_residual.float(), 0.5, dim=1, keepdim=True
-        ).to(raw_residual.dtype)
-        centered_residual = raw_residual - residual_median
+        centered_residual = project_fixed_vocabulary_zero_median(raw_residual)
         shrinkage = torch.sigmoid(self.site_shrinkage_logit)
-        correction = centered_residual * shrinkage.unsqueeze(0)
+        neural_correction = centered_residual * shrinkage.unsqueeze(0)
+        prediction = project_fixed_vocabulary_zero_median(
+            centered_baseline + neural_correction
+        )
+        correction = prediction - centered_baseline
         return {
-            "prediction": centered_baseline + correction,
+            "prediction": prediction,
             "correction": correction,
+            "neural_correction": neural_correction,
             "centered_residual": centered_residual,
             "site_shrinkage": shrinkage,
             "site_pathway_attention": (
@@ -469,6 +575,8 @@ class ProteinAnchoredAxialDynamicHypergraph(nn.Module):
         site_kinase_index: torch.Tensor,
         site_kinase_mask: torch.Tensor,
         site_coverage: torch.Tensor,
+        site_anchor_quality: torch.Tensor,
+        site_anchor_coverage: torch.Tensor,
     ) -> None:
         super().__init__()
         self.config = config
@@ -512,6 +620,8 @@ class ProteinAnchoredAxialDynamicHypergraph(nn.Module):
             site_kinase_index,
             site_kinase_mask,
             site_coverage,
+            site_anchor_quality,
+            site_anchor_coverage,
         )
 
     @staticmethod
@@ -576,6 +686,8 @@ class ProteinAnchoredAxialDynamicHypergraph(nn.Module):
         reference_cache: Sequence[torch.Tensor],
         neighbour_index: torch.Tensor,
         neighbour_similarity: torch.Tensor,
+        reference_residual: torch.Tensor,
+        reference_residual_mask: torch.Tensor,
         return_attention: bool = False,
     ) -> dict[str, torch.Tensor | list[torch.Tensor] | None]:
         if len(reference_cache) != self.config.axial_layers:
@@ -585,6 +697,7 @@ class ProteinAnchoredAxialDynamicHypergraph(nn.Module):
         )
         state = self.encode_base(query_rna_rank, query_protein_prediction)
         sample_attention: list[torch.Tensor] = []
+        final_attention: torch.Tensor | None = None
         for layer, (pathway_layer, sample_layer) in enumerate(
             zip(self.pathway_axis, self.sample_axis)
         ):
@@ -595,12 +708,19 @@ class ProteinAnchoredAxialDynamicHypergraph(nn.Module):
                 index,
                 similarity,
             )
+            final_attention = attention
             if return_attention:
                 sample_attention.append(attention)
+        if final_attention is None:
+            raise RuntimeError("axial model produced no sample attention")
         output = self.site_decoder(
             state,
             query_protein_prediction.detach(),
             centered_parent_baseline.detach(),
+            final_attention,
+            index,
+            reference_residual.detach(),
+            reference_residual_mask.detach(),
             return_attention=return_attention,
         )
         output["sample_attention"] = sample_attention if return_attention else None
@@ -616,7 +736,9 @@ class ProteinAnchoredAxialDynamicHypergraph(nn.Module):
             "total_protein_is_frozen_input": True,
             "phosphosite_gradient_to_total_protein": False,
             "sample_graph_input": ["RNA rank", "predicted total protein"],
+            "reference_label_memory": "training residual only, introduced after graph attention",
             "external_query_to_query_edges": False,
+            "final_projection": "fixed-vocabulary sample-row zero median",
             "config": self.config.to_dict(),
         }
 
@@ -637,6 +759,19 @@ def masked_site_equal_mse(
     if not bool(valid.any()):
         return prediction.sum() * 0.0
     return per_site[valid].mean()
+
+
+def masked_sample_intercept_site_equal_mse(
+    prediction: torch.Tensor,
+    target: torch.Tensor,
+    mask: torch.Tensor,
+) -> torch.Tensor:
+    """Remove a nuisance sample offset before the site-equal value loss."""
+    mask_f = mask.float()
+    count = mask_f.sum(dim=1, keepdim=True)
+    offset = ((prediction - target) * mask_f).sum(dim=1, keepdim=True) / count.clamp_min(1.0)
+    aligned = prediction - offset
+    return masked_site_equal_mse(aligned, target, mask)
 
 
 def masked_site_equal_pearson_loss(
@@ -669,3 +804,53 @@ def masked_site_equal_pearson_loss(
     if not bool(valid.any()):
         return prediction.sum() * 0.0
     return 1.0 - correlation[valid].mean()
+
+
+def masked_site_equal_variance_loss(
+    prediction: torch.Tensor,
+    target: torch.Tensor,
+    mask: torch.Tensor,
+    minimum_observations: int = 8,
+) -> torch.Tensor:
+    """Recover cross-sample site variance with equal weight per valid site."""
+    prediction = prediction.float()
+    target = target.float()
+    mask_f = mask.float()
+    count = mask_f.sum(dim=0)
+    pred_mean = (prediction * mask_f).sum(dim=0) / count.clamp_min(1.0)
+    target_mean = (target * mask_f).sum(dim=0) / count.clamp_min(1.0)
+    denominator = (count - 1.0).clamp_min(1.0)
+    pred_variance = (((prediction - pred_mean) * mask_f).square()).sum(dim=0) / denominator
+    target_variance = (((target - target_mean) * mask_f).square()).sum(dim=0) / denominator
+    epsilon = 1.0e-6
+    difference = torch.log(pred_variance + epsilon) - torch.log(target_variance + epsilon)
+    valid = (count >= int(minimum_observations)) & (target_variance > epsilon)
+    if not bool(valid.any()):
+        return prediction.sum() * 0.0
+    return difference[valid].square().mean()
+
+
+def compose_training_objective(
+    value_mse: torch.Tensor,
+    pearson_loss: torch.Tensor,
+    variance_loss: torch.Tensor,
+    shrinkage_loss: torch.Tensor,
+    *,
+    pearson_weight: float,
+    variance_weight: float,
+    shrinkage_weight: float,
+) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
+    """Compose the unique training terms; no residual MSE is accepted."""
+    components = {
+        "site_equal_mse": value_mse,
+        "site_equal_pearson": pearson_loss,
+        "site_equal_variance": variance_loss,
+        "site_shrinkage": shrinkage_loss,
+    }
+    total = (
+        value_mse
+        + float(pearson_weight) * pearson_loss
+        + float(variance_weight) * variance_loss
+        + float(shrinkage_weight) * shrinkage_loss
+    )
+    return total, components
