@@ -28,9 +28,17 @@ def _logit(probability: float) -> float:
     return math.log(value / (1.0 - value))
 
 
-def project_fixed_vocabulary_zero_median(values: torch.Tensor) -> torch.Tensor:
-    """Project every prediction row over the fixed output vocabulary."""
-    median = torch.nanquantile(values.float(), 0.5, dim=1, keepdim=True)
+def project_fixed_vocabulary_zero_median(
+    values: torch.Tensor,
+    centering_site_index: torch.Tensor | None = None,
+) -> torch.Tensor:
+    """Project every row over a fixed, label-independent site vocabulary."""
+    center_values = (
+        values
+        if centering_site_index is None
+        else values.index_select(1, centering_site_index.to(values.device))
+    )
+    median = torch.nanquantile(center_values.float(), 0.5, dim=1, keepdim=True)
     return values - median.to(values.dtype)
 
 
@@ -359,6 +367,21 @@ class HeterogeneousSiteHypergraphDecoder(nn.Module):
         self.site_shrinkage_logit = nn.Parameter(
             torch.full((config.n_sites,), _logit(config.initial_site_shrinkage))
         )
+        self.register_buffer(
+            "centering_site_index",
+            torch.arange(config.n_sites, dtype=torch.long),
+            persistent=False,
+        )
+
+    def set_centering_site_index(self, index: torch.Tensor) -> None:
+        index = torch.as_tensor(index, dtype=torch.long, device=self.site_embedding.weight.device)
+        if index.ndim != 1 or index.numel() < 1:
+            raise ValueError("centering site index must be a non-empty vector")
+        if int(index.min()) < 0 or int(index.max()) >= self.config.n_sites:
+            raise IndexError("centering site index falls outside the output vocabulary")
+        if torch.unique(index).numel() != index.numel():
+            raise ValueError("centering site index contains duplicates")
+        self.centering_site_index = index
 
     def _static_query(self, start: int, end: int) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         device = self.site_embedding.weight.device
@@ -485,7 +508,17 @@ class HeterogeneousSiteHypergraphDecoder(nn.Module):
                     [parent_abundance, baseline, anchor_quality, anchor_coverage], dim=-1
                 )
             )
-            kinase_dynamic = kinase.unsqueeze(0).expand(pathway_state.shape[0], -1, -1)
+            sample_kinase_context = getattr(self, "_sample_site_kinase_context", None)
+            if sample_kinase_context is None:
+                kinase_dynamic = kinase.unsqueeze(0).expand(pathway_state.shape[0], -1, -1)
+            else:
+                if sample_kinase_context.shape != (
+                    pathway_state.shape[0],
+                    self.config.n_sites,
+                    self.config.hidden,
+                ):
+                    raise ValueError("sample kinase context has an incompatible shape")
+                kinase_dynamic = kinase.unsqueeze(0) + sample_kinase_context[:, start:end]
             site_dynamic = site.unsqueeze(0).expand(pathway_state.shape[0], -1, -1)
 
             pathway_index = self.site_pathway_index[start:end]
@@ -533,11 +566,14 @@ class HeterogeneousSiteHypergraphDecoder(nn.Module):
         # The projection uses the fixed output vocabulary. It never reads the
         # phosphosite observation mask, so external predictions are invariant
         # to label availability and query-cohort composition.
-        centered_residual = project_fixed_vocabulary_zero_median(raw_residual)
+        centered_residual = project_fixed_vocabulary_zero_median(
+            raw_residual, self.centering_site_index
+        )
         shrinkage = torch.sigmoid(self.site_shrinkage_logit)
         neural_correction = centered_residual * shrinkage.unsqueeze(0)
         prediction = project_fixed_vocabulary_zero_median(
-            centered_baseline + neural_correction
+            centered_baseline + neural_correction,
+            self.centering_site_index,
         )
         correction = prediction - centered_baseline
         return {
@@ -729,6 +765,9 @@ class ProteinAnchoredAxialDynamicHypergraph(nn.Module):
     def shrinkage_regularization(self) -> torch.Tensor:
         return torch.sigmoid(self.site_decoder.site_shrinkage_logit).square().mean()
 
+    def set_centering_site_index(self, index: torch.Tensor) -> None:
+        self.site_decoder.set_centering_site_index(index)
+
     def checkpoint_metadata(self) -> dict[str, Any]:
         return {
             "architecture": "protein_anchored_axial_dynamic_pathway_heterogeneous_hypergraph",
@@ -738,7 +777,8 @@ class ProteinAnchoredAxialDynamicHypergraph(nn.Module):
             "sample_graph_input": ["RNA rank", "predicted total protein"],
             "reference_label_memory": "training residual only, introduced after graph attention",
             "external_query_to_query_edges": False,
-            "final_projection": "fixed-vocabulary sample-row zero median",
+            "final_projection": "fixed-panel sample-row zero median",
+            "centering_site_count": int(self.site_decoder.centering_site_index.numel()),
             "config": self.config.to_dict(),
         }
 

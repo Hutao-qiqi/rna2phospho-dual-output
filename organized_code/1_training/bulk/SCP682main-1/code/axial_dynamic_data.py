@@ -175,8 +175,8 @@ def validate_split_manifest(
     sizes = (len(train), len(validation), len(sealed))
     if expected_sizes is not None and sizes != tuple(expected_sizes):
         raise ValueError(f"locked split sizes differ: observed={sizes}, expected={expected_sizes}")
-    if min(sizes) < 1:
-        raise ValueError("all split roles must contain at least one sample")
+    if sizes[0] < 1 or sizes[1] < 1 or sizes[2] < 0:
+        raise ValueError("training and validation roles must contain samples")
     return SplitContract(
         sample_ids=table["sample_id"].to_numpy(str),
         roles=table["role"].to_numpy(str),
