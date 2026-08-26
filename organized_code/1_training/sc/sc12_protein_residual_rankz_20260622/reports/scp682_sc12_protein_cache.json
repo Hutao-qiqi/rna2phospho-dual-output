@@ -1,0 +1,11 @@
+{
+  "cache_dir": "D:\\data\\lsy\\vm_lsy_parent\\lsy\\01_data\\single_cell\\intermediate\\protein_prediction_cache\\scTranslator_sc12_all_protein_cache_merged_rankz_v1",
+  "matrix_path": "D:\\data\\lsy\\vm_lsy_parent\\lsy\\01_data\\single_cell\\intermediate\\protein_prediction_cache\\scTranslator_sc12_all_protein_cache_merged_rankz_v1\\protein_predicted.npy",
+  "table_path": "D:\\data\\lsy\\vm_lsy_parent\\lsy\\01_data\\single_cell\\intermediate\\protein_prediction_cache\\scTranslator_sc12_all_protein_cache_merged_rankz_v1\\protein_features.tsv",
+  "matrix_shape": [
+    212820,
+    18870
+  ],
+  "n_targets": 56,
+  "n_targets_with_parent_protein": 56
+}

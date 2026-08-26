@@ -1,0 +1,10 @@
+{
+  "model": "SCP682-SC12-protein-residual",
+  "architecture": "scRNA_to_predicted_protein_to_phospho_residual",
+  "formula": "phospho_pred = frozen_beta_site * predicted_parent_protein + frozen_bias_site + phospho_residual(RNA_state,pathway_attention,site_graph,protein_context)",
+  "residual_target": "transformed_phospho - frozen_parent_protein_baseline",
+  "protein_context": "predicted parent protein is projected into site-level residual decoding",
+  "n_cells": 212820,
+  "n_targets": 56,
+  "n_parent_protein_features": 56
+}
