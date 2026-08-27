@@ -1,0 +1,9 @@
+model	category	description
+ppko_v10b	full model	Frozen V10B PPKO model using baseline, signed target context, graph prior and learned decoder.
+zero_vector	null	Predicts zero phosphosite delta for every site.
+direct_kinase_substrate	KSEA forward	Signed target seed projected directly through regulator-to-site edges without protein-protein propagation.
+graph_heat_diffusion	graph diffusion	Two-step signed/unsigned protein graph heat diffusion followed by signed regulator-to-site projection; no learned parameters.
+rwr_signed_graph	graph diffusion	Random-walk-with-restart on the signed protein graph followed by signed regulator-to-site projection; no learned parameters.
+ridge_signed_target	linear regression	Ridge regression from signed target vector plus intercept to phosphosite delta; alpha selected inside decryptM CV, alpha=0.01.
+retrieval_target	nearest neighbor	Nearest decryptM comparison by target protein-context cosine; uses the retrieved training delta.
+retrieval_target_baseline	nearest neighbor	Nearest decryptM comparison by average of target protein-context cosine and baseline phosphosite cosine; uses the retrieved training delta.

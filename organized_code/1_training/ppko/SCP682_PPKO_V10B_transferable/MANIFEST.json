@@ -1,0 +1,63 @@
+{
+  "model_name": "SCP682-PPKO V10B strong300",
+  "frozen_on": "2026-05-23",
+  "primary_checkpoint": {
+    "path": "models/scp682_ppko_v10b_strong300_best.pt",
+    "bytes": 15680895,
+    "sha256": "A7498D0056DD83095E0AB8135DAC3C2D60A70ABDB2251184D279F7D3731A11FD"
+  },
+  "scripts": [
+    {
+      "path": "scripts/pretrain_v10b_strong300.py",
+      "role": "training"
+    },
+    {
+      "path": "scripts/validate_v10b_p100_all_drugs.py",
+      "role": "P100 all-drug validation"
+    }
+  ],
+  "results": [
+    {
+      "path": "results/v10b_strong300_p100_metrics.tsv",
+      "role": "original P100 all-drug per-comparison metrics"
+    },
+    {
+      "path": "results/v10b_strong300_focus55_summary.tsv",
+      "role": "original focus55 summary"
+    },
+    {
+      "path": "results/v10b_p100_all_drug_mode_summary_reannotated.tsv",
+      "role": "P100 all-drug summary after target reannotation"
+    },
+    {
+      "path": "results/v10b_p100_all_drug_drug_summary_reannotated.tsv",
+      "role": "P100 per-drug summary after target reannotation"
+    },
+    {
+      "path": "results/candidate_comparison_report.json",
+      "role": "candidate comparison record"
+    }
+  ],
+  "main_reannotated_p100_true_target_metrics": {
+    "n": 125,
+    "all_cosine": 0.5427339787352831,
+    "all_spearman": 0.5470166048681168,
+    "all_direction": 0.681914125393064,
+    "responsive20_cosine": 0.7087219299077988,
+    "responsive20_spearman": 0.6617739340277576,
+    "responsive20_direction": 0.8572109668109669,
+    "topk_recall": 0.4392450216450216,
+    "topk_direction": 0.964207650273224,
+    "response_auroc_abs_pred": 0.6973215949966064
+  },
+  "claim_scope": {
+    "allowed": [
+      "P100 all-drug shared-phosphosite response prediction",
+      "coverage of targets not present in the V20D target vocabulary"
+    ],
+    "not_allowed": [
+      "strict target-mechanism specificity",
+      "compound-structure-driven unseen drug generalization"
+    ]
+  }
+}
