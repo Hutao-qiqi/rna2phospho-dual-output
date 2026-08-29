@@ -1,0 +1,9 @@
+protocol	model	mean_overall_spearman	mean_within_condition_spearman	mean_pseudobulk_spearman	n_repeats
+leave_one_plate_out	SC13_A4	0.211000	0.181000	0.431000	5
+leave_one_plate_out	cTP_style_mean3	0.434536	0.333289	0.648455	5
+leave_one_plate_out	sciPENN_style_mean3	0.449904	0.352624	0.648612	5
+leave_one_plate_out	SC15_A2_single	0.434999	0.350839	0.633410	5
+leave_one_plate_out	SC15_A2_mean3	0.465178	0.361982	0.649403	5
+leave_one_plate_out	SC15_A2_validation_selected_ensemble	0.465812	0.359403	0.647878	5
+stratified_random_81_9_10	SC13_T1S	0.344700	NA	NA	10
+stratified_random_81_9_10	SC15_A2	0.718032	0.703403	0.794227	3

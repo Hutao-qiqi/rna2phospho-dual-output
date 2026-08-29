@@ -1,0 +1,45 @@
+{
+  "model": "SCP682-SC15 Dual-Input Ensemble",
+  "architecture": "HVG_scFoundation_dual_input_ensemble",
+  "inputs": [
+    "4000_fold_specific_HVGs",
+    "frozen_scFoundation_embedding"
+  ],
+  "leave_one_plate_out": {
+    "n_folds": 5,
+    "mean_overall_spearman": 0.46581234149567763,
+    "mean_within_condition_spearman": 0.3594034076611022,
+    "mean_pseudobulk_spearman": 0.6478783282391136
+  },
+  "equal_budget_comparison": {
+    "ensemble_size": 3,
+    "scp682_sc15_mean3_overall_spearman": 0.4651775751469037,
+    "ctpnet_mean3_overall_spearman": 0.434536,
+    "scipenn_mean3_overall_spearman": 0.449904,
+    "primary_comparison": "fixed_mean3_vs_fixed_mean3"
+  },
+  "stratified_random_81_9_10": {
+    "n_seeds": 3,
+    "mean_overall_spearman": 0.718031586905695,
+    "mean_within_condition_spearman": 0.7034034354385692,
+    "mean_pseudobulk_spearman": 0.7942274856692251
+  },
+  "fold_selection": {
+    "69001": "rank3",
+    "69002": "mean3",
+    "69003": "rank3",
+    "69004": "rank3",
+    "69005": "mean3"
+  },
+  "checkpoint_root": "D:\\data\\lsy\\vm_lsy_parent\\lsy\\02_results\\single_cell\\20260829_scp682_sc15_direct_prior_residual_v1",
+  "status": "locked",
+  "portable_release": {
+    "inference_entry": "code/predict_scp682_sc15_locked.py",
+    "model_hashes": "model_hashes.tsv",
+    "hvg_order": "hvg4000_ordered.txt",
+    "normalization": "input_normalization.json",
+    "readout_schema": "readout_schema.tsv",
+    "ensemble_config": "ensemble_config.json",
+    "external_protocol": "external_validation_protocol.md"
+  }
+}
