@@ -18,3 +18,9 @@
 > ⚠ 全部为**复制件**。三台机器上的原始文件未被改动或删除。原始数据/权重不在本包内，路径见各脚本头部及根目录 `SCP682_CURRENT.json` / `SCP682_PPKO_CURRENT.json`。若需要可复制预测包，请使用根目录 `SCP682_PORTABLE/`。
 
 构建方式：三机 sha256 全量清点去重（1,387 唯一文件）→ 多智能体逐文件分类（canonical/legacy/support/...）→ 取 canonical+support 复制入库。详见 `REPRODUCE.md` 第 2、7 节（含已知缺口与未跑完的 verify 阶段说明）。
+
+## SCP682-SC15 单细胞模型
+
+冻结的单细胞磷酸化预测模型位于
+[`1_training/sc/sc15_dual_input_ensemble_20260829/`](1_training/sc/sc15_dual_input_ensemble_20260829/)。
+该发布包含双输入网络、五折三成员集成配置、20 个读数定义、折内 4,000 基因顺序、归一化参数、性能表和外部验证协议。模型权重通过对应的 GitHub Release 附件提供。
