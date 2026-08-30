@@ -1,0 +1,25 @@
+{
+  "status": "FINAL_LOCKED",
+  "model_family": "SCP682-ChemState-MODZ",
+  "label": "Q1_MODZ_replicate_consensus",
+  "deployment_seed": 682,
+  "models": {
+    "KI": {
+      "file": "models/scp682_chemstate_modz_ki.pt",
+      "sha256": "ca4deaf08971e196c65dde18dc23f94ac4a28292f420a52d6fdfe9e00701304d",
+      "n_parent_drugs": 52,
+      "n_comparisons": 370,
+      "epochs": 30
+    },
+    "All": {
+      "file": "models/scp682_chemstate_modz_all.pt",
+      "sha256": "829fcb3b86c3cc24de5196e9d8913dfae04f4eabfed85b907a8e2571f812ec93",
+      "n_parent_drugs": 118,
+      "n_comparisons": 849,
+      "epochs": 10
+    }
+  },
+  "output_sites": 45,
+  "input_mask": "finite baseline observations only",
+  "locked_date": "2026-08-30"
+}
