@@ -2,7 +2,7 @@
 
 模块范围：药物扰动算子 PPKO V10B (strong300)、P100 验证 (n=125)、患者级 TCGA-TCPA 响应 (AUC 0.72)、Fig4 全部 panel (a-h) 及 ED baseline 图。
 
-canonical 模型身份：`SCP682_PPKO_V10B_transferable` / `paper_materials_SCP682_PPKO`，架构 `AttentionPriorManifoldV10`，训练脚本默认 620 epoch，权重 `scp682_ppko_v10b_strong300_best.pt`。
+PPKO包含V10B靶点干预和ChemState-MODZ药物预测，统一入口见[PPKO发布目录](../1_training/ppko/README.md)。V10B架构为`AttentionPriorManifoldV10`，训练300轮，权重为`scp682_ppko_v10b_strong300_best.pt`；ChemState-MODZ分别提供52药和118药权重。
 
 ---
 
@@ -52,7 +52,7 @@ canonical 模型身份：`SCP682_PPKO_V10B_transferable` / `paper_materials_SCP6
 | **canonical 训练（transferable版）** | `SCP682_PPKO_V10B_transferable/scripts/pretrain_v10b_strong300.py` | LW | `decryptm_comparison_delta_v8` + `global_phosphoprotein_heterograph_v10_measured_string700_top50` | `scp682_ppko_v10b_strong300_best.pt` |
 | canonical 训练（paper_materials 版，同架构） | `paper_materials_SCP682_PPKO/03_code/training/pretrain_v10b_strong300.py` | L | 同上 | 同上 |
 
-**版本漂移说明**：`_pretrain_v10.py`（旧入口）及全部 pre-V10B 版本（v1–v22，包括 cophee_atlas_v6、signed_manifold_v9、context_ppi_v11、scnet_dualview_v12、expert_fusion_v19 等）均已标记为 legacy，不纳入复现集。canonical 以 `pretrain_v10b_strong300.py`（AttentionPriorManifoldV10，默认 620 epoch）为准；训练脚本会输出 `scp682_ppko_v10b_strong300_best.pt`，并保留旧名 checkpoint 作为兼容别名。
+V10B训练入口为`1_training/ppko/SCP682_PPKO_V10B_transferable/scripts/pretrain_v10b_strong300.py`，默认300轮。ChemState-MODZ的训练和推理入口见`1_training/ppko/PPKO_MODELS.json`。
 
 ---
 

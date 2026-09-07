@@ -1,5 +1,7 @@
 # organized_code — SCP682 论文复现代码包
 
+**PPKO扰动模型发布入口：** [靶点干预V10B与药物预测ChemState-MODZ](1_training/ppko/README.md)。两种模型的架构、训练代码、使用方法和三份权重均在对应模型包内。
+
 把 SCP682 论文（Fig 1–5）的 **canonical 复现代码**从三台工作区（本地 / Ubuntu / Windows-WSL）跨机去重、精选、并按 **训练 / 分析 / 画图** 三类整理。
 
 当前 bulk 主模型入口以 `2_analysis/bulk/predict_scp682.py` 为准。该入口先用冻结的磷酸化状态估计器 `S_phi` 从 bulk RNA 和样本上下文生成全位点初始状态，再用图约束残差算子输出 `0.3 * Delta` 修正项，最终得到样本级 phosphosite 丰度预测。历史文件名和历史编号只代表内部组件来源或旧实验记录，不再作为论文主模型名称使用。
@@ -15,6 +17,6 @@
 共 415 个脚本（去重）
 ```
 
-> ⚠ 全部为**复制件**。三台机器上的原始文件未被改动或删除。原始数据/权重不在本包内，路径见各脚本头部及根目录 `SCP682_CURRENT.json` / `SCP682_PPKO_CURRENT.json`。若需要可复制预测包，请使用根目录 `SCP682_PORTABLE/`。
+原始训练数据路径见各脚本参数。PPKO的权重和配套代码包含在`1_training/ppko/`；其他模块的运行资源见各自使用说明。
 
 构建方式：三机 sha256 全量清点去重（1,387 唯一文件）→ 多智能体逐文件分类（canonical/legacy/support/...）→ 取 canonical+support 复制入库。详见 `REPRODUCE.md` 第 2、7 节（含已知缺口与未跑完的 verify 阶段说明）。

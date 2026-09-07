@@ -169,7 +169,7 @@ def main():
     ap.add_argument("--graph-dir", default=str(DEFAULT_GRAPH))
     ap.add_argument("--output-dir", default=str(DEFAULT_OUT))
     ap.add_argument("--device", default="cuda:0")
-    ap.add_argument("--epochs", type=int, default=620)
+    ap.add_argument("--epochs", type=int, default=300)
     ap.add_argument("--batch-size", type=int, default=16)
     ap.add_argument("--lr", type=float, default=8e-4)
     ap.add_argument("--hidden", type=int, default=192)

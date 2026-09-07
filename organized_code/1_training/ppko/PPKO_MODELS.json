@@ -1,0 +1,35 @@
+{
+  "model_family": "SCP682-PPKO",
+  "models": [
+    {
+      "id": "target_v10b",
+      "checkpoint": "SCP682_PPKO_V10B_transferable/models/scp682_ppko_v10b_strong300_best.pt",
+      "architecture": "SCP682_PPKO_V10B_transferable/scripts/pretrain_v10b_strong300.py:AttentionPriorManifoldV10",
+      "training": "SCP682_PPKO_V10B_transferable/scripts/pretrain_v10b_strong300.py",
+      "evaluation": "SCP682_PPKO_V10B_transferable/scripts/validate_v10b_p100_all_drugs.py",
+      "n_outputs": 8192,
+      "context_mode": "full_graph_prior",
+      "training_epochs": 300
+    },
+    {
+      "id": "chemical_modz_ki",
+      "checkpoint": "SCP682_ChemState_MODZ_final/models/scp682_chemstate_modz_ki.pt",
+      "architecture": "SCP682_ChemState_MODZ_final/scripts/chemstate_modz_model.py:ChemStateMODZ",
+      "training": "SCP682_ChemState_MODZ_final/scripts/train_chemstate_modz.py",
+      "inference": "SCP682_ChemState_MODZ_final/scripts/infer_chemstate_modz.py",
+      "n_outputs": 45,
+      "n_training_drugs": 52,
+      "training_epochs": 30
+    },
+    {
+      "id": "chemical_modz_all",
+      "checkpoint": "SCP682_ChemState_MODZ_final/models/scp682_chemstate_modz_all.pt",
+      "architecture": "SCP682_ChemState_MODZ_final/scripts/chemstate_modz_model.py:ChemStateMODZ",
+      "training": "SCP682_ChemState_MODZ_final/scripts/train_chemstate_modz.py",
+      "inference": "SCP682_ChemState_MODZ_final/scripts/infer_chemstate_modz.py",
+      "n_outputs": 45,
+      "n_training_drugs": 118,
+      "training_epochs": 10
+    }
+  ]
+}

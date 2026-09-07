@@ -90,7 +90,7 @@ python .\scripts\pretrain_v10b_strong300.py `
   --device cuda:0
 ```
 
-训练脚本的固定主要超参为：`epochs=620`、`batch_size=16`、`lr=8e-4`、`hidden=192`、`latent=96`、`seed=20260519`。
+训练脚本的固定主要超参为：`epochs=300`、`batch_size=16`、`lr=8e-4`、`hidden=192`、`latent=96`、`seed=20260519`。这些参数与发布权重内的训练记录一致。
 
 ## 使用边界
 
