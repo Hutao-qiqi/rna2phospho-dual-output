@@ -1,0 +1,43 @@
+{
+  "model": "SCP682-M2.2-LR-rank128",
+  "release": "2026-09-07",
+  "runtime": "runtime/scp682_m22_runtime.npz",
+  "entrypoint": "predict.py",
+  "input": [
+    "reference_quantile_rna",
+    "rna_predicted_protein"
+  ],
+  "rna_features": 19938,
+  "protein_features": 11311,
+  "phosphosites": 18592,
+  "rna_projection": 256,
+  "protein_projection": 128,
+  "ptm_rank": 128,
+  "ridge_alpha": 1000,
+  "rescue_coordinates_one_based": [
+    16,
+    19,
+    24,
+    31,
+    42,
+    49,
+    56,
+    59
+  ],
+  "pt7": {
+    "adapter_rank": 24,
+    "adapter_ridge": 10,
+    "gamma": 0.1,
+    "lambda": 1,
+    "kappa": 100
+  },
+  "profile_stacking": {
+    "ridge": 30,
+    "alpha": 0.1
+  },
+  "included_weights": [
+    "M2.2 projection, latent ridge, selective rescue, site basis, parent coefficients, global centers"
+  ],
+  "protein_regressor_weights_included": false,
+  "target_domain_adapter_weights_included": false
+}
