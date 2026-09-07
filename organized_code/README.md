@@ -19,8 +19,8 @@
 
 构建方式：三机 sha256 全量清点去重（1,387 唯一文件）→ 多智能体逐文件分类（canonical/legacy/support/...）→ 取 canonical+support 复制入库。详见 `REPRODUCE.md` 第 2、7 节（含已知缺口与未跑完的 verify 阶段说明）。
 
-## SCP682-SC15 单细胞模型
+## SCP682 统一单细胞模型
 
-冻结的单细胞磷酸化预测模型位于
-[`1_training/sc/sc15_dual_input_ensemble_20260829/`](1_training/sc/sc15_dual_input_ensemble_20260829/)。
-该发布包含双输入网络、五折三成员集成配置、20 个读数定义、折内 4,000 基因顺序、归一化参数、性能表和外部验证协议。模型权重通过对应的 GitHub Release 附件提供。
+单细胞模型使用U1配置，入口为
+[`1_training/sc/scp682_u1/`](1_training/sc/scp682_u1/)。
+GSE300551、icCITE和QuRIE共享双输入编码器、位点条件输出和轻量域校准。发布包含架构、训练及推理代码、47个有监督读出的定义、固定基因顺序、归一化参数、细胞划分与验证记录。完整权重见[SCP682 U1发布页](https://github.com/Hutao-qiqi/rna2phospho-dual-output/releases/tag/scp682-u1-v1)。

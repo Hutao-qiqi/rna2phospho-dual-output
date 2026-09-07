@@ -1,0 +1,13 @@
+{
+  "model": "SCP682",
+  "configuration": "U1",
+  "epoch": 5,
+  "output_coordinates": 52,
+  "supervised_readouts": 47,
+  "architecture_max_error": 0.0,
+  "real_cell_prediction_max_error": 2.475257873529868e-07,
+  "training_backward_pass": true,
+  "pytorch": "2.12.0+cu126",
+  "numpy": "2.2.6",
+  "passed": true
+}

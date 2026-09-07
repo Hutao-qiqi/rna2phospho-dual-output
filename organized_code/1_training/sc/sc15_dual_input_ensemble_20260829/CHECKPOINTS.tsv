@@ -1,6 +1,0 @@
-split_seed	selected_ensemble	member1	member2	member3
-69001	rank3	A2_seed69001	direct_ensemble/split_69001/seed_79011	direct_ensemble/split_69001/seed_79012
-69002	mean3	A2_seed69002	direct_ensemble/split_69002/seed_79021	direct_ensemble/split_69002/seed_79022
-69003	rank3	A2_seed69003	direct_ensemble/split_69003/seed_79031	direct_ensemble/split_69003/seed_79032
-69004	rank3	A2_seed69004	direct_ensemble/split_69004/seed_79041	direct_ensemble/split_69004/seed_79042
-69005	mean3	A2_seed69005	direct_ensemble/split_69005/seed_79051	direct_ensemble/split_69005/seed_79052

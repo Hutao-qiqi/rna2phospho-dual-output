@@ -1,6 +1,0 @@
-stage	model	selection_metric	result	decision
-A1	4000_HVG_direct	leave_one_plate_validation_spearman	0.423069	advance
-A2	HVG_plus_scFoundation	leave_one_plate_validation_spearman	0.457358	advance
-A3	readout_specific_heads	leave_one_plate_validation_spearman	0.443501	stop
-A4	SC13_OOF_prior_residual	validation_gain	0.000000	stop
-A7	SCP682_SC15_Dual_Input_Ensemble	leave_one_plate_mean_test_spearman	0.465812	final
