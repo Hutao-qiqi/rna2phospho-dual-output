@@ -1,0 +1,13 @@
+{
+  "model_family": "SCP682-SC",
+  "public_name": "SCP682",
+  "formal_variant": "U1",
+  "status": "FORMAL_CURRENT_LOCKED",
+  "decision_date": "2026-09-09",
+  "checkpoint_file": "SCP682_U1.pt",
+  "checkpoint_sha256": "20D3882307A92D7C8240E3CF6D1B0606421942ADEDC7E78BAC678022EB60E1A5",
+  "selected_epoch": 5,
+  "training_cells": 177078,
+  "output_coordinates": 52,
+  "supervised_output_coordinates": 47
+}

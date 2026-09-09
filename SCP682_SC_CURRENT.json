@@ -1,0 +1,21 @@
+{
+  "model_family": "SCP682-SC",
+  "public_name": "SCP682",
+  "formal_variant": "U1",
+  "status": "FORMAL_CURRENT_LOCKED",
+  "decision_date": "2026-09-09",
+  "release_tag": "scp682-u1-v1",
+  "release_url": "https://github.com/Hutao-qiqi/rna2phospho-dual-output/releases/tag/scp682-u1-v1",
+  "checkpoint_file": "SCP682_U1.pt",
+  "checkpoint_sha256": "20D3882307A92D7C8240E3CF6D1B0606421942ADEDC7E78BAC678022EB60E1A5",
+  "training_cells": 177078,
+  "training_domains": {
+    "GSE300551": {"cells": 55231, "supervised_readouts": 20},
+    "icCITE": {"cells": 114398, "supervised_readouts": 12},
+    "QuRIE": {"cells": 7449, "supervised_readouts": 28}
+  },
+  "output_coordinates": 52,
+  "supervised_output_coordinates": 47,
+  "selected_epoch": 5,
+  "supersedes_as_formal_model": ["SC11", "SC15", "F_ALL"]
+}
