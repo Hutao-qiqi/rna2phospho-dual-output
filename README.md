@@ -6,7 +6,7 @@
 
 [U1架构、训练和推理代码](organized_code/1_training/sc/scp682_u1/)
 
-[U1模型发布页](https://github.com/Hutao-qiqi/rna2phospho-dual-output/releases/tag/scp682-u1-v1)
+[模型发布页](https://github.com/Hutao-qiqi/rna2phospho-dual-output/releases/tag/scp2000-v1)
 
 U1在GSE300551、icCITE和QuRIE共177,078个细胞上联合训练，共享RNA双输入编码器、位点条件输出和轻量域校准；包含52个输出坐标，其中47个获得实测监督。
 
