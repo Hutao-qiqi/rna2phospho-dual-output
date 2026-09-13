@@ -221,6 +221,6 @@ def train(root,out,variant,smoke=False,device='cuda:0'):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(); p.add_argument('stage',choices=['prepare','train']); p.add_argument('--root',type=Path,required=True); p.add_argument('--variant',default='U1',choices=['U0','U1','U2']); p.add_argument('--smoke',action='store_true'); p.add_argument('--device',default='cuda:0'); args=p.parse_args()
-    out=args.root/'results/scp682_u1'; out.mkdir(parents=True,exist_ok=True)
+    out=args.root/'results/scp2000_sc_u1'; out.mkdir(parents=True,exist_ok=True)
     if args.stage=='prepare': prepare(args.root,out)
     else: train(args.root,out,args.variant,args.smoke,args.device)
