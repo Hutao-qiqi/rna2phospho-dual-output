@@ -1,0 +1,19 @@
+{
+  "model_family": "SCP2000-sc",
+  "public_name": "SCP2000-sc",
+  "formal_variant": "U1",
+  "status": "FORMAL_CURRENT_LOCKED",
+  "decision_date": "2026-09-14",
+  "selected_epoch": 5,
+  "checkpoint": "SCP2000_sc_U1.pt",
+  "checkpoint_sha256": "20D3882307A92D7C8240E3CF6D1B0606421942ADEDC7E78BAC678022EB60E1A5",
+  "preprocessing_sha256": "86A91B1D2790F22A9164C05823359D282D19ABE3B3951DD68AD54B9B621283BF",
+  "domain_normalization_sha256": "27DB982A0F3A961D97003ADF4274B682D8C0689E02C9F54D80BF0EDF967FACAB",
+  "readouts_sha256": "E585CBB10F205C525F8733ECDBBBB8887021485ABB1083AFED25DEC8F63E2EF0",
+  "training_config_sha256": "FE5867CC9DFD631EC14E34BE7E527F5F1C58CD4B253139B85E72037DE4BC3B9D",
+  "total_training_cells": 177078,
+  "output_coordinates": 52,
+  "supervised_output_coordinates": 47,
+  "superseded_formal_models": ["SC11", "SC15", "F_ALL"],
+  "previous_public_name": "SCP682"
+}

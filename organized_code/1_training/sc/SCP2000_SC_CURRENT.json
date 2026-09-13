@@ -1,0 +1,28 @@
+{
+  "model_family": "SCP2000-sc",
+  "public_name": "SCP2000-sc",
+  "formal_variant": "U1",
+  "status": "FORMAL_CURRENT_LOCKED",
+  "decision_date": "2026-09-14",
+  "release_dir_relative": "analysis_outputs/20260914_SCP2000_sc_U1_release",
+  "checkpoint_relative": "analysis_outputs/20260914_SCP2000_sc_U1_release/SCP2000_sc_U1.pt",
+  "server_release_dir": "/data/gongke/SCP682_SC/release/scp2000_sc_u1",
+  "server_checkpoint": "/data/gongke/SCP682_SC/release/scp2000_sc_u1/SCP2000_sc_U1.pt",
+  "checkpoint_sha256": "20D3882307A92D7C8240E3CF6D1B0606421942ADEDC7E78BAC678022EB60E1A5",
+  "inference_entrypoint_relative": "analysis_outputs/20260914_SCP2000_sc_U1_release/code/predict.py",
+  "training_entrypoint_relative": "analysis_outputs/20260914_SCP2000_sc_U1_release/code/train.py",
+  "training_domains": {
+    "gse300551_iccite_plex_kinase_2025": {"cells": 55231, "supervised_readouts": 20},
+    "iccite_seq_tcell_2025": {"cells": 114398, "supervised_readouts": 12},
+    "qurie_seq_bjab_2021": {"cells": 7449, "supervised_readouts": 28}
+  },
+  "total_training_cells": 177078,
+  "output_coordinates": 52,
+  "supervised_output_coordinates": 47,
+  "selection_rule": "mean of dataset-level median validation per-readout Spearman",
+  "selected_epoch": 5,
+  "supersedes_as_formal_model": ["SC11", "SC15", "F_ALL"],
+  "previous_public_name": "SCP682",
+  "historical_models_policy": "Retain original names and results for development-history and ablation reporting only; do not relabel historical predictions as U1.",
+  "github_release": "https://github.com/Hutao-qiqi/rna2phospho-dual-output/releases/tag/scp2000-sc-u1-v1"
+}

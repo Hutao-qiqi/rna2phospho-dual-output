@@ -1,8 +1,12 @@
-# SC 模块复现链（SCP682-SC11 / Fig3）
+# SC 模块复现链（SCP2000-sc U1 / Fig3）
 
-生成日期：2026-06-16  
-canonical 模型：SCP682-SC11（`train_scp682_sc11_expanded_scnet_site_gnn.py`）  
+更新日期：2026-09-14
+
+canonical 模型：SCP2000-sc U1（`1_training/sc/scp2000_sc_u1_20260914/code/train.py`）
+
 覆盖 panel：Fig3a / Fig3b / Fig3c / Fig3d / Fig3e / Fig3f / Fig3g  
+
+当前冻结发布入口见 `1_training/sc/SCP2000_SC_CURRENT.json`。下文保留的 SC11 路径用于复现历史 Fig3 分析与消融，不再定义当前公开模型。
 
 ---
 

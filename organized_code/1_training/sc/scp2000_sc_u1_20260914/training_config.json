@@ -1,0 +1,41 @@
+{
+  "seed": 682,
+  "datasets": [
+    {
+      "dataset": "gse300551_iccite_plex_kinase_2025",
+      "cells": 55231,
+      "readouts": 20,
+      "split_counts": {
+        "optimization": 32372,
+        "test": 12090,
+        "validation": 10769
+      }
+    },
+    {
+      "dataset": "iccite_seq_tcell_2025",
+      "cells": 114398,
+      "readouts": 12,
+      "split_counts": {
+        "optimization": 92662,
+        "test": 11441,
+        "validation": 10295
+      }
+    },
+    {
+      "dataset": "qurie_seq_bjab_2021",
+      "cells": 7449,
+      "readouts": 28,
+      "split_counts": {
+        "optimization": 6034,
+        "test": 745,
+        "validation": 670
+      }
+    }
+  ],
+  "hvg": "equal_dataset_round_robin_training_variance",
+  "gene_identity": "exact_case_species_namespaced; no_uppercase_orthology_substitution",
+  "checkpoint": "mean_dataset_median_validation_spearman",
+  "epochs": 40,
+  "steps_per_epoch": 300,
+  "batch_per_dataset": 64
+}
